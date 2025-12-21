@@ -2,7 +2,7 @@ use crate::AppState;
 use axum::{extract::State, http::StatusCode, Json};
 use serde::Deserialize;
 use serde::Serialize;
-use sqlx::FromRow;
+use sqlx::{Type, FromRow};
 use validator::Validate;
 
 #[derive(Deserialize, Serialize, Debug, FromRow)]
@@ -51,8 +51,8 @@ pub enum Role{
     Client
 }
 
-#[derive(Debug, sqlx::Type, Deserialize, Serialize)]
-#[sqlx(type_name = "country_enum", rename_all = "lowercase")]
+#[derive(Debug, Type, Deserialize, Serialize)]
+#[sqlx(type_name = "country", rename_all = "lowercase")]
 pub enum Country{
     US, CA, GB, AU, DE, FR, IN, JP, CN, BR, ZA, NG, KE, EG, MX, PK, RU, IT, ES, NL
 }

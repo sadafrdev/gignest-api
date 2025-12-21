@@ -1,6 +1,7 @@
 -- Add migration script here
--- CREATE TYPE user_role AS ENUM ('client', 'freelancer');
 
--- CREATE TYPE country_enum AS ENUM (
---   'US', 'CA', 'GB', 'AU', 'DE', 'FR', 'IN', 'JP', 'CN', 'BR', 'ZA', 'NG', 'KE', 'EG', 'MX', 'PK', 'RU', 'IT', 'ES', 'NL'
--- );
+CREATE TYPE country AS ENUM (
+  'us','ca','gb','au','de','fr','in','jp','cn','br','za','ng','ke','eg','mx','pk','ru','it','es','nl'
+);
+
+CREATE TYPE user_role AS ENUM ('client', 'freelancer');

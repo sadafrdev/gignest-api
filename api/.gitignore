@@ -1,0 +1,23 @@
+# Rust/Cargo
+/target
+**/*.rs.bk
+
+# Ignore build artifacts
+**/*.rmeta
+**/*.rlib
+**/*.dSYM
+*.log
+
+# Ignore temporary files
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore environment files
+.env
