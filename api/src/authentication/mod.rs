@@ -3,11 +3,12 @@ use axum::{extract::State, http::StatusCode, Json};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::FromRow;
+use validator::Validate;
 
 #[derive(Deserialize, Serialize, Debug, FromRow)]
 pub struct User {
     pub password: String,
-    pub email: String,
+    pub email: String
 }
 
 #[derive(Deserialize)]
@@ -43,16 +44,31 @@ pub async fn login(
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, FromRow)]
+#[derive(Debug, sqlx::Type, Deserialize, Serialize)]
+#[sqlx(type_name = "user_role", rename_all = "lowercase")]
+pub enum Role{
+    Freelancer,
+    Client
+}
+
+#[derive(Debug, sqlx::Type, Deserialize, Serialize)]
+#[sqlx(type_name = "country_enum", rename_all = "lowercase")]
+pub enum Country{
+    US, CA, GB, AU, DE, FR, IN, JP, CN, BR, ZA, NG, KE, EG, MX, PK, RU, IT, ES, NL
+}
+
+#[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Users {
     pub first_name: String,
     pub last_name: String,
+    #[validate(length(min = 6, message = "Password must be at least 6 characters long"))]
     pub password: String,
+    #[validate(email(message = "Invalid email format"))]
     pub email: String,
     pub phone_number: String,
     pub username: String,
-    pub country: String,
-    pub role: String,
+    pub country: Country,
+    pub role: Role,
 }
 
 pub async fn register(
@@ -72,8 +88,8 @@ pub async fn register(
    .bind(payload.email)
    .bind(payload.phone_number)
    .bind(payload.username)
-   .bind(payload.country)
-   .bind(payload.role)
+   .bind(payload.country as Country)
+   .bind(payload.role as Role)
    .execute(&state.db)
    .await
    .map_err(|e| {
