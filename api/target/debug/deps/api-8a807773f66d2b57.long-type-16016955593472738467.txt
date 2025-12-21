@@ -1,0 +1,2 @@
+fn(State<AppState>, axum::Json<Users>) -> impl Future<Output = Result<Users, StatusCode>> {authentication::register}
+fn(State<AppState>, axum::Json<Users>) -> impl Future<Output = Result<Users, StatusCode>> {authentication::register}: Handler<_, _>

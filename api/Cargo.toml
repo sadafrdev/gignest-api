@@ -12,3 +12,4 @@ sqlx = { version = "0.7", features = ["postgres", "chrono", "runtime-tokio"] }
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 anyhow = "1"
+tracing = "0.1.41"

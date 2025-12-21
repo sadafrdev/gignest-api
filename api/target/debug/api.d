@@ -1,0 +1,1 @@
+/Users/sadaf/Documents/gignest/api/target/debug/api: /Users/sadaf/Documents/gignest/api/src/authentication/mod.rs /Users/sadaf/Documents/gignest/api/src/main.rs /Users/sadaf/Documents/gignest/api/src/routes/mod.rs

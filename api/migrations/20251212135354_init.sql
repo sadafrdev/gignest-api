@@ -11,6 +11,5 @@ CREATE TABLE users (
   country TEXT,
   picture_url TEXT,
   role TEXT NOT NULL DEFAULT 'user',
-  created_at: TEXT
-  created_at TIMESTAMPTZ NOT NULL
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

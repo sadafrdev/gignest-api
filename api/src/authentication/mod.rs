@@ -1,6 +1,5 @@
 use crate::AppState;
-use axum::http::StatusCode;
-use axum::{extract::Json, extract::State};
+use axum::{extract::State, http::StatusCode, Json};
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::FromRow;
@@ -43,3 +42,45 @@ pub async fn login(
         None => Err(StatusCode::NOT_FOUND),
     }
 }
+
+#[derive(Deserialize, Serialize, Debug, FromRow)]
+pub struct Users {
+    pub first_name: String,
+    pub last_name: String,
+    pub password: String,
+    pub email: String,
+    pub phone_number: String,
+    pub username: String,
+    pub country: String,
+    pub role: String,
+}
+
+pub async fn register(
+    State(state): State<AppState>,
+    Json(payload): Json<Users>,
+)-> Result<(), StatusCode> {
+   sqlx::query(
+    "
+        INSERT INTO users 
+        (first_name, last_name, password, email, phone_number, username, country, role)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    "
+   ) 
+   .bind(payload.first_name)
+   .bind(payload.last_name)
+   .bind(payload.password)
+   .bind(payload.email)
+   .bind(payload.phone_number)
+   .bind(payload.username)
+   .bind(payload.country)
+   .bind(payload.role)
+   .execute(&state.db)
+   .await
+   .map_err(|e| {
+    eprintln!("SQL ERROR: {:?}", e);
+    StatusCode::INTERNAL_SERVER_ERROR
+   })?;
+
+   Ok(())
+}
+    

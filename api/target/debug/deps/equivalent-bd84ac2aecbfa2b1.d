@@ -1,0 +1,7 @@
+/Users/sadaf/Documents/gignest/api/target/debug/deps/equivalent-bd84ac2aecbfa2b1.d: /Users/sadaf/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equivalent-1.0.2/src/lib.rs
+
+/Users/sadaf/Documents/gignest/api/target/debug/deps/libequivalent-bd84ac2aecbfa2b1.rlib: /Users/sadaf/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equivalent-1.0.2/src/lib.rs
+
+/Users/sadaf/Documents/gignest/api/target/debug/deps/libequivalent-bd84ac2aecbfa2b1.rmeta: /Users/sadaf/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equivalent-1.0.2/src/lib.rs
+
+/Users/sadaf/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equivalent-1.0.2/src/lib.rs:
