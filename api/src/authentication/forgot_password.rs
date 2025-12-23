@@ -7,6 +7,8 @@ use serde_json::json;
 use sqlx::prelude::FromRow;
 use crate::AppState;
 use sqlx::postgres::PgRow;
+use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use time::{Duration, OffsetDateTime};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct ResetClaims {
@@ -48,7 +50,7 @@ pub async fn send_email(email: &String, otp: u32) {
     println!("{:?}", res);
 }
 
-pub async fn request_password_reset(
+pub async fn send_otp(
     State(state): State<AppState>,
     Json(payload): Json<ResetClaims>,
 )-> Result<(), StatusCode>{
@@ -89,4 +91,89 @@ pub async fn request_password_reset(
     send_email(&email, otp).await;
 
     Ok(())
+}
+
+#[derive(Deserialize, Debug, Serialize, FromRow)]
+pub struct OTPVerfication{
+    pub otp: i32,
+    pub email: String
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResetTokenClaims {
+    pub sub: String,
+    pub email: String,
+    pub iat: i64,
+    pub exp: i64,
+}
+
+pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
+    let secret = std::env::var("JWT_RESET_SECRET")
+        .expect("JWT_RESET_SECRET not set");
+
+    let now = OffsetDateTime::now_utc().unix_timestamp();
+    let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
+
+    let claims = ResetTokenClaims {
+        sub: "password_reset".to_string(),
+        email: email.to_string(),
+        iat: now,
+        exp,
+    };
+
+    encode(
+        &Header::new(Algorithm::HS256),
+        &claims,
+        &EncodingKey::from_secret(secret.as_bytes()),
+    )
+}
+
+pub async fn verify_otp(
+    State(state): State<AppState>,
+    Json(payload): Json<OTPVerfication>
+)-> Result<Json<serde_json::Value>, StatusCode>{
+    let email = payload.email.clone();
+
+    let otp_str = format!("{:06}", payload.otp);
+    let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
+
+    let res= sqlx::query(
+        r#"SELECT email
+            FROM otps
+            WHERE email = $1
+                AND otp_hash = $2
+                AND purpose = 'password_reset'
+                AND expires_at > now()
+            "#
+    )
+    .bind(&email)
+    .bind(otp_hash)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| 
+        StatusCode::NOT_FOUND
+    )?;
+
+    if res.is_none(){
+        return Err(StatusCode::UNAUTHORIZED)
+    }
+
+    sqlx::query(
+        r#"
+        DELETE FROM otps
+        WHERE email = $1
+          AND purpose = 'password_reset'
+        "#
+    )
+    .bind(&email)
+    .execute(&state.db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let reset_token = generate_reset_token(&email)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    return Ok(Json(serde_json::json!({
+        "reset_token": reset_token
+    })));
 }
