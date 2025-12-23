@@ -7,8 +7,8 @@ use serde_json::json;
 use sqlx::prelude::FromRow;
 use crate::AppState;
 use sqlx::postgres::PgRow;
-#[derive(Deserialize, Debug, Serialize, FromRow)]
 
+#[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct ResetClaims {
     pub email: String
 }
@@ -34,7 +34,7 @@ pub async fn send_email(email: &String, otp: u32) {
         }]
     });
 
-     let res = client
+    let res = client
         .post("https://api.sendgrid.com/v3/mail/send")
         .bearer_auth(api_key)
         .json(&body)
@@ -44,7 +44,8 @@ pub async fn send_email(email: &String, otp: u32) {
             eprintln!("Email sending error: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         });
-        println!("{:?}", res);
+
+    println!("{:?}", res);
 }
 
 pub async fn request_password_reset(
@@ -53,9 +54,10 @@ pub async fn request_password_reset(
 )-> Result<(), StatusCode>{
     let otp = rand::random::<u32>() % 1_000_000;
     let otp_hash = format!("{:x}", Sha256::digest(otp.to_string().as_bytes())).clone();
+
     let email= payload.email.clone();
 
-    let user_exists: Option<PgRow> = sqlx::query(
+    let user: Option<PgRow> = sqlx::query(
         r#"
             SELECT email FROM users WHERE email = $1
         "#
@@ -65,7 +67,7 @@ pub async fn request_password_reset(
     .await
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    if user_exists.is_none() {
+    if user.is_none() {
         println!("Your Email Does Not Exists.");
         return Err(StatusCode::NOT_FOUND);
     }

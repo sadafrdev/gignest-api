@@ -13,7 +13,7 @@ pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
 ) -> Result<(), StatusCode> {
-    let rows : Option<PgRow>= sqlx::query(
+    let res: Option<PgRow>= sqlx::query(
         r#"
             SELECT 
                 password, email
@@ -30,7 +30,7 @@ pub async fn login(
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    match rows {
+    match res {
         Some(_) => Ok(()),
         None => Err(StatusCode::NOT_FOUND),
     }
