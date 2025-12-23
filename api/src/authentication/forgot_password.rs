@@ -7,7 +7,7 @@ use serde_json::json;
 use sqlx::prelude::FromRow;
 use crate::AppState;
 use sqlx::postgres::PgRow;
-use jsonwebtoken::{encode, Algorithm, EncodingKey, Header};
+use jsonwebtoken::{encode, Algorithm, EncodingKey, Header, decode, DecodingKey, Validation};
 use time::{Duration, OffsetDateTime};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
@@ -94,7 +94,7 @@ pub async fn send_otp(
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct OTPVerfication{
+pub struct OTPVerficationPayload{
     pub otp: i32,
     pub email: String
 }
@@ -130,7 +130,7 @@ pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors:
 
 pub async fn verify_otp(
     State(state): State<AppState>,
-    Json(payload): Json<OTPVerfication>
+    Json(payload): Json<OTPVerficationPayload>
 )-> Result<Json<serde_json::Value>, StatusCode>{
     let email = payload.email.clone();
 
@@ -176,4 +176,59 @@ pub async fn verify_otp(
     return Ok(Json(serde_json::json!({
         "reset_token": reset_token
     })));
+}
+
+#[derive(Deserialize, Debug, Serialize, FromRow)]
+pub struct ResetPasswordPayload{
+    pub email: String,
+    pub new_password: String,
+    pub token: String
+}
+pub fn verify_reset_token(token: &str) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
+    let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+
+    let mut validation = Validation::new(Algorithm::HS256);
+    validation.validate_exp = true;
+
+    let data = decode::<ResetTokenClaims>(
+        token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &validation,
+    )?;
+
+    if data.claims.sub != "password_reset" {
+        return Err(jsonwebtoken::errors::Error::from(
+            jsonwebtoken::errors::ErrorKind::InvalidToken,
+        ));
+    }
+
+    Ok(data.claims)
+}
+
+pub async fn update_password(
+    State(state): State<AppState>,
+    Json(payload): Json<ResetPasswordPayload>
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    //VErifying Token
+    verify_reset_token(&payload.token)
+        .map_err(|_| StatusCode::UNAUTHORIZED);
+
+    //Updating Password
+    sqlx::query(
+        "
+            UPDATE users
+            SET password = $1
+            WHERE email = $2
+
+        "
+    )
+    .bind(payload.new_password)
+    .bind(payload.email)
+    .execute(&state.db)
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR);
+
+    Ok(Json(json!({
+        "message": "Password updated successfully"
+    })))
 }
