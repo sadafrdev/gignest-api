@@ -1,0 +1,7 @@
+# macOS files
+.DS_Store
+**/.DS_Store
+
+# gateway folder or file
+gateway/
+gateway
