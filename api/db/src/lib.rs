@@ -1,9 +1,8 @@
 use anyhow::Context;
-use sqlx::PgPool;
 use dotenvy::dotenv;
+use sqlx::PgPool;
 
 pub async fn connect() -> anyhow::Result<PgPool> {
-
     dotenv().ok();
 
     let database_url = std::env::var("DATABASE_URL")
@@ -12,6 +11,6 @@ pub async fn connect() -> anyhow::Result<PgPool> {
     let database_url = &database_url;
 
     PgPool::connect(database_url)
-    .await
-    .with_context(|| "failed to connect to Postgres")
+        .await
+        .with_context(|| "failed to connect to Postgres")
 }

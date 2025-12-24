@@ -1,16 +1,16 @@
-use axum::{Json, http::StatusCode, extract::Extension};
-use sqlx::{FromRow, PgPool};
-use serde::Deserialize;
-use serde::Serialize;
-use sqlx::postgres::PgRow;
-use validator::Validate;
+use axum::{Json, extract::Extension, http::StatusCode};
 use domain::enums::{Country, Role};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand;
 use reqwest::Client;
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
+use sqlx::postgres::PgRow;
+use sqlx::{FromRow, PgPool};
 use time::{Duration, OffsetDateTime};
+use validator::Validate;
 
 #[derive(Deserialize)]
 pub struct LoginRequest {
@@ -45,7 +45,6 @@ pub async fn login(
     }
 }
 
-
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Users {
     pub first_name: String,
@@ -62,7 +61,7 @@ pub struct Users {
 
 pub async fn register(
     Extension(db): Extension<PgPool>,
-    Json(payload): Json<Users>
+    Json(payload): Json<Users>,
 ) -> Result<(), StatusCode> {
     sqlx::query(
         "
@@ -306,3 +305,5 @@ pub async fn update_password(
         "message": "Password updated successfully"
     })))
 }
+
+//will seperate the handlers later
