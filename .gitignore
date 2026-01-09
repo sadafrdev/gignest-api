@@ -8,3 +8,5 @@ gateway
 target
 /target
 **/target/
+.env
+.env.*
