@@ -5,3 +5,8 @@
 # gateway folder or file
 gateway/
 gateway
+target
+/target
+**/target/
+.env
+.env.*
