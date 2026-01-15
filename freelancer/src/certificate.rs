@@ -2,11 +2,11 @@ use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{get, patch, post},
 };
 use lib::AppState;
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::{self, NaiveDate};
+use sqlx::types::chrono::NaiveDate;
 
 #[derive(Deserialize, Serialize)]
 pub struct Users {
@@ -45,7 +45,7 @@ pub struct User {
     user_id: i64,
 }
 
-#[derive(Debug, Serialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Certificate {
     pub user_id: i64,
     pub name: String,
@@ -79,9 +79,42 @@ pub async fn get_certificates(
     Ok(Json(certificates))
 }
 
+pub async fn update_certificate(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<Certificate>,
+) -> Result<StatusCode, StatusCode> {
+    let result = sqlx::query(
+        r#"
+            UPDATE certificates
+            SET
+                name = $1,
+                certificate_by = $2,
+                year = $3
+            WHERE user_id = $4
+        "#,
+    )
+    .bind(&payload.name)
+    .bind(&payload.certificate_by)
+    .bind(payload.year)
+    .bind(payload.user_id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    if result.rows_affected() == 0 {
+        return Err(StatusCode::NOT_FOUND);
+    }
+
+    Ok(StatusCode::OK)
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/certificates", get(get_certificates))
         .route("/certificate", post(generate_certificate))
+        .route("/update-certificate", patch(update_certificate))
         .layer(Extension(state))
 }
