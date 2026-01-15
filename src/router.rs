@@ -1,7 +1,5 @@
-use axum::{
-    Extension, Router
-};
 use crate::AppState;
+use axum::{Extension, Router};
 
 pub fn router(state: AppState) -> Router {
     Router::new()
