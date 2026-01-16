@@ -37,7 +37,7 @@ CREATE TABLE educations (
   degree TEXT NOT NULL,
   institute TEXT NOT NULL,
   major TEXT NOT NULL,
-  year_of_gradution DATE NOT NULL,
+  year_of_graduation DATE NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
