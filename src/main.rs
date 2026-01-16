@@ -1,5 +1,5 @@
-use authentication::routes;
 use lib;
+pub mod router;
 use lib::AppState;
 use std::net::SocketAddr;
 
@@ -15,7 +15,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let state = AppState { db };
 
-    let app = routes::router(state);
+    let app = router::router(state.clone());
 
     let addr: SocketAddr = "127.0.0.1:3000".parse().unwrap();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
