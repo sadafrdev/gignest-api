@@ -9,8 +9,9 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
 use lib::utils::enums::Country;
 
-#[derive(Deserialize, Serialize)]
-pub struct Users {
+
+#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
+pub struct Education {
     pub user_id: i64,
     pub country: Country,
     pub degree: String,
@@ -21,7 +22,7 @@ pub struct Users {
 
 pub async fn create_education(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Users>,
+    Json(payload): Json<Education>,
 ) -> Result<(), StatusCode> {
     sqlx::query(
         "
@@ -45,8 +46,43 @@ pub async fn create_education(
     Ok(())
 }
 
+#[derive(serde::Deserialize)]
+pub struct User {
+    user_id: i64,
+}
+
+pub async fn get_educations(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<User>,
+) -> Result<Json<Vec<Education>>, StatusCode> {
+    let educations = sqlx::query_as::<_, Education>(
+        r#"
+            SELECT
+                user_id,
+                country,
+                degree,
+                institute,
+                major,
+                year_of_graduation
+            FROM educations
+            WHERE user_id = $1
+        "#,
+    )
+    .bind(payload.user_id)
+    .fetch_all(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {e:?}");
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+   
+    Ok(Json(educations))
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/education", post(create_education))
+        .route("/educations", get(get_educations))
         .layer(Extension(state))
 }
+
