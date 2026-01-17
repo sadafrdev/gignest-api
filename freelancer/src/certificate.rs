@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use axum::{
     Router,
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
 };
 use lib::AppState;
 use serde::{Deserialize, Serialize};
@@ -111,10 +111,41 @@ pub async fn update_certificate(
     Ok(StatusCode::OK)
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteCertificate {
+    pub id: i64,
+}
+
+pub async fn delete_certificate(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<DeleteCertificate>,
+) -> Result<StatusCode, StatusCode> {
+    let result = sqlx::query(
+        "
+            DELETE FROM certificates
+            WHERE id = $1
+        ",
+    )
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    if result.rows_affected() == 0 {
+        return Err(StatusCode::NOT_FOUND);
+    }
+
+    Ok(StatusCode::OK)
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/certificates", get(get_certificates))
         .route("/certificate", post(generate_certificate))
         .route("/update-certificate", patch(update_certificate))
+        .route("/delete-certificate", delete(delete_certificate))
         .layer(Extension(state))
 }
