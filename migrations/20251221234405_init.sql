@@ -64,3 +64,9 @@ CREATE TABLE portfolios (
   tagline TEXT NOT NULL,
   description TEXT NOT NULL
 );
+
+CREATE TABLE skills (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id BIGINT REFERENCES users(id),
+  skill skills NOT NULL
+);
