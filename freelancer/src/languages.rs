@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use axum::routing::{get, patch, post};
+use axum::routing::{delete, get, patch, post};
 use axum::{Extension, Json};
 use lib::AppState;
 use lib::utils::enums::{Language, LanguageLevel};
@@ -94,10 +94,37 @@ pub async fn update_language(
     Ok(StatusCode::OK)
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct LanguageID {
+    pub id: i64,
+}
+
+pub async fn delete_language(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<LanguageID>,
+) -> Result<StatusCode, StatusCode> {
+    sqlx::query(
+        r#"
+        DELETE FROM languages
+        WHERE id = $1
+        "#,
+    )
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(StatusCode::OK)
+}
+
 pub fn router(state: AppState) -> axum::Router {
     axum::Router::new()
         .route("/language", post(add_language))
         .route("/languages", get(get_languages))
         .route("/update-language", patch(update_language))
+        .route("/delete-language", delete(delete_language))
         .layer(Extension(state))
 }
