@@ -1,15 +1,14 @@
-use core::str;
-
-use axum::http::{StatusCode, response};
+use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use axum::{
     Router,
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
 };
+use core::str;
 use lib::AppState;
+use lib::utils::enums::Country;
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
-use lib::utils::enums::Country;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Education {
@@ -76,7 +75,7 @@ pub async fn get_educations(
         eprintln!("SQL ERROR: {e:?}");
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
-   
+
     Ok(Json(educations))
 }
 
@@ -117,11 +116,41 @@ pub async fn update_education(
     Ok(())
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteEducation {
+    pub id: i64,
+}
+
+pub async fn delete_education(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<DeleteEducation>,
+) -> Result<StatusCode, StatusCode> {
+    let result = sqlx::query(
+        "
+            DELETE FROM educations
+            WHERE id = $1
+        ",
+    )
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    if result.rows_affected() == 0 {
+        return Err(StatusCode::NOT_FOUND);
+    }
+
+    Ok(StatusCode::OK)
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/education", post(create_education))
         .route("/educations", get(get_educations))
         .route("/update-education", patch(update_education))
+        .route("/delete-education", delete(delete_education))
         .layer(Extension(state))
 }
-
