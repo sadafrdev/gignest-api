@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 members = [
-    "authentication", "freelancer", 
+    "authentication", "clients", "freelancer", 
     "lib"
 ]
 
@@ -13,6 +13,7 @@ members = [
 authentication = { path = "./authentication" }
 lib = { path = "./lib" }
 freelancer = { path = "./freelancer" }
+clients = { path = "./clients" }
 axum = "0.8.7"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

@@ -40,6 +40,7 @@ dependencies = [
  "authentication",
  "axum",
  "chrono",
+ "clients",
  "dotenvy",
  "freelancer",
  "jsonwebtoken",
@@ -231,6 +232,19 @@ dependencies = [
  "serde",
  "wasm-bindgen",
  "windows-link",
+]
+
+[[package]]
+name = "clients"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "lib",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
 ]
 
 [[package]]
