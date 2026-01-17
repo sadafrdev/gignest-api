@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use axum::routing::{get, post};
+use axum::routing::{get, patch, post};
 use axum::{Extension, Json};
 use lib::AppState;
 use lib::utils::enums::{Language, LanguageLevel};
@@ -63,9 +63,41 @@ pub async fn get_languages(
     Ok(Json(languages))
 }
 
+#[derive(Deserialize, Serialize, sqlx::FromRow, Debug)]
+pub struct UpdateLanguage {
+    pub id: i64,
+    pub language: Language,
+    pub language_level: LanguageLevel,
+}
+
+pub async fn update_language(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<UpdateLanguage>,
+) -> Result<StatusCode, StatusCode> {
+    sqlx::query(
+        r#"
+        UPDATE languages
+        SET language = $2, language_level = $3
+        WHERE id = $1
+        "#,
+    )
+    .bind(payload.id)
+    .bind(payload.language as Language)
+    .bind(payload.language_level as LanguageLevel)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(StatusCode::OK)
+}
+
 pub fn router(state: AppState) -> axum::Router {
     axum::Router::new()
         .route("/language", post(add_language))
         .route("/languages", get(get_languages))
+        .route("/update-language", patch(update_language))
         .layer(Extension(state))
 }
