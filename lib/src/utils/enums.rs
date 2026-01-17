@@ -1,16 +1,16 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "language_level")]
 pub enum LanguageLevel {
     BEGINNER,
     INTERMEDIATE,
-    FLUENT
+    FLUENT,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "language")]
-pub enum Language{
+pub enum Language {
     ENGLISH,
     URDU,
     SPANISH,
@@ -23,5 +23,5 @@ pub enum Language{
     HINDI,
     PERSIAN,
     TURKISH,
-    BENGALI
+    BENGALI,
 }
