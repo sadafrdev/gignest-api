@@ -39,7 +39,8 @@ pub async fn create_job(
 
     Ok(())
 }
-pub async fn router(state: AppState) -> Router {
+
+pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/jobs", post(create_job))
         .layer(Extension(state))
