@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use axum::{Extension, Json};
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{delete, get, post, put},
 };
 use bigdecimal::BigDecimal;
 use core::str;
@@ -74,9 +74,76 @@ pub async fn get_jobs(
     Ok(Json(jobs))
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UpdateJob {
+    pub id: i64,
+    pub title: String,
+    pub description: String,
+    pub budget_min: BigDecimal,
+    pub budget_max: BigDecimal,
+}
+
+pub async fn update_job(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<UpdateJob>,
+) -> Result<StatusCode, StatusCode> {
+    sqlx::query(
+        r#"
+            UPDATE jobs
+            SET
+                title = $1,
+                description = $2,
+                budget_min = $3,
+                budget_max = $4
+            WHERE id = $5
+        "#,
+    )
+    .bind(&payload.title)
+    .bind(&payload.description)
+    .bind(payload.budget_min)
+    .bind(payload.budget_max)
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    });
+
+    Ok(StatusCode::OK)
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct JobID {
+    id: i64,
+}
+
+pub async fn delete_job(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<JobID>,
+) -> Result<StatusCode, StatusCode> {
+    sqlx::query(
+        r#"
+            DELETE FROM jobs
+            WHERE id = $1
+        "#,
+    )
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/job", post(create_job))
         .route("/jobs", get(get_jobs))
+        .route("/update-job", put(update_job))
+        .route("/delete-job", delete(delete_job))
         .layer(Extension(state))
 }
