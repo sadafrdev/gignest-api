@@ -112,13 +112,13 @@ pub async fn update_certificate(
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct DeleteCertificate {
+pub struct CertificateID{
     pub id: i64,
 }
 
 pub async fn delete_certificate(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<DeleteCertificate>,
+    Json(payload): Json<CertificateID>,
 ) -> Result<StatusCode, StatusCode> {
     let result = sqlx::query(
         "
