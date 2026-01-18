@@ -10,7 +10,7 @@ pub enum LanguageLevel {
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "language")]
-pub enum Language {
+pub enum LanguageEnum {
     ENGLISH,
     URDU,
     SPANISH,

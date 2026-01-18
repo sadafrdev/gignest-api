@@ -2,20 +2,20 @@ use axum::http::StatusCode;
 use axum::routing::{delete, get, patch, post};
 use axum::{Extension, Json};
 use lib::AppState;
-use lib::utils::enums::{Language, LanguageLevel};
+use lib::utils::enums::{LanguageEnum, LanguageLevel};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
-pub struct UserLanguage {
+pub struct Language {
     pub user_id: i64,
-    pub language: Language,
+    pub language: LanguageEnum,
     pub language_level: LanguageLevel,
 }
 
 pub async fn add_language(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<UserLanguage>,
+    Json(payload): Json<Language>,
 ) -> Result<StatusCode, StatusCode> {
     sqlx::query(
         r#"
@@ -24,7 +24,7 @@ pub async fn add_language(
         "#,
     )
     .bind(payload.user_id)
-    .bind(payload.language as Language)
+    .bind(payload.language as LanguageEnum)
     .bind(payload.language_level as LanguageLevel)
     .execute(&state.db)
     .await
@@ -37,15 +37,15 @@ pub async fn add_language(
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct UserId {
+pub struct User {
     user_id: i64,
 }
 
 pub async fn get_languages(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<UserId>,
-) -> Result<Json<Vec<UserLanguage>>, StatusCode> {
-    let languages = sqlx::query_as::<_, UserLanguage>(
+    Json(payload): Json<User>,
+) -> Result<Json<Vec<Language>>, StatusCode> {
+    let languages = sqlx::query_as::<_, Language>(
         r#"
         SELECT user_id, language, language_level
         FROM languages
@@ -66,7 +66,7 @@ pub async fn get_languages(
 #[derive(Deserialize, Serialize, sqlx::FromRow, Debug)]
 pub struct UpdateLanguage {
     pub id: i64,
-    pub language: Language,
+    pub language: LanguageEnum,
     pub language_level: LanguageLevel,
 }
 
@@ -82,7 +82,7 @@ pub async fn update_language(
         "#,
     )
     .bind(payload.id)
-    .bind(payload.language as Language)
+    .bind(payload.language as LanguageEnum)
     .bind(payload.language_level as LanguageLevel)
     .execute(&state.db)
     .await
