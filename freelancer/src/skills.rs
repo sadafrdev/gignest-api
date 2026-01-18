@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use axum::{Extension, Json};
 use axum::{
     Router,
-    routing::{get, post},
+    routing::{get, post, put},
 };
 use core::str;
 use lib::AppState;
@@ -107,9 +107,38 @@ pub async fn get_skills(
     Ok(Json(skills))
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UpdateSkill {
+    pub id: i64,
+    pub skill: SkillsEnum,
+}
+
+pub async fn update_skill(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<UpdateSkill>,
+) -> Result<(), StatusCode> {
+    sqlx::query(
+        "
+        UPDATE skills
+        SET skill = $1
+        WHERE id = $2",
+    )
+    .bind(payload.skill as SkillsEnum)
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(())
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/skill", post(generate_skill))
         .route("/skills", get(get_skills))
+        .route("/update-skill", put(update_skill))
         .layer(Extension(state))
 }
