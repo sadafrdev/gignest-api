@@ -68,5 +68,5 @@ CREATE TABLE portfolios (
 CREATE TABLE skills (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id BIGINT REFERENCES users(id),
-  skill skills NOT NULL
+  skill skills_enum NOT NULL
 );
