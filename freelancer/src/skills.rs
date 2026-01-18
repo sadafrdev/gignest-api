@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use axum::{Extension, Json};
 use axum::{
     Router,
-    routing::{get, post, put},
+    routing::{delete, get, post, put},
 };
 use core::str;
 use lib::AppState;
@@ -135,10 +135,36 @@ pub async fn update_skill(
     Ok(())
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SkillID {
+    pub id: i64,
+}
+
+pub async fn delete_skill(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<SkillID>,
+) -> Result<(), StatusCode> {
+    sqlx::query(
+        "
+        DELETE FROM skills
+        WHERE id = $1",
+    )
+    .bind(payload.id)
+    .execute(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(())
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/skill", post(generate_skill))
         .route("/skills", get(get_skills))
         .route("/update-skill", put(update_skill))
+        .route("/delete-skill", delete(delete_skill))
         .layer(Extension(state))
 }
