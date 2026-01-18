@@ -1,6 +1,10 @@
 use axum::http::StatusCode;
 use axum::{Extension, Json};
-use axum::{Router, routing::post};
+use axum::{
+    Router,
+    routing::{get, post},
+};
+use core::str;
 use lib::AppState;
 use serde::{Deserialize, Serialize};
 
@@ -74,8 +78,38 @@ pub async fn generate_skill(
     Ok(())
 }
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct User {
+    pub user_id: i64,
+}
+
+pub async fn get_skills(
+    Extension(state): Extension<AppState>,
+    Json(payload): Json<User>,
+) -> Result<Json<Vec<Skills>>, StatusCode> {
+    let skills = sqlx::query_as::<_, Skills>(
+        r#"
+        SELECT
+            user_id,
+            skill
+        FROM skills
+        WHERE user_id = $1
+        "#,
+    )
+    .bind(payload.user_id)
+    .fetch_all(&state.db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(Json(skills))
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/skill", post(generate_skill))
+        .route("/skills", get(get_skills))
         .layer(Extension(state))
 }
