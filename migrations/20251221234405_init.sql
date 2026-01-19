@@ -64,3 +64,11 @@ CREATE TABLE portfolios (
   tagline TEXT NOT NULL,
   description TEXT NOT NULL
 );
+
+CREATE TABLE proposals (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  freelancer_id BIGINT REFERENCES freelancers(id),
+  portfolio_id BIGINT REFERENCES portfolios(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ 
