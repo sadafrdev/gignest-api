@@ -75,4 +75,3 @@ CREATE TABLE proposals (
   status job_status NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
- 
