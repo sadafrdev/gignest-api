@@ -1,7 +1,7 @@
 pub use crate::certificate;
+use crate::skills_routes;
 use axum::{Extension, Router};
 use lib::AppState;
-use crate::skills_routes;
 
 pub fn router(state: AppState) -> Router {
     Router::new()

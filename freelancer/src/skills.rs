@@ -54,7 +54,6 @@ pub struct UpdateSkill {
 }
 
 impl Skills {
-
     pub async fn generate_skill(
         Extension(state): Extension<AppState>,
         Json(payload): Json<Skills>,
@@ -95,18 +94,18 @@ impl Skills {
     pub async fn get_skills(
         Extension(state): Extension<AppState>,
         Json(payload): Json<User>,
-    ) -> Result<Json<Option<Skills>>, StatusCode> {
-        let skills = sqlx::query_as::<_, Skills>(
+    ) -> Result<Json<Vec<Self>>, StatusCode> {
+        let skills = sqlx::query_as::<_, Self>(
             r#"
-            SELECT
-                user_id,
-                skill
-            FROM skills
-            WHERE user_id = $1
+                SELECT
+                    user_id,
+                    skill
+                FROM skills
+                WHERE user_id = $1
             "#,
         )
         .bind(payload.user_id)
-        .fetch_optional(&state.db)
+        .fetch_all(&state.db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
@@ -115,7 +114,7 @@ impl Skills {
 
         Ok(Json(skills))
     }
-    
+
     pub async fn update_skill(
         Extension(state): Extension<AppState>,
         Json(payload): Json<UpdateSkill>,
