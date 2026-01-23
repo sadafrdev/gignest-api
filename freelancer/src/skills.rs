@@ -86,7 +86,7 @@ pub struct User {
 pub async fn get_skills(
     Extension(state): Extension<AppState>,
     Json(payload): Json<User>,
-) -> Result<Json<Vec<Skills>>, StatusCode> {
+) -> Result<Json<Option<Skills>>, StatusCode> {
     let skills = sqlx::query_as::<_, Skills>(
         r#"
         SELECT
@@ -97,7 +97,7 @@ pub async fn get_skills(
         "#,
     )
     .bind(payload.user_id)
-    .fetch_all(&state.db)
+    .fetch_optional(&state.db)
     .await
     .map_err(|e| {
         eprintln!("SQL ERROR: {:?}", e);
@@ -158,13 +158,4 @@ pub async fn delete_skill(
     })?;
 
     Ok(())
-}
-
-pub fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/skill", post(generate_skill))
-        .route("/skills", get(get_skills))
-        .route("/update-skill", put(update_skill))
-        .route("/delete-skill", delete(delete_skill))
-        .layer(Extension(state))
 }
