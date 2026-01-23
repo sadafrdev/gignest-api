@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use axum::{Extension, Json};
+use axum::{Extension, Json, extract::Path};
 use core::str;
 use lib::AppState;
 use serde::{Deserialize, Serialize};
@@ -35,16 +35,6 @@ pub enum SkillsEnum {
 pub struct Skills {
     pub user_id: i64,
     pub skill: SkillsEnum,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct SkillID {
-    pub id: i64,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct User {
-    pub user_id: i64,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -93,7 +83,7 @@ impl Skills {
 
     pub async fn get_skills(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<User>,
+        user_id: i64,
     ) -> Result<Json<Vec<Self>>, StatusCode> {
         let skills = sqlx::query_as::<_, Self>(
             r#"
@@ -104,7 +94,7 @@ impl Skills {
                 WHERE user_id = $1
             "#,
         )
-        .bind(payload.user_id)
+        .bind(user_id)
         .fetch_all(&state.db)
         .await
         .map_err(|e| {
@@ -139,14 +129,14 @@ impl Skills {
 
     pub async fn delete_skill(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<SkillID>,
+        id: i64,
     ) -> Result<(), StatusCode> {
         sqlx::query(
             "
             DELETE FROM skills
             WHERE id = $1",
         )
-        .bind(payload.id)
+        .bind(id)
         .execute(&state.db)
         .await
         .map_err(|e| {

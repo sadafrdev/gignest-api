@@ -1,5 +1,4 @@
 use axum::Extension;
-use axum::Json;
 use lib::AppState;
 pub mod certificate;
 pub mod routes;
@@ -8,8 +7,10 @@ use axum::{
     Router,
     http::StatusCode,
     routing::{delete, get, post, put},
+    Json,
+    extract::Path,
 };
-use skills::{SkillID, Skills, UpdateSkill, User};
+use skills::{Skills, UpdateSkill};
 
 pub async fn add_skill(
     Extension(state): Extension<AppState>,
@@ -20,9 +21,9 @@ pub async fn add_skill(
 
 pub async fn get_skills(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<User>,
+    Path(user_id): Path<i64>,
 ) -> Result<Json<Vec<Skills>>, StatusCode> {
-    Skills::get_skills(Extension(state), Json(payload)).await
+    Skills::get_skills(Extension(state), user_id).await
 }
 
 pub async fn update_skill(
@@ -34,16 +35,16 @@ pub async fn update_skill(
 
 pub async fn delete_skill(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<SkillID>,
+    Path(id): Path<i64>,
 ) -> Result<(), StatusCode> {
-    Skills::delete_skill(Extension(state), Json(payload)).await
+    Skills::delete_skill(Extension(state), id).await
 }
 
 pub fn skills_routes(state: AppState) -> Router {
     Router::new()
         .route("/skill", post(add_skill))
-        .route("/skills", get(get_skills))
+        .route("/skills/:id", get(get_skills))
         .route("/update-skill", put(update_skill))
-        .route("/delete-skill", delete(delete_skill))
+        .route("/delete-skill/:id", delete(delete_skill))
         .layer(Extension(state))
 }
