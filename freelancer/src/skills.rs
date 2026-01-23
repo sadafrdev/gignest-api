@@ -1,9 +1,5 @@
 use axum::http::StatusCode;
 use axum::{Extension, Json};
-use axum::{
-    Router,
-    routing::{delete, get, post, put},
-};
 use core::str;
 use lib::AppState;
 use serde::{Deserialize, Serialize};
@@ -41,70 +37,14 @@ pub struct Skills {
     pub skill: SkillsEnum,
 }
 
-pub async fn generate_skill(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<Skills>,
-) -> Result<(), StatusCode> {
-    let findskill = sqlx::query(
-        "
-        SELECT * FROM skills
-        WHERE user_id = $1 AND skill = $2",
-    )
-    .bind(payload.user_id)
-    .bind(payload.skill as SkillsEnum)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if findskill.is_some() {
-        return Err(StatusCode::NOT_FOUND);
-    }
-
-    sqlx::query(
-        "
-        INSERT INTO skills
-        (user_id, skill)
-        VALUES ($1, $2)",
-    )
-    .bind(payload.user_id)
-    .bind(payload.skill as SkillsEnum)
-    .execute(&state.db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
-
-    Ok(())
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SkillID {
+    pub id: i64,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct User {
     pub user_id: i64,
-}
-
-pub async fn get_skills(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<User>,
-) -> Result<Json<Option<Skills>>, StatusCode> {
-    let skills = sqlx::query_as::<_, Skills>(
-        r#"
-        SELECT
-            user_id,
-            skill
-        FROM skills
-        WHERE user_id = $1
-        "#,
-    )
-    .bind(payload.user_id)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
-
-    Ok(Json(skills))
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -113,49 +53,108 @@ pub struct UpdateSkill {
     pub skill: SkillsEnum,
 }
 
-pub async fn update_skill(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdateSkill>,
-) -> Result<(), StatusCode> {
-    sqlx::query(
-        "
-        UPDATE skills
-        SET skill = $1
-        WHERE id = $2",
-    )
-    .bind(payload.skill as SkillsEnum)
-    .bind(payload.id)
-    .execute(&state.db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+impl Skills {
 
-    Ok(())
-}
+    pub async fn generate_skill(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<Skills>,
+    ) -> Result<(), StatusCode> {
+        let findskill = sqlx::query(
+            "
+            SELECT * FROM skills
+            WHERE user_id = $1 AND skill = $2",
+        )
+        .bind(payload.user_id)
+        .bind(payload.skill as SkillsEnum)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct SkillID {
-    pub id: i64,
-}
+        if findskill.is_some() {
+            return Err(StatusCode::NOT_FOUND);
+        }
 
-pub async fn delete_skill(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<SkillID>,
-) -> Result<(), StatusCode> {
-    sqlx::query(
-        "
-        DELETE FROM skills
-        WHERE id = $1",
-    )
-    .bind(payload.id)
-    .execute(&state.db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+        sqlx::query(
+            "
+            INSERT INTO skills
+            (user_id, skill)
+            VALUES ($1, $2)",
+        )
+        .bind(payload.user_id)
+        .bind(payload.skill as SkillsEnum)
+        .execute(&state.db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
-    Ok(())
+        Ok(())
+    }
+
+    pub async fn get_skills(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<User>,
+    ) -> Result<Json<Option<Skills>>, StatusCode> {
+        let skills = sqlx::query_as::<_, Skills>(
+            r#"
+            SELECT
+                user_id,
+                skill
+            FROM skills
+            WHERE user_id = $1
+            "#,
+        )
+        .bind(payload.user_id)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+        Ok(Json(skills))
+    }
+    
+    pub async fn update_skill(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<UpdateSkill>,
+    ) -> Result<(), StatusCode> {
+        sqlx::query(
+            "
+            UPDATE skills
+            SET skill = $1
+            WHERE id = $2",
+        )
+        .bind(payload.skill as SkillsEnum)
+        .bind(payload.id)
+        .execute(&state.db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+        Ok(())
+    }
+
+    pub async fn delete_skill(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<SkillID>,
+    ) -> Result<(), StatusCode> {
+        sqlx::query(
+            "
+            DELETE FROM skills
+            WHERE id = $1",
+        )
+        .bind(payload.id)
+        .execute(&state.db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+        Ok(())
+    }
 }

@@ -11,14 +11,14 @@ pub async fn add_skill(
     Extension(state): Extension<AppState>,
     Json(payload): Json<Skills>,
 ) -> Result<(), StatusCode> {
-    skills::generate_skill(Extension(state), Json(payload)).await
+    Skills::generate_skill(Extension(state), Json(payload)).await
 }
 
 pub async fn get_skills(
     Extension(state): Extension<AppState>,
     Json(payload): Json<User>,
 ) -> Result<Json<Option<Skills>>, StatusCode> {
-    skills::get_skills(Extension(state), Json(payload)).await
+    Skills::get_skills(Extension(state), Json(payload)).await
 }
 
 pub fn skills_routes(state: AppState) -> Router {
