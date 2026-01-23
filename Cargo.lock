@@ -37,14 +37,10 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "authentication",
  "axum",
  "chrono",
- "clients",
  "dotenvy",
- "freelancer",
  "jsonwebtoken",
- "lib",
  "password-hash",
  "rand 0.9.2",
  "reqwest",
@@ -73,30 +69,6 @@ name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
-
-[[package]]
-name = "authentication"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "chrono",
- "dotenvy",
- "jsonwebtoken",
- "lib",
- "password-hash",
- "rand 0.9.2",
- "reqwest",
- "resend-rs",
- "serde",
- "serde_json",
- "sha2",
- "sqlx",
- "time",
- "tokio",
- "tracing",
- "validator",
-]
 
 [[package]]
 name = "autocfg"
@@ -232,19 +204,6 @@ dependencies = [
  "serde",
  "wasm-bindgen",
  "windows-link",
-]
-
-[[package]]
-name = "clients"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "lib",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
 ]
 
 [[package]]
@@ -553,18 +512,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf"
 dependencies = [
  "percent-encoding",
-]
-
-[[package]]
-name = "freelancer"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "lib",
- "serde",
- "serde_json",
- "sqlx",
 ]
 
 [[package]]
@@ -1122,14 +1069,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 dependencies = [
  "spin",
-]
-
-[[package]]
-name = "lib"
-version = "0.1.0"
-dependencies = [
- "axum",
- "sqlx",
 ]
 
 [[package]]
