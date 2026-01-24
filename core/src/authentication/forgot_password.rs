@@ -11,7 +11,7 @@ use time::{Duration, OffsetDateTime};
 use crate::DB;
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct send_otp {
+pub struct SendOtp {
     pub email: String,
 }
 
@@ -46,8 +46,8 @@ pub async fn send_email(email: &String, otp: u32) {
         });
 }
 
-impl send_otp {
-    pub async fn send_otp(self, db: DB) -> Result<(), StatusCode> {
+impl SendOtp {
+    pub async fn send(self, db: DB) -> Result<(), StatusCode> {
         let otp = rand::random::<u32>() % 1_000_000;
         let otp_hash = format!("{:x}", Sha256::digest(otp.to_string().as_bytes())).clone();
 
@@ -96,34 +96,58 @@ pub struct ResetTokenClaims {
     pub exp: i64,
 }
 
-pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+impl ResetTokenClaims{
+    pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
+        let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
 
-    let now = OffsetDateTime::now_utc().unix_timestamp();
-    let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
+        let now = OffsetDateTime::now_utc().unix_timestamp();
+        let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
 
-    let claims = ResetTokenClaims {
-        sub: "password_reset".to_string(),
-        email: email.to_string(),
-        iat: now,
-        exp,
-    };
+        let claims = self {
+            sub: "password_reset".to_string(),
+            email: email.to_string(),
+            iat: now,
+            exp,
+        };
 
-    encode(
-        &Header::new(Algorithm::HS256),
-        &claims,
-        &EncodingKey::from_secret(secret.as_bytes()),
-    )
+        encode(
+            &Header::new(Algorithm::HS256),
+            &claims,
+            &EncodingKey::from_secret(secret.as_bytes()),
+        )
+    }
+
+    pub fn verify_reset_token(token: &str) -> Result<self, Error> {
+        let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+
+        let mut validation = Validation::new(Algorithm::HS256);
+        validation.validate_exp = true;
+
+        let data = decode::<self>(
+            token,
+            &DecodingKey::from_secret(secret.as_bytes()),
+            &validation,
+        )?;
+
+        if data.claims.sub != "password_reset" {
+            return Err(jsonwebtoken::errors::Error::from(
+                jsonwebtoken::errors::ErrorKind::InvalidToken,
+            ));
+        }
+
+        Ok(data.claims)
+    }
+
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct verify_otp {
+pub struct VerifyOtp {
     pub otp: i32,
     pub email: String,
 }
 
-impl verify_otp{
-    pub async fn verify_otp(self, db:DB) -> Result<Json<Value>, StatusCode> {
+impl VerifyOtp{
+    pub async fn verify(self, db:DB) -> Result<Json<Value>, StatusCode> {
         let otp_str = format!("{:06}", self.otp);
         let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
 
@@ -159,7 +183,7 @@ impl verify_otp{
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        let reset_token = generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let reset_token = ResetTokenClaims.generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
         return Ok(Json(json!({
             "reset_token": reset_token
@@ -168,37 +192,16 @@ impl verify_otp{
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct update_password {
+pub struct UpdatePassword {
     pub email: String,
     pub new_password: String,
     pub token: String,
 }
 
-pub fn verify_reset_token(token: &str) -> Result<ResetTokenClaims, Error> {
-    let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
-
-    let mut validation = Validation::new(Algorithm::HS256);
-    validation.validate_exp = true;
-
-    let data = decode::<ResetTokenClaims>(
-        token,
-        &DecodingKey::from_secret(secret.as_bytes()),
-        &validation,
-    )?;
-
-    if data.claims.sub != "password_reset" {
-        return Err(jsonwebtoken::errors::Error::from(
-            jsonwebtoken::errors::ErrorKind::InvalidToken,
-        ));
-    }
-
-    Ok(data.claims)
-}
-
-impl update_password{
-    pub async fn update_password(self, db: DB) -> Result<Json<Value>, StatusCode> {
+impl UpdatePassword{
+    pub async fn update(self, db: DB) -> Result<Json<Value>, StatusCode> {
         //VErifying Token
-        verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        ResetTokenClaims.verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
 
         //Updating Password
         sqlx::query!(
