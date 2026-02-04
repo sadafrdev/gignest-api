@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sqlx::Type;
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "language_level")]
@@ -24,7 +25,7 @@ pub enum LanguageEnum {
     PERSIAN,
     TURKISH,
     BENGALI,
-use sqlx::Type;
+}
 
 #[derive(Debug, Type, Deserialize, Serialize)]
 #[sqlx(type_name = "country", rename_all = "lowercase")]

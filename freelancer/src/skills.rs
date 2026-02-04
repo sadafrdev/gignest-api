@@ -1,5 +1,5 @@
 use axum::http::StatusCode;
-use axum::{Extension, Json, extract::Path};
+use axum::{Extension, Json};
 use core::str;
 use lib::AppState;
 use serde::{Deserialize, Serialize};

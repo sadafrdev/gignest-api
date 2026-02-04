@@ -8,11 +8,12 @@ pub mod skills;
 use axum::{
     Router,
     http::StatusCode,
-    routing::{delete, get, post, put},
+    routing::{delete, get, post, put, patch},
     Json,
     extract::Path,
 };
 use skills::{Skills, UpdateSkill};
+use languages::{Language, UpdateLanguage};
 
 pub async fn add_skill(
     Extension(state): Extension<AppState>,
@@ -41,18 +42,6 @@ pub async fn delete_skill(
 ) -> Result<(), StatusCode> {
     Skills::delete_skill(Extension(state), id).await
 }
-
-pub fn skills_routes(state: AppState) -> Router {
-    Router::new()
-        .route("/skill", post(add_skill))
-        .route("/skills/:id", get(get_skills))
-        .route("/update-skill", put(update_skill))
-        .route("/delete-skill/:id", delete(delete_skill))
-use axum::Router;
-use axum::routing::{delete, get, patch, post};
-use axum::{Json, extract::Extension, http::StatusCode};
-use languages::{Language, UpdateLanguage};
-use lib::AppState;
 
 pub async fn create_language(
     Extension(state): Extension<AppState>,
@@ -92,5 +81,14 @@ pub fn languages_router(state: AppState) -> Router {
         .route("/delete-language", delete(delete_language))
         .route("/languages", get(get_languages))
         .route("/update-language", patch(update_language))
+        .layer(Extension(state))
+}
+
+pub fn skills_routes(state: AppState) -> Router {
+    Router::new()
+        .route("/skill", post(add_skill))
+        .route("/skills/{id}", get(get_skills))
+        .route("/update-skill", put(update_skill))
+        .route("/delete-skill/{id}", delete(delete_skill))
         .layer(Extension(state))
 }
