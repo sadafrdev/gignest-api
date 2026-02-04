@@ -33,3 +33,6 @@ CREATE TYPE skills_enum AS ENUM (
   'VIDEO_EDITING',
   'UI_UX_DESIGN'
 );
+CREATE TYPE job_status AS ENUM ('fixed', 'hourly');
+
+CREATE TYPE proposal_status AS ENUM ('pending', 'accepted', 'rejected');

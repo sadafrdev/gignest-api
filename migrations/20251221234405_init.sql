@@ -70,3 +70,13 @@ CREATE TABLE skills (
   user_id BIGINT REFERENCES users(id),
   skill skills_enum NOT NULL
 );
+CREATE TABLE proposals (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  freelancer_id BIGINT REFERENCES freelancers(id),
+  proposal_status proposal_status NOT NULL DEFAULT 'pending',
+  job_id BIGINT REFERENCES jobs(id),
+  cover_letter TEXT NOT NULL,
+  bid_amount NUMERIC(10, 2) NOT NULL,
+  status job_status NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
