@@ -9,3 +9,7 @@ CREATE TYPE user_role AS ENUM ('client', 'freelancer');
 CREATE TYPE language AS ENUM ('ENGLISH', 'URDU', 'SPANISH', 'CHINESE', 'KOREAN', 'FRENCH', 'RUSSIAN', 'GERMAN', 'ARABIC', 'HINDI', 'PERSIAN', 'TURKISH', 'BENGALI');
 
 CREATE TYPE language_level AS ENUM ('BEGGINER', 'INTERMEDIATE', 'FLUENT');
+
+CREATE TYPE job_status AS ENUM ('fixed', 'hourly');
+
+CREATE TYPE proposal_status AS ENUM ('pending', 'accepted', 'rejected');

@@ -65,12 +65,13 @@ CREATE TABLE portfolios (
   description TEXT NOT NULL
 );
 
-CREATE TABLE jobs (
+CREATE TABLE proposals (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  client_id BIGINT REFERENCES users(id),
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  budget_min NUMERIC NOT NULL,
-  budget_max NUMERIC NOT NULL,
+  freelancer_id BIGINT REFERENCES freelancers(id),
+  proposal_status proposal_status NOT NULL DEFAULT 'pending',
+  job_id BIGINT REFERENCES jobs(id),
+  cover_letter TEXT NOT NULL,
+  bid_amount NUMERIC(10, 2) NOT NULL,
+  status job_status NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
