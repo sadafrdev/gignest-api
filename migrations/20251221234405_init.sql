@@ -64,3 +64,13 @@ CREATE TABLE portfolios (
   tagline TEXT NOT NULL,
   description TEXT NOT NULL
 );
+
+CREATE TABLE jobs (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  client_id BIGINT REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  budget_min NUMERIC NOT NULL,
+  budget_max NUMERIC NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
