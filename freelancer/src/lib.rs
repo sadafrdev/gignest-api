@@ -1,5 +1,6 @@
 pub mod certificate;
 pub mod languages;
+pub mod educations;
 pub mod routes;
 use axum::Router;
 use axum::routing::{delete, get, patch, post};
