@@ -65,6 +65,11 @@ CREATE TABLE portfolios (
   description TEXT NOT NULL
 );
 
+CREATE TABLE skills (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id BIGINT REFERENCES users(id),
+  skill skills_enum NOT NULL
+);
 CREATE TABLE proposals (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   freelancer_id BIGINT REFERENCES freelancers(id),
