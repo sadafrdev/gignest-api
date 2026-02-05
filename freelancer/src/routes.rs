@@ -1,16 +1,12 @@
-pub use crate::certificate;
-use crate::skills_routes;
-pub use crate::languages;
-use crate::languages_router;
-use crate::educations;
+
 use axum::{Extension, Router};
 use lib::AppState;
+use crate::features::{languages, skills, certificates};
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .merge(certificate::router(state.clone()))
-        .merge(skills_routes(state.clone()))
-        .merge(languages_router(state.clone()))
-        .merge(educations::router(state.clone()))
+        .merge(certificates::router(state.clone()))
+        .merge(skills::skills_routes(state.clone()))
+        .merge(languages::languages_router(state.clone()))
         .layer(Extension(state))
 }

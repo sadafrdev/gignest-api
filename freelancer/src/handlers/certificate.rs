@@ -1,9 +1,5 @@
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
-use axum::{
-    Router,
-    routing::{delete, get, patch, post},
-};
 use lib::AppState;
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
@@ -53,7 +49,7 @@ pub struct Certificate {
     pub year: NaiveDate,
 }
 
-pub async fn get_certificates(
+pub async fn certificates(
     Extension(state): Extension<AppState>,
     Json(payload): Json<User>,
 ) -> Result<Json<Vec<Certificate>>, StatusCode> {
@@ -139,13 +135,4 @@ pub async fn delete_certificate(
     }
 
     Ok(StatusCode::OK)
-}
-
-pub fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/certificates", get(get_certificates))
-        .route("/certificate", post(generate_certificate))
-        .route("/update-certificate", patch(update_certificate))
-        .route("/delete-certificate", delete(delete_certificate))
-        .layer(Extension(state))
 }
