@@ -12,16 +12,6 @@ pub struct Certificate {
     pub year: NaiveDate,
 }
 
-#[derive(serde::Deserialize)]
-pub struct User {
-    user_id: i64,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CertificateID {
-    pub id: i64,
-}
-
 impl Certificate {
     pub async fn generate(
         Extension(state): Extension<AppState>,
@@ -49,7 +39,7 @@ impl Certificate {
 
     pub async fn get(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<User>,
+        id: i64,
     ) -> Result<Json<Vec<Self>>, StatusCode> {
         let certificates = sqlx::query_as::<_, Self>(
             r#"
@@ -62,7 +52,7 @@ impl Certificate {
             WHERE user_id = $1
             "#,
         )
-        .bind(payload.user_id)
+        .bind(id)
         .fetch_all(&state.db)
         .await
         .map_err(|e| {
@@ -107,7 +97,7 @@ impl Certificate {
 
     pub async fn delete(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<CertificateID>,
+        id: i64,
     ) -> Result<StatusCode, StatusCode> {
         let result = sqlx::query(
             "
@@ -115,7 +105,7 @@ impl Certificate {
                 WHERE id = $1
             ",
         )
-        .bind(payload.id)
+        .bind(id)
         .execute(&state.db)
         .await
         .map_err(|e| {

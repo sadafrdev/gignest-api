@@ -13,16 +13,6 @@ pub struct Language {
     pub language_level: LanguageLevel,
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct User {
-    user_id: i64,
-}
-
-#[derive(Deserialize, Serialize)]
-pub struct LanguageID {
-    pub id: i64,
-}
-
 impl Language {
     pub async fn add(
         Extension(state): Extension<AppState>,
@@ -50,7 +40,7 @@ impl Language {
 
     pub async fn delete(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<LanguageID>,
+        id: i64,
     ) -> Result<StatusCode, StatusCode> {
         sqlx::query(
             r#"
@@ -58,7 +48,7 @@ impl Language {
             WHERE id = $1
             "#,
         )
-        .bind(payload.id)
+        .bind(id)
         .execute(&state.db)
         .await
         .map_err(|e| {
@@ -71,7 +61,7 @@ impl Language {
 
     pub async fn get(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<User>,
+        id: i64,
     ) -> Result<Vec<Self>, StatusCode> {
         let languages = sqlx::query_as::<_, Self>(
             r#"
@@ -80,7 +70,7 @@ impl Language {
             WHERE user_id = $1
             "#,
         )
-        .bind(payload.user_id)
+        .bind(id)
         .fetch_all(&state.db)
         .await
         .map_err(|e| {

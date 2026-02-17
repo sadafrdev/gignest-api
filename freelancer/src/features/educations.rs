@@ -1,7 +1,7 @@
-use axum::Extension;
+use axum::{Extension, extract::Path};
 use lib::AppState;
 
-use crate::handlers::educations::{DeleteEducation, Education, UpdateEducation, User};
+use crate::handlers::educations::{Education, UpdateEducation};
 use axum::{
     Json, Router,
     http::StatusCode,
@@ -17,9 +17,9 @@ pub async fn create_education(
 
 pub async fn get_educations(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<User>,
+    Path(id): Path<i64>,
 ) -> Result<Json<Vec<Education>>, StatusCode> {
-    let educations = Education::get(Extension(state), Json(payload)).await?;
+    let educations = Education::get(Extension(state), id).await?;
     Ok(educations)
 }
 
@@ -33,17 +33,17 @@ pub async fn update_education(
 
 pub async fn delete_education(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<DeleteEducation>,
+    Path(id): Path<i64>,
 ) -> Result<(), StatusCode> {
-    Education::delete(Extension(state), Json(payload)).await?;
+    Education::delete(Extension(state), id).await?;
     Ok(())
 }
 
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/education", post(create_education))
-        .route("/educations", get(get_educations))
+        .route("/educations/{id}", get(get_educations))
         .route("/update-education", patch(update_education))
-        .route("/delete-education", delete(delete_education))
+        .route("/delete-education/{id}", delete(delete_education))
         .layer(Extension(state))
 }

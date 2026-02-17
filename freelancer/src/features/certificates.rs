@@ -1,7 +1,8 @@
-use crate::handlers::certificate::{Certificate, CertificateID, User};
+use crate::handlers::certificate::Certificate;
 use axum::Extension;
 use axum::{
     Json, Router,
+    extract::Path,
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
@@ -17,9 +18,9 @@ pub async fn create_certificate(
 
 pub async fn get_certificates(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<User>,
+    Path(id): Path<i64>,
 ) -> Result<Json<Vec<Certificate>>, StatusCode> {
-    Certificate::get(Extension(state), Json(payload)).await
+    Certificate::get(Extension(state), id).await
 }
 
 pub async fn update_certificate(
@@ -32,17 +33,17 @@ pub async fn update_certificate(
 
 pub async fn delete_certificate(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<CertificateID>,
+    Path(id): Path<i64>,
 ) -> Result<(), StatusCode> {
-    Certificate::delete(Extension(state), Json(payload)).await?;
+    Certificate::delete(Extension(state), id).await?;
     Ok(())
 }
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/certificates", get(get_certificates))
+        .route("/certificates/{id}", get(get_certificates))
         .route("/certificate", post(create_certificate))
         .route("/update-certificate", patch(update_certificate))
-        .route("/delete-certificate", delete(delete_certificate))
+        .route("/delete-certificate/{id}", delete(delete_certificate))
         .layer(Extension(state))
 }

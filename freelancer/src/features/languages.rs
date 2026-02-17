@@ -2,6 +2,7 @@ use crate::handlers::languages;
 use axum::Extension;
 use axum::{
     Json, Router,
+    extract::Path,
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
@@ -18,9 +19,9 @@ pub async fn create_language(
 
 pub async fn get_languages(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<languages::User>,
+    Path(id): Path<i64>,
 ) -> Result<Json<Vec<Language>>, StatusCode> {
-    let languages = Language::get(Extension(state), Json(payload)).await?;
+    let languages = Language::get(Extension(state), id).await?;
     Ok(Json(languages))
 }
 
@@ -34,17 +35,17 @@ pub async fn update_language(
 
 pub async fn delete_language(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<languages::LanguageID>,
+    Path(id): Path<i64>,
 ) -> Result<(), StatusCode> {
-    Language::delete(Extension(state), Json(payload)).await?;
+    Language::delete(Extension(state), id).await?;
     Ok(())
 }
 
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/language", post(create_language))
-        .route("/delete-language", delete(delete_language))
+        .route("/delete-language/{id}", delete(delete_language))
         .route("/languages", get(get_languages))
-        .route("/update-language", patch(update_language))
+        .route("/update-language/{id}", patch(update_language))
         .layer(Extension(state))
 }
