@@ -97,14 +97,14 @@ impl Certificate {
             eprintln!("SQL ERROR: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
-    
+
         if result.rows_affected() == 0 {
             return Err(StatusCode::NOT_FOUND);
         }
-    
+
         Ok(StatusCode::OK)
     }
-    
+
     pub async fn delete(
         Extension(state): Extension<AppState>,
         Json(payload): Json<CertificateID>,

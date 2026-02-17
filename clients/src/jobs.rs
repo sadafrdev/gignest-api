@@ -34,7 +34,6 @@ pub struct JobID {
 }
 
 impl Job {
-
     pub async fn create_job(
         Extension(state): Extension<AppState>,
         Json(payload): Json<Job>,
@@ -136,5 +135,4 @@ impl Job {
 
         Ok(())
     }
-
-} 
+}

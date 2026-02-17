@@ -9,6 +9,7 @@ pub mod handlers {
 
 pub mod features {
     pub mod certificates;
+    pub mod educations;
     pub mod languages;
     pub mod skills;
 }

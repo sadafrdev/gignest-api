@@ -24,7 +24,7 @@ pub struct LanguageID {
 }
 
 impl Language {
-    pub async fn add_language(
+    pub async fn add(
         Extension(state): Extension<AppState>,
         Json(payload): Json<Self>,
     ) -> Result<StatusCode, StatusCode> {
@@ -48,7 +48,7 @@ impl Language {
         Ok(StatusCode::OK)
     }
 
-    pub async fn delete_language(
+    pub async fn delete(
         Extension(state): Extension<AppState>,
         Json(payload): Json<LanguageID>,
     ) -> Result<StatusCode, StatusCode> {
@@ -69,7 +69,7 @@ impl Language {
         Ok(StatusCode::OK)
     }
 
-    pub async fn get_languages(
+    pub async fn get(
         Extension(state): Extension<AppState>,
         Json(payload): Json<User>,
     ) -> Result<Vec<Self>, StatusCode> {
@@ -91,7 +91,7 @@ impl Language {
         Ok(languages)
     }
 
-    pub async fn update_language(
+    pub async fn update(
         Extension(state): Extension<AppState>,
         Json(payload): Json<Self>,
     ) -> Result<(), StatusCode> {

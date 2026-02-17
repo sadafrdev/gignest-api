@@ -1,13 +1,11 @@
+use crate::handlers::certificate::{Certificate, CertificateID, User};
 use axum::Extension;
-use lib::AppState;
-
 use axum::{
-    Router,
+    Json, Router,
     http::StatusCode,
-    routing::{delete, get, post, patch},
-    Json,
+    routing::{delete, get, patch, post},
 };
-use crate::handlers::certificate::{Certificate, User, CertificateID};
+use lib::AppState;
 
 pub async fn create_certificate(
     Extension(state): Extension<AppState>,

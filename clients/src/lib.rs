@@ -2,11 +2,11 @@ use axum::Json;
 
 pub mod jobs;
 pub mod routes;
+use axum::routing::{delete, get, post, put};
 use axum::{extract::Extension, http::StatusCode};
-use lib::AppState;
-use jobs::{ClientID, UpdateJob, JobID};
-use axum::routing::{get, post, put, delete};
 use jobs::Job;
+use jobs::{ClientID, JobID, UpdateJob};
+use lib::AppState;
 
 pub async fn get_jobs(
     Extension(state): Extension<AppState>,

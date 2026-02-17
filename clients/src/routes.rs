@@ -1,6 +1,6 @@
+use crate::job_router;
 use axum::{Extension, Router};
 use lib::AppState;
-use crate::job_router;
 
 pub fn router(state: AppState) -> Router {
     Router::new()

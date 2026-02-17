@@ -44,7 +44,7 @@ pub struct UpdateSkill {
 }
 
 impl Skills {
-    pub async fn generate_skill(
+    pub async fn create(
         Extension(state): Extension<AppState>,
         Json(payload): Json<Skills>,
     ) -> Result<(), StatusCode> {
@@ -81,7 +81,7 @@ impl Skills {
         Ok(())
     }
 
-    pub async fn get_skills(
+    pub async fn get(
         Extension(state): Extension<AppState>,
         user_id: i64,
     ) -> Result<Json<Vec<Self>>, StatusCode> {
@@ -105,7 +105,7 @@ impl Skills {
         Ok(Json(skills))
     }
 
-    pub async fn update_skill(
+    pub async fn update(
         Extension(state): Extension<AppState>,
         Json(payload): Json<UpdateSkill>,
     ) -> Result<(), StatusCode> {
@@ -127,10 +127,7 @@ impl Skills {
         Ok(())
     }
 
-    pub async fn delete_skill(
-        Extension(state): Extension<AppState>,
-        id: i64,
-    ) -> Result<(), StatusCode> {
+    pub async fn delete(Extension(state): Extension<AppState>, id: i64) -> Result<(), StatusCode> {
         sqlx::query(
             "
             DELETE FROM skills
