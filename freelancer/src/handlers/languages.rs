@@ -7,6 +7,7 @@ use sqlx::FromRow;
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Language {
+    pub id: i64,
     pub user_id: i64,
     pub language: LanguageEnum,
     pub language_level: LanguageLevel,
@@ -17,13 +18,6 @@ pub struct User {
     user_id: i64,
 }
 
-#[derive(Deserialize, Serialize, sqlx::FromRow, Debug)]
-pub struct UpdateLanguage {
-    pub id: i64,
-    pub language: LanguageEnum,
-    pub language_level: LanguageLevel,
-}
-
 #[derive(Deserialize, Serialize)]
 pub struct LanguageID {
     pub id: i64,
@@ -32,14 +26,15 @@ pub struct LanguageID {
 impl Language {
     pub async fn add_language(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<Language>,
+        Json(payload): Json<Self>,
     ) -> Result<StatusCode, StatusCode> {
         sqlx::query(
             r#"
-            INSERT INTO languages (user_id, language, language_level)
-            VALUES ($1, $2, $3)
+            INSERT INTO languages (id, user_id, language, language_level)
+            VALUES ($1, $2, $3, $4)
             "#,
         )
+        .bind(payload.id)
         .bind(payload.user_id)
         .bind(payload.language as LanguageEnum)
         .bind(payload.language_level as LanguageLevel)
@@ -98,7 +93,7 @@ impl Language {
 
     pub async fn update_language(
         Extension(state): Extension<AppState>,
-        Json(payload): Json<UpdateLanguage>,
+        Json(payload): Json<Self>,
     ) -> Result<(), StatusCode> {
         sqlx::query(
             r#"

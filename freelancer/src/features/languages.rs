@@ -6,7 +6,7 @@ use axum::{
     routing::{delete, get, post, patch},
     Json,
 };
-use languages::{Language, UpdateLanguage};
+use languages::{Language};
 use crate::handlers::{languages};
 
 pub async fn create_language(
@@ -27,7 +27,7 @@ pub async fn get_languages(
 
 pub async fn update_language(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdateLanguage>,
+    Json(payload): Json<Language>,
 ) -> Result<(), StatusCode> {
     Language::update_language(Extension(state), Json(payload)).await?;
     Ok(())
