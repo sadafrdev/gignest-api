@@ -1,7 +1,7 @@
-use axum::http::StatusCode;
-use axum::{Extension, Json};
 use crate::AppState;
 use crate::utils::enums::{LanguageEnum, LanguageLevel};
+use axum::http::StatusCode;
+use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 

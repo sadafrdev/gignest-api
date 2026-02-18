@@ -3,7 +3,6 @@ use sqlx::PgPool;
 use std::error::Error;
 
 pub async fn establish_connection() -> Result<AppState, Box<dyn Error>> {
-
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL is missing. Put it in .env or export it before running.");
 

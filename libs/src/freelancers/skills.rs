@@ -1,7 +1,7 @@
+use crate::AppState;
 use axum::http::StatusCode;
 use axum::{Extension, Json};
 use core::str;
-use crate::AppState;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, serde::Deserialize, serde::Serialize, sqlx::Type)]

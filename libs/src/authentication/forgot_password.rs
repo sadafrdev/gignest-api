@@ -1,6 +1,6 @@
+use crate::AppState;
 use axum::{Json, extract::Extension, http::StatusCode};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use crate::AppState;
 use rand;
 use reqwest::Client;
 use serde::Deserialize;

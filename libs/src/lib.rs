@@ -1,7 +1,7 @@
 pub mod utils;
 use sqlx::{Pool, Postgres};
-pub mod clients;
 pub mod authentication;
+pub mod clients;
 pub mod freelancers;
 
 #[derive(Clone)]

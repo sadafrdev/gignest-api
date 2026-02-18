@@ -4,8 +4,8 @@ pub mod certificates;
 pub mod educations;
 pub mod languages;
 pub mod skills;
-pub use libs::utils::db::establish_connection;
 pub use libs::clients;
+pub use libs::utils::db::establish_connection;
 
 pub fn router(state: AppState) -> Router {
     Router::new()

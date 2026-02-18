@@ -2,10 +2,10 @@ use axum::{
     Extension, Router,
     routing::{get, post},
 };
+use libs::AppState;
 use libs::authentication::forgot_password;
 use libs::authentication::login;
 use libs::authentication::register;
-use libs::AppState;
 
 pub fn router(state: AppState) -> Router {
     Router::new()

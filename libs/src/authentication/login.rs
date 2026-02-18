@@ -1,5 +1,5 @@
-use axum::{Json, extract::Extension, http::StatusCode};
 use crate::AppState;
+use axum::{Json, extract::Extension, http::StatusCode};
 use serde::Deserialize;
 
 #[derive(Deserialize)]

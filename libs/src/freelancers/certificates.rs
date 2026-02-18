@@ -1,6 +1,6 @@
+use crate::AppState;
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
-use crate::AppState;
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
 

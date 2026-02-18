@@ -1,8 +1,8 @@
+use crate::AppState;
+use crate::utils::enums::Country;
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use core::str;
-use crate::AppState;
-use crate::utils::enums::Country;
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
 
