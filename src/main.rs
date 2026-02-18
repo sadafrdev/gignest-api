@@ -1,6 +1,6 @@
-use lib;
+use libs;
 pub mod router;
-use lib::AppState;
+use libs::AppState;
 use std::net::SocketAddr;
 
 #[tokio::main]

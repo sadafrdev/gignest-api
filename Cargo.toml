@@ -5,15 +5,16 @@ edition = "2024"
 
 [workspace]
 members = [
-    "authentication", "clients", "freelancer", 
-    "lib"
+    "libs", "services/authentication", "services/clients", "services/freelancers"
 ]
 
 [dependencies]
-authentication = { path = "./authentication" }
-lib = { path = "./lib" }
-freelancer = { path = "./freelancer" }
-clients = { path = "./clients" }
+authentication = { path = "./services/authentication" }
+freelancers = { path = "./services/freelancers" }
+clients = { path = "./services/clients" }
+
+libs = { path = "./libs" }
+
 axum = "0.8.7"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
