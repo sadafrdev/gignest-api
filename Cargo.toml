@@ -6,7 +6,8 @@ members = [
     "lib/authentication",
     "lib/clients",
     "lib/freelancers",
-    "lib/utils"
+    "lib/utils",
+    "services/gateway"
 ]
 
 resolver = "1"

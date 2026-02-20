@@ -3,7 +3,9 @@
 // pub mod jobs;
 
 // pub fn router(state: AppState) -> Router {
-//     Router::new()
+//     let clients_routes = Router::new()
 //         .merge(jobs::router(state.clone()))
 //         .layer(Extension(state))
+//     Router::new().nest("/client", clients_routes)
+
 // }
