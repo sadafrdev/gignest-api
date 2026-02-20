@@ -37,7 +37,7 @@ CREATE TABLE educations (
   degree TEXT NOT NULL,
   institute TEXT NOT NULL,
   major TEXT NOT NULL,
-  year_of_gradution DATE NOT NULL,
+  year_of_graduation DATE NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -70,6 +70,17 @@ CREATE TABLE skills (
   user_id BIGINT REFERENCES users(id),
   skill skills_enum NOT NULL
 );
+
+CREATE TABLE jobs (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  client_id BIGINT REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  budget_min NUMERIC NOT NULL,
+  budget_max NUMERIC NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE proposals (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   freelancer_id BIGINT REFERENCES freelancers(id),
