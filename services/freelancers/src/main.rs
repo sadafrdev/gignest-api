@@ -1,20 +1,12 @@
 use freelancers::router;
 use std::net::SocketAddr;
-use utils::db::AppState;
+use utils::db::establish_connection;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    dotenvy::dotenv().ok();
+    let state = establish_connection().await?;
 
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL is missing. Put it in .env or export it before running.");
-
-    let database_url = &database_url;
-    let db = sqlx::PgPool::connect(&database_url).await?;
-
-    let state = AppState { db };
-
-    let app = router(state.clone());
+    let app = router(state);
 
     let addr: SocketAddr = "127.0.0.1:3000".parse().unwrap();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
