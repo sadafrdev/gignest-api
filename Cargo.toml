@@ -1,13 +1,10 @@
 [workspace]
 members = [
-    "services/authentication",
-    "services/clients",
-    "services/freelancers",
     "lib/authentication",
     "lib/clients",
     "lib/freelancers",
     "lib/utils",
-    "services/gateway"
+    "api"
 ]
 
 resolver = "1"

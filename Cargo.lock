@@ -33,6 +33,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
+name = "api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "dotenv",
+ "dotenvy",
+ "lib_authentication",
+ "lib_clients",
+ "lib_freelancers",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "utils",
+]
+
+[[package]]
 name = "atoi"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -46,21 +64,6 @@ name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
-
-[[package]]
-name = "authentication"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "bigdecimal",
- "lib-authentication",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "utils",
-]
 
 [[package]]
 name = "autocfg"
@@ -260,20 +263,6 @@ checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
  "crypto-common",
  "inout",
-]
-
-[[package]]
-name = "clients"
-version = "0.1.0"
-dependencies = [
- "axum",
- "bigdecimal",
- "lib_clients",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "utils",
 ]
 
 [[package]]
@@ -562,23 +551,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "freelancers"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "dotenv",
- "dotenvy",
- "lib_clients",
- "lib_freelancers",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "utils",
-]
-
-[[package]]
 name = "futures-channel"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -648,26 +620,6 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
-]
-
-[[package]]
-name = "gateway"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "authentication",
- "axum",
- "clients",
- "dotenv",
- "dotenvy",
- "freelancers",
- "lib_clients",
- "lib_freelancers",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "utils",
 ]
 
 [[package]]
@@ -1152,7 +1104,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09edd9e8b54e49e587e4f6295a7d29c3ea94d469cb40ab8ca70b288248a81db2"
 
 [[package]]
-name = "lib-authentication"
+name = "lib_authentication"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -2062,7 +2014,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee6798b1838b6a0f69c007c133b8df5866302197e404e8b6ee8ed3e3a5e68dc6"
 dependencies = [
  "base64 0.22.1",
- "bigdecimal",
  "bytes",
  "chrono",
  "crc",
@@ -2137,7 +2088,6 @@ checksum = "aa003f0038df784eb8fecbbac13affe3da23b45194bd57dba231c8f48199c526"
 dependencies = [
  "atoi",
  "base64 0.22.1",
- "bigdecimal",
  "bitflags 2.10.0",
  "byteorder",
  "bytes",
@@ -2181,7 +2131,6 @@ checksum = "db58fcd5a53cf07c184b154801ff91347e4c30d17a3562a635ff028ad5deda46"
 dependencies = [
  "atoi",
  "base64 0.22.1",
- "bigdecimal",
  "bitflags 2.10.0",
  "byteorder",
  "chrono",
@@ -2199,7 +2148,6 @@ dependencies = [
  "log",
  "md-5",
  "memchr",
- "num-bigint",
  "once_cell",
  "rand",
  "serde",
