@@ -1,11 +1,10 @@
 use axum::{Extension, Router};
-use libs::AppState;
+use utils::db::AppState;
 pub mod certificates;
 pub mod educations;
 pub mod languages;
 pub mod skills;
-pub use libs::clients;
-pub use libs::utils::db::establish_connection;
+// pub use lib_utils::db::establish_connection;
 
 pub fn router(state: AppState) -> Router {
     Router::new()

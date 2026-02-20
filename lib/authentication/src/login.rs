@@ -1,6 +1,6 @@
-use crate::AppState;
 use axum::{Json, extract::Extension, http::StatusCode};
 use serde::Deserialize;
+use utils::db::AppState;
 
 #[derive(Deserialize)]
 pub struct LoginRequest {

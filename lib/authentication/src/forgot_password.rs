@@ -1,4 +1,3 @@
-use crate::AppState;
 use axum::{Json, extract::Extension, http::StatusCode};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand;
@@ -10,6 +9,7 @@ use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use sqlx::postgres::PgRow;
 use time::{Duration, OffsetDateTime};
+use utils::db::AppState;
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct ResetClaims {

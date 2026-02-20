@@ -1,9 +1,9 @@
-use crate::AppState;
-use crate::utils::enums::{LanguageEnum, LanguageLevel};
 use axum::http::StatusCode;
 use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use utils::db::AppState;
+use utils::enums::{LanguageEnum, LanguageLevel};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Language {

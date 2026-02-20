@@ -1,7 +1,6 @@
-use libs;
-pub mod router;
-use libs::AppState;
+use freelancers::router;
 use std::net::SocketAddr;
+use utils::db::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -15,7 +14,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let state = AppState { db };
 
-    let app = router::router(state.clone());
+    let app = router(state.clone());
 
     let addr: SocketAddr = "127.0.0.1:3000".parse().unwrap();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

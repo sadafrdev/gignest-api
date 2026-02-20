@@ -1,6 +1,12 @@
-use crate::AppState;
 use sqlx::PgPool;
+use sqlx::Pool;
+use sqlx::Postgres;
 use std::error::Error;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db: Pool<Postgres>,
+}
 
 pub async fn establish_connection() -> Result<AppState, Box<dyn Error>> {
     let database_url = std::env::var("DATABASE_URL")

@@ -1,7 +1,8 @@
-use crate::AppState;
 use axum::{Json, extract::Extension, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};
+use utils::db::AppState;
+use utils::enums::Country;
 use validator::Validate;
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
@@ -23,31 +24,6 @@ pub struct Users {
 pub enum Role {
     Freelancer,
     Client,
-}
-
-#[derive(Debug, Type, Deserialize, Serialize)]
-#[sqlx(type_name = "country", rename_all = "lowercase")]
-pub enum Country {
-    US,
-    CA,
-    GB,
-    AU,
-    DE,
-    FR,
-    IN,
-    JP,
-    CN,
-    BR,
-    ZA,
-    NG,
-    KE,
-    EG,
-    MX,
-    PK,
-    RU,
-    IT,
-    ES,
-    NL,
 }
 
 pub async fn register(

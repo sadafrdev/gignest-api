@@ -1,8 +1,8 @@
-use crate::AppState;
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
+use utils::db::AppState;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Certificate {

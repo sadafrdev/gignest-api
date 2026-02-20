@@ -1,12 +1,12 @@
 use axum::{Extension, extract::Path};
-use libs::AppState;
+use utils::db::AppState;
 
 use axum::{
     Json, Router,
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use libs::freelancers::educations::{Education, UpdateEducation};
+use lib_freelancers::educations::{Education, UpdateEducation};
 
 pub async fn create_education(
     Extension(state): Extension<AppState>,

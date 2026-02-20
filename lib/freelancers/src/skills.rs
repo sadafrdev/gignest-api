@@ -1,8 +1,8 @@
-use crate::AppState;
 use axum::http::StatusCode;
 use axum::{Extension, Json};
 use core::str;
 use serde::{Deserialize, Serialize};
+use utils::db::AppState;
 
 #[derive(Debug, Clone, Copy, serde::Deserialize, serde::Serialize, sqlx::Type)]
 #[sqlx(type_name = "skills_enum", rename_all = "SCREAMING_SNAKE_CASE")]

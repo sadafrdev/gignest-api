@@ -1,10 +1,10 @@
-use crate::AppState;
-use crate::utils::enums::Country;
 use axum::http::StatusCode;
 use axum::{Json, extract::Extension};
 use core::str;
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono::NaiveDate;
+use utils::db::AppState;
+use utils::enums::Country;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Education {

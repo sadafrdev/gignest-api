@@ -5,8 +5,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, post, put},
 };
-use libs::AppState;
-use libs::freelancers::skills::{Skills, UpdateSkill};
+use lib_freelancers::skills::{Skills, UpdateSkill};
+use utils::db::AppState;
 
 pub async fn add_skill(
     Extension(state): Extension<AppState>,

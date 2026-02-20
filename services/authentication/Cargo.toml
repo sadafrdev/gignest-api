@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-libs = { path = "../../libs" }
+utils = { path = "../../lib/utils" }
+lib-authentication = { path = "../../lib/authentication" }
+
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

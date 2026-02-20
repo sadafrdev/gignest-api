@@ -5,8 +5,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use libs::AppState;
-use libs::freelancers::certificates::Certificate;
+use lib_freelancers::certificates::Certificate;
+use utils::db::AppState;
 
 pub async fn create_certificate(
     Extension(state): Extension<AppState>,

@@ -5,8 +5,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use libs::AppState;
-pub use libs::freelancers::languages::Language;
+pub use lib_freelancers::languages::Language;
+use utils::db::AppState;
 
 pub async fn create_language(
     Extension(state): Extension<AppState>,

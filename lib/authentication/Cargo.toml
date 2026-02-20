@@ -1,9 +1,10 @@
 [package]
-name = "libs"
+name = "lib-authentication"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+utils = { path = "../utils" }
 sqlx = { version = "0.8.6", features = ["postgres", "chrono", "runtime-tokio"] }
 axum = "0.8.7"
 serde = { version = "1.0", features = ["derive"] }
