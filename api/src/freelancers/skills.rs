@@ -5,7 +5,7 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, post, put},
 };
-use lib_freelancers::skills::{Skills, UpdateSkill};
+use freelancers::skills::{Skills, UpdateSkill};
 use utils::db::AppState;
 
 pub async fn add_skill(

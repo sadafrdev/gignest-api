@@ -5,7 +5,7 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-pub use lib_freelancers::languages::Language;
+pub use freelancers::languages::Language;
 use utils::db::AppState;
 
 pub async fn create_language(
