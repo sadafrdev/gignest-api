@@ -1,9 +1,9 @@
+use authentication::login::Login;
 use axum::Json;
+use axum::Router;
 use axum::routing::get;
 use axum::{extract::Extension, http::StatusCode};
 use utils::db::AppState;
-use authentication::login::Login;
-use axum::Router;
 
 pub async fn login(
     Extension(state): Extension<AppState>,

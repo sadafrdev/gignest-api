@@ -1,9 +1,9 @@
+use authentication::register::Register;
 use axum::Json;
+use axum::Router;
 use axum::routing::post;
 use axum::{extract::Extension, http::StatusCode};
 use utils::db::AppState;
-use authentication::register::Register;
-use axum::Router;
 
 pub async fn register(
     Extension(state): Extension<AppState>,

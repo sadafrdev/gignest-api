@@ -1,8 +1,8 @@
 use axum::Json;
 use axum::routing::{delete, get, post, put};
 use axum::{extract::Extension, http::StatusCode};
-use utils::db::AppState;
 use clients::jobs::{ClientID, Job, JobID, UpdateJob};
+use utils::db::AppState;
 
 pub async fn get_jobs(
     Extension(state): Extension<AppState>,

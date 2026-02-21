@@ -7,5 +7,4 @@ pub fn router(state: AppState) -> Router {
         .merge(jobs::router(state.clone()))
         .layer(Extension(state));
     Router::new().nest("/client", clients_routes)
-
 }
