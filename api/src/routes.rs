@@ -8,6 +8,6 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .merge(freelancers::router(state.clone()))
         .merge(authentication::router(state.clone()))
-        // .merge(clients::router(state.clone()))
+        .merge(clients::router(state.clone()))
         .layer(Extension(state))
 }

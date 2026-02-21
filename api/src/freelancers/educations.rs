@@ -6,7 +6,7 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use lib_freelancers::educations::{Education, UpdateEducation};
+use freelancers::educations::{Education, UpdateEducation};
 
 pub async fn create_education(
     Extension(state): Extension<AppState>,

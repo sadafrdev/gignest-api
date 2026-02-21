@@ -5,7 +5,7 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use lib_freelancers::certificates::Certificate;
+use freelancers::certificates::Certificate;
 use utils::db::AppState;
 
 pub async fn create_certificate(
