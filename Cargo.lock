@@ -120,6 +120,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "dotenv",
+ "dotenvy",
  "jsonwebtoken",
  "lettre",
  "rand",

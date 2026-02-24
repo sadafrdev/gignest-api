@@ -15,6 +15,7 @@ use sqlx::FromRow;
 use sqlx::postgres::PgRow;
 use time::{Duration, OffsetDateTime};
 use utils::db::AppState;
+use dotenvy::dotenv;
 // use lettre::{
 //     message::header::ContentType,
 //     transport::smtp::authentication::Credentials,
@@ -30,6 +31,7 @@ pub struct SendOtp {
 
 impl SendOtp {
     pub async fn send_email(email: &String, otp: String) {
+        dotenv().ok();
         let api_key = std::env::var("SENDGRID_API_KEY").expect("SENDGRID_API_KEY not set");
 
         let from_email = std::env::var("FROM_EMAIL").expect("FROM_EMAIL not set");
@@ -59,7 +61,16 @@ impl SendOtp {
                 StatusCode::INTERNAL_SERVER_ERROR
             });
 
-        println!("{:?}", res);
+        match res {
+            Ok(response) => {
+                println!("Status: {}", response.status());
+                let text = response.text().await.unwrap_or_default();
+                println!("Body: {}", text);
+            }
+            Err(e) => {
+                eprintln!("Request error: {:?}", e);
+            }
+        }
     }
 
     pub fn otp() -> String {
@@ -82,8 +93,6 @@ impl SendOtp {
         Extension(state): Extension<AppState>,
         Json(payload): Json<Self>,
     ) -> Result<(), StatusCode> {
-        // let otp = Self::otp();
-        // let otp_hash = format!("{:x}", Sha256::digest(otp.to_string().as_bytes())).clone();
         let hashed_otp = Self::hash_otp(&Self::otp());
         let otp = Self::otp();
         let email = &payload.email.clone();
@@ -102,7 +111,6 @@ impl SendOtp {
             println!("Your Email Does Not Exists.");
             return Err(StatusCode::NOT_FOUND);
         }
-        print!("User Exists, sending OTP... {}, {}", otp, hashed_otp);
         sqlx::query(
             r#"
                 INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
@@ -117,10 +125,7 @@ impl SendOtp {
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        print!("im here");
-
         Self::send_email(email, otp).await;
-        print!("im here2");
 
         Ok(())
     }
@@ -142,6 +147,7 @@ pub struct ResetTokenClaims {
 
 impl VerifyOtp {
     pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
+        dotenv::dotenv().ok();
         let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
 
         let now = OffsetDateTime::now_utc().unix_timestamp();
