@@ -1,6 +1,11 @@
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
+};
 use axum::{Json, extract::Extension, http::StatusCode};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand;
+use rand::{Rng, distributions::Alphanumeric};
 use reqwest::Client;
 use serde::Deserialize;
 use serde::Serialize;
@@ -10,11 +15,6 @@ use sqlx::FromRow;
 use sqlx::postgres::PgRow;
 use time::{Duration, OffsetDateTime};
 use utils::db::AppState;
-use rand::{distributions::Alphanumeric, Rng};
-use argon2::{
-    password_hash::{SaltString, PasswordHasher, rand_core::OsRng},
-    Argon2,
-};
 // use lettre::{
 //     message::header::ContentType,
 //     transport::smtp::authentication::Credentials,
@@ -29,38 +29,38 @@ pub struct SendOtp {
 }
 
 impl SendOtp {
-        pub async fn send_email(email: &String, otp: String) {
-            let api_key = std::env::var("SENDGRID_API_KEY").expect("SENDGRID_API_KEY not set");
-        
-            let from_email = std::env::var("FROM_EMAIL").expect("FROM_EMAIL not set");
-        
-            let client = Client::new();
-        
-            let body = json!({
-                "personalizations": [{
-                    "to": [{ "email": email}]
-                }],
-                "from": { "email": from_email},
-                "subject": "Forgot Password OTP",
-                "content": [{
-                    "type": "text/plain",
-                    "value": format!("Your OTP is {}", otp)
-                }]
+    pub async fn send_email(email: &String, otp: String) {
+        let api_key = std::env::var("SENDGRID_API_KEY").expect("SENDGRID_API_KEY not set");
+
+        let from_email = std::env::var("FROM_EMAIL").expect("FROM_EMAIL not set");
+
+        let client = Client::new();
+
+        let body = json!({
+            "personalizations": [{
+                "to": [{ "email": email}]
+            }],
+            "from": { "email": from_email},
+            "subject": "Forgot Password OTP",
+            "content": [{
+                "type": "text/plain",
+                "value": format!("Your OTP is {}", otp)
+            }]
+        });
+
+        let res = client
+            .post("https://api.sendgrid.com/v3/mail/send")
+            .bearer_auth(api_key)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| {
+                eprintln!("Email sending error: {:?}", e);
+                StatusCode::INTERNAL_SERVER_ERROR
             });
-        
-            let res = client
-                .post("https://api.sendgrid.com/v3/mail/send")
-                .bearer_auth(api_key)
-                .json(&body)
-                .send()
-                .await
-                .map_err(|e| {
-                    eprintln!("Email sending error: {:?}", e);
-                    StatusCode::INTERNAL_SERVER_ERROR
-                });
-        
-            println!("{:?}", res);
-        }
+
+        println!("{:?}", res);
+    }
 
     pub fn otp() -> String {
         rand::thread_rng()
@@ -143,17 +143,17 @@ pub struct ResetTokenClaims {
 impl VerifyOtp {
     pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
         let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
-    
+
         let now = OffsetDateTime::now_utc().unix_timestamp();
         let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
-    
+
         let claims = ResetTokenClaims {
             sub: "password_reset".to_string(),
             email: email.to_string(),
             iat: now,
             exp,
         };
-    
+
         encode(
             &Header::new(Algorithm::HS256),
             &claims,
@@ -219,24 +219,26 @@ pub struct UpdatePassword {
 }
 
 impl UpdatePassword {
-    pub fn verify_reset_token(token: &str) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
+    pub fn verify_reset_token(
+        token: &str,
+    ) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
         let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
-    
+
         let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_exp = true;
-    
+
         let data = decode::<ResetTokenClaims>(
             token,
             &DecodingKey::from_secret(secret.as_bytes()),
             &validation,
         )?;
-    
+
         if data.claims.sub != "password_reset" {
             return Err(jsonwebtoken::errors::Error::from(
                 jsonwebtoken::errors::ErrorKind::InvalidToken,
             ));
         }
-    
+
         Ok(data.claims)
     }
 

@@ -1,9 +1,6 @@
-use axum::{
-    Extension, Router,
-    routing::{get, post},
-};
-pub mod login;
+use axum::{Extension, Router};
 pub mod forgot_password;
+pub mod login;
 pub mod register;
 use utils::db::AppState;
 

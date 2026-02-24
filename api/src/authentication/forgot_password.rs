@@ -1,10 +1,10 @@
+use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
 use axum::Json;
 use axum::Router;
 use axum::routing::patch;
 use axum::routing::post;
 use axum::{extract::Extension, http::StatusCode};
 use utils::db::AppState;
-use authentication::forgot_password::{SendOtp, VerifyOtp, UpdatePassword};
 
 pub async fn send_otp(
     Extension(state): Extension<AppState>,
