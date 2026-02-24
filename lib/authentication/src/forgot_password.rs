@@ -10,90 +10,124 @@ use sqlx::FromRow;
 use sqlx::postgres::PgRow;
 use time::{Duration, OffsetDateTime};
 use utils::db::AppState;
+use rand::{distributions::Alphanumeric, Rng};
+use argon2::{
+    password_hash::{SaltString, PasswordHasher, rand_core::OsRng},
+    Argon2,
+};
+// use lettre::{
+//     message::header::ContentType,
+//     transport::smtp::authentication::Credentials,
+//     Message, AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
+// };
+// use core::hash;
+// use std::env;
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct ResetClaims {
+pub struct SendOtp {
     pub email: String,
 }
 
-pub async fn send_email(email: &String, otp: u32) {
-    let api_key = std::env::var("SENDGRID_API_KEY").expect("SENDGRID_API_KEY not set");
+impl SendOtp {
+        pub async fn send_email(email: &String, otp: String) {
+            let api_key = std::env::var("SENDGRID_API_KEY").expect("SENDGRID_API_KEY not set");
+        
+            let from_email = std::env::var("FROM_EMAIL").expect("FROM_EMAIL not set");
+        
+            let client = Client::new();
+        
+            let body = json!({
+                "personalizations": [{
+                    "to": [{ "email": email}]
+                }],
+                "from": { "email": from_email},
+                "subject": "Forgot Password OTP",
+                "content": [{
+                    "type": "text/plain",
+                    "value": format!("Your OTP is {}", otp)
+                }]
+            });
+        
+            let res = client
+                .post("https://api.sendgrid.com/v3/mail/send")
+                .bearer_auth(api_key)
+                .json(&body)
+                .send()
+                .await
+                .map_err(|e| {
+                    eprintln!("Email sending error: {:?}", e);
+                    StatusCode::INTERNAL_SERVER_ERROR
+                });
+        
+            println!("{:?}", res);
+        }
 
-    let from_email = std::env::var("FROM_EMAIL").expect("FROM_EMAIL not set");
-
-    let client = Client::new();
-
-    let body = json!({
-        "personalizations": [{
-            "to": [{ "email": email}]
-        }],
-        "from": { "email": from_email},
-        "subject": "Forgot Password OTP",
-        "content": [{
-            "type": "text/plain",
-            "value": format!("Your OTP is {}", otp)
-        }]
-    });
-
-    let res = client
-        .post("https://api.sendgrid.com/v3/mail/send")
-        .bearer_auth(api_key)
-        .json(&body)
-        .send()
-        .await
-        .map_err(|e| {
-            eprintln!("Email sending error: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        });
-
-    println!("{:?}", res);
-}
-
-pub async fn send_otp(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<ResetClaims>,
-) -> Result<(), StatusCode> {
-    let otp = rand::random::<u32>() % 1_000_000;
-    let otp_hash = format!("{:x}", Sha256::digest(otp.to_string().as_bytes())).clone();
-
-    let email = payload.email.clone();
-
-    let user: Option<PgRow> = sqlx::query(
-        r#"
-            SELECT email FROM users WHERE email = $1
-        "#,
-    )
-    .bind(&email)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if user.is_none() {
-        println!("Your Email Does Not Exists.");
-        return Err(StatusCode::NOT_FOUND);
+    pub fn otp() -> String {
+        rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(6)
+            .map(char::from)
+            .collect()
     }
 
-    sqlx::query(
-        "
-            INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
-            VALUES (
-                $1, $2, 'password_reset', NOW(), NOW() + INTERVAL '10 minutes'
-            )
-        ",
-    )
-    .bind(&email)
-    .bind(&otp_hash)
-    .execute(&state.db)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    pub fn hash_otp(otp: &str) -> String {
+        let salt = SaltString::generate(&mut OsRng);
+        Argon2::default()
+            .hash_password(otp.as_bytes(), &salt)
+            .unwrap()
+            .to_string()
+    }
 
-    send_email(&email, otp).await;
+    pub async fn send_otp(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<Self>,
+    ) -> Result<(), StatusCode> {
+        // let otp = Self::otp();
+        // let otp_hash = format!("{:x}", Sha256::digest(otp.to_string().as_bytes())).clone();
+        let hashed_otp = Self::hash_otp(&Self::otp());
+        let otp = Self::otp();
+        let email = &payload.email.clone();
 
-    Ok(())
+        let user: Option<PgRow> = sqlx::query(
+            r#"
+                SELECT email FROM users WHERE email = $1
+            "#,
+        )
+        .bind(email)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        if user.is_none() {
+            println!("Your Email Does Not Exists.");
+            return Err(StatusCode::NOT_FOUND);
+        }
+        print!("User Exists, sending OTP... {}, {}", otp, hashed_otp);
+        sqlx::query(
+            r#"
+                INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
+                VALUES (
+                    $1, $2, 'password_reset', NOW(), NOW() + INTERVAL '10 minutes'
+                )
+            "#,
+        )
+        .bind(email)
+        .bind(hashed_otp)
+        .execute(&state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        print!("im here");
+
+        Self::send_email(email, otp).await;
+        print!("im here2");
+
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct OTPVerficationPayload {
+pub struct VerifyOtp {
     pub otp: i32,
     pub email: String,
 }
@@ -106,125 +140,130 @@ pub struct ResetTokenClaims {
     pub exp: i64,
 }
 
-pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
-    let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
-
-    let now = OffsetDateTime::now_utc().unix_timestamp();
-    let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
-
-    let claims = ResetTokenClaims {
-        sub: "password_reset".to_string(),
-        email: email.to_string(),
-        iat: now,
-        exp,
-    };
-
-    encode(
-        &Header::new(Algorithm::HS256),
-        &claims,
-        &EncodingKey::from_secret(secret.as_bytes()),
-    )
-}
-
-pub async fn verify_otp(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<OTPVerficationPayload>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
-    let email = payload.email.clone();
-
-    let otp_str = format!("{:06}", payload.otp);
-    let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
-
-    let res = sqlx::query(
-        r#"
-                SELECT email
-                FROM otps
-                WHERE email = $1
-                    AND otp_hash = $2
-                    AND purpose = 'password_reset'
-                    AND expires_at > now()
-            "#,
-    )
-    .bind(&email)
-    .bind(otp_hash)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|_| StatusCode::NOT_FOUND)?;
-
-    println!("here {:?}, {}", res, payload.otp);
-    if res.is_none() {
-        return Err(StatusCode::UNAUTHORIZED);
+impl VerifyOtp {
+    pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
+        let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+    
+        let now = OffsetDateTime::now_utc().unix_timestamp();
+        let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
+    
+        let claims = ResetTokenClaims {
+            sub: "password_reset".to_string(),
+            email: email.to_string(),
+            iat: now,
+            exp,
+        };
+    
+        encode(
+            &Header::new(Algorithm::HS256),
+            &claims,
+            &EncodingKey::from_secret(secret.as_bytes()),
+        )
     }
-    sqlx::query(
-        r#"
-            DELETE FROM otps
-            WHERE email = $1
-            AND purpose = 'password_reset'
-        "#,
-    )
-    .bind(&email)
-    .execute(&state.db)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let reset_token =
-        generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    pub async fn verify_otp(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<Self>,
+    ) -> Result<Json<serde_json::Value>, StatusCode> {
+        let email = payload.email.clone();
 
-    return Ok(Json(serde_json::json!({
-        "reset_token": reset_token
-    })));
+        let otp_str = format!("{:06}", payload.otp);
+        let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
+
+        let res = sqlx::query(
+            r#"
+                    SELECT email
+                    FROM otps
+                    WHERE email = $1
+                        AND otp_hash = $2
+                        AND purpose = 'password_reset'
+                        AND expires_at > now()
+                "#,
+        )
+        .bind(&email)
+        .bind(otp_hash)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
+
+        println!("here {:?}, {}", res, payload.otp);
+        if res.is_none() {
+            return Err(StatusCode::UNAUTHORIZED);
+        }
+        sqlx::query(
+            r#"
+                DELETE FROM otps
+                WHERE email = $1
+                AND purpose = 'password_reset'
+            "#,
+        )
+        .bind(&email)
+        .execute(&state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        let reset_token =
+            Self::generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+        return Ok(Json(serde_json::json!({
+            "reset_token": reset_token
+        })));
+    }
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
-pub struct ResetPasswordPayload {
+pub struct UpdatePassword {
     pub email: String,
     pub new_password: String,
     pub token: String,
 }
-pub fn verify_reset_token(token: &str) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
-    let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
 
-    let mut validation = Validation::new(Algorithm::HS256);
-    validation.validate_exp = true;
-
-    let data = decode::<ResetTokenClaims>(
-        token,
-        &DecodingKey::from_secret(secret.as_bytes()),
-        &validation,
-    )?;
-
-    if data.claims.sub != "password_reset" {
-        return Err(jsonwebtoken::errors::Error::from(
-            jsonwebtoken::errors::ErrorKind::InvalidToken,
-        ));
+impl UpdatePassword {
+    pub fn verify_reset_token(token: &str) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
+        let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+    
+        let mut validation = Validation::new(Algorithm::HS256);
+        validation.validate_exp = true;
+    
+        let data = decode::<ResetTokenClaims>(
+            token,
+            &DecodingKey::from_secret(secret.as_bytes()),
+            &validation,
+        )?;
+    
+        if data.claims.sub != "password_reset" {
+            return Err(jsonwebtoken::errors::Error::from(
+                jsonwebtoken::errors::ErrorKind::InvalidToken,
+            ));
+        }
+    
+        Ok(data.claims)
     }
 
-    Ok(data.claims)
-}
+    pub async fn update_password(
+        Extension(state): Extension<AppState>,
+        Json(payload): Json<Self>,
+    ) -> Result<Json<serde_json::Value>, StatusCode> {
+        //VErifying Token
+        Self::verify_reset_token(&payload.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
 
-pub async fn update_password(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<ResetPasswordPayload>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
-    //VErifying Token
-    verify_reset_token(&payload.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        //Updating Password
+        sqlx::query(
+            "
+                UPDATE users
+                SET password = $1
+                WHERE email = $2
 
-    //Updating Password
-    sqlx::query(
-        "
-            UPDATE users
-            SET password = $1
-            WHERE email = $2
+            ",
+        )
+        .bind(payload.new_password)
+        .bind(payload.email)
+        .execute(&state.db)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        ",
-    )
-    .bind(payload.new_password)
-    .bind(payload.email)
-    .execute(&state.db)
-    .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(Json(json!({
-        "message": "Password updated successfully"
-    })))
+        Ok(Json(json!({
+            "message": "Password updated successfully"
+        })))
+    }
 }
