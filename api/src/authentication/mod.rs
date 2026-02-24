@@ -1,10 +1,10 @@
+use authentication::forgot_password;
+use authentication::login;
+use authentication::register;
 use axum::{
     Extension, Router,
     routing::{get, post},
 };
-use authentication::forgot_password;
-use authentication::login;
-use authentication::register;
 use utils::db::AppState;
 
 pub fn router(state: AppState) -> Router {

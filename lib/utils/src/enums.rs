@@ -51,3 +51,18 @@ pub enum Country {
     ES,
     NL,
 }
+
+#[derive(Debug, Type, Deserialize, Serialize)]
+#[sqlx(type_name = "job_type", rename_all = "lowercase")]
+pub enum JobType {
+    FIXED,
+    HOURLY,
+}
+
+#[derive(Debug, Type, Deserialize, Serialize)]
+#[sqlx(type_name = "proposal_status", rename_all = "lowercase")]
+pub enum ProposalStatus {
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+}
