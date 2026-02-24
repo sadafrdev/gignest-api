@@ -2,7 +2,6 @@ use anyhow::Result;
 use sqlx::PgPool;
 use sqlx::Pool;
 use sqlx::Postgres;
-use std::error::Error;
 
 #[derive(Clone)]
 pub struct AppState {
