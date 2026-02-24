@@ -34,7 +34,7 @@ CREATE TABLE educations (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id BIGINT REFERENCES users(id),
   country country NOT NULL,
-  degree TEXT NOT NULL,
+  degree TEXT NOT NULL UNIQUE,
   institute TEXT NOT NULL,
   major TEXT NOT NULL,
   year_of_graduation DATE NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE educations (
 CREATE TABLE languages (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id BIGINT REFERENCES users(id),
-  language language NOT NULL,
+  language language NOT NULL UNIQUE,
   language_level language_level NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -52,7 +52,7 @@ CREATE TABLE languages (
 CREATE TABLE certificates (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id BIGINT REFERENCES users(id),
-  name TEXT NOT NULL,
+  name TEXT NOT NULL UNIQUE,
   certificate_by TEXT NOT NULL,
   year DATE NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -68,13 +68,13 @@ CREATE TABLE portfolios (
 CREATE TABLE skills (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id BIGINT REFERENCES users(id),
-  skill skills_enum NOT NULL
+  skill skills_enum NOT NULL UNIQUE
 );
 
 CREATE TABLE jobs (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   client_id BIGINT REFERENCES users(id),
-  title TEXT NOT NULL,
+  title TEXT NOT NULL UNIQUE,
   description TEXT NOT NULL,
   budget_min NUMERIC NOT NULL,
   budget_max NUMERIC NOT NULL,
