@@ -124,6 +124,7 @@ dependencies = [
  "jsonwebtoken",
  "lettre",
  "rand",
+ "rand_core",
  "reqwest",
  "serde",
  "serde_json",

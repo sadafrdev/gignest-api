@@ -1,6 +1,8 @@
 use axum::{Json, extract::Extension, http::StatusCode};
 use serde::Deserialize;
 use utils::db::AppState;
+use argon2::{Argon2, password_hash::{SaltString, PasswordHasher}};
+use rand_core::OsRng;
 
 #[derive(Deserialize)]
 pub struct Login {
@@ -13,6 +15,12 @@ impl Login {
         Extension(state): Extension<AppState>,
         Json(payload): Json<Self>,
     ) -> Result<(), StatusCode> {
+        let salt = SaltString::generate(&mut OsRng);
+        let hashed_password = Argon2::default()
+            .hash_password(payload.password.as_bytes(), &salt)
+            .unwrap()
+            .to_string();
+
         let res = sqlx::query(
             r#"
                 SELECT
@@ -22,7 +30,7 @@ impl Login {
             "#,
         )
         .bind(payload.email)
-        .bind(payload.password)
+        .bind(hashed_password)
         .fetch_optional(&state.db)
         .await
         .map_err(|e| {

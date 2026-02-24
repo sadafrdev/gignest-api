@@ -4,6 +4,8 @@ use sqlx::{FromRow, Type};
 use utils::db::AppState;
 use utils::enums::Country;
 use validator::Validate;
+use argon2::{Argon2, password_hash::{SaltString, PasswordHasher}};
+use rand_core::OsRng;
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Register {
@@ -31,6 +33,12 @@ impl Register {
         Extension(state): Extension<AppState>,
         Json(payload): Json<Self>,
     ) -> Result<(), StatusCode> {
+        let salt = SaltString::generate(&mut OsRng);
+        let hashed_password = Argon2::default()
+            .hash_password(payload.password.as_bytes(), &salt)
+            .unwrap()
+            .to_string();
+        
         sqlx::query(
             "
             INSERT INTO users
@@ -40,7 +48,7 @@ impl Register {
         )
         .bind(payload.first_name)
         .bind(payload.last_name)
-        .bind(payload.password)
+        .bind(hashed_password)
         .bind(payload.email)
         .bind(payload.phone_number)
         .bind(payload.username)
