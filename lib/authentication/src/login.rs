@@ -1,6 +1,7 @@
-use axum::{Json, extract::Extension, http::StatusCode};
+use axum::{http::StatusCode};
 use serde::Deserialize;
-use utils::db::AppState;
+use sqlx::query;
+use utils::db::DB;
 
 #[derive(Deserialize, Debug)]
 pub struct Login {
@@ -10,27 +11,25 @@ pub struct Login {
 
 impl Login {
     pub async fn login(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
+       self, db: DB
     ) -> Result<(), StatusCode> {
-        let res = sqlx::query(
-            r#"
+        let res = query!(
+            "
                 SELECT
                    password
                 FROM users
                 WHERE email = $1 
-            "#,
+            ",
+            self.email
         )
-        .bind(payload.email)
-        .fetch_optional(&state.db)
+        .fetch_optional(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
-        println!("RES: {:?}", res);
-        
+        println!("{:?}", res);
         Ok(())
     }
 }

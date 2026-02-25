@@ -2,7 +2,7 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
-use axum::{Json, extract::Extension, http::StatusCode};
+use axum::{Json, http::StatusCode};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand;
 use rand::{Rng, distributions::Alphanumeric};
@@ -12,17 +12,9 @@ use serde::Serialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
-use sqlx::postgres::PgRow;
 use time::{Duration, OffsetDateTime};
-use utils::db::AppState;
 use dotenvy::dotenv;
-// use lettre::{
-//     message::header::ContentType,
-//     transport::smtp::authentication::Credentials,
-//     Message, AsyncSmtpTransport, AsyncTransport, Tokio1Executor,
-// };
-// use core::hash;
-// use std::env;
+use utils::db::DB;
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct SendOtp {
@@ -89,21 +81,18 @@ impl SendOtp {
             .to_string()
     }
 
-    pub async fn send_otp(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
-    ) -> Result<(), StatusCode> {
+    pub async fn send_otp(self, db: DB) -> Result<(), StatusCode> {
         let hashed_otp = Self::hash_otp(&Self::otp());
         let otp = Self::otp();
-        let email = &payload.email.clone();
+        let email = &self.email.clone();
 
-        let user: Option<PgRow> = sqlx::query(
+        let user= sqlx::query!(
             r#"
                 SELECT email FROM users WHERE email = $1
             "#,
+            self.email
         )
-        .bind(email)
-        .fetch_optional(&state.db)
+        .fetch_optional(&db)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
@@ -121,7 +110,7 @@ impl SendOtp {
         )
         .bind(email)
         .bind(hashed_otp)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
@@ -167,16 +156,13 @@ impl VerifyOtp {
         )
     }
 
-    pub async fn verify_otp(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
-    ) -> Result<Json<serde_json::Value>, StatusCode> {
-        let email = payload.email.clone();
+    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
+        let email = self.email.clone();
 
-        let otp_str = format!("{:06}", payload.otp);
+        let otp_str = format!("{:06}", self.otp);
         let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
 
-        let res = sqlx::query(
+        let res = sqlx::query!(
             r#"
                     SELECT email
                     FROM otps
@@ -185,26 +171,26 @@ impl VerifyOtp {
                         AND purpose = 'password_reset'
                         AND expires_at > now()
                 "#,
+                self.email,
+                otp_hash
         )
-        .bind(&email)
-        .bind(otp_hash)
-        .fetch_optional(&state.db)
+        .fetch_optional(&db)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
 
-        println!("here {:?}, {}", res, payload.otp);
+        println!("here {:?}, {}", res, self.otp);
         if res.is_none() {
             return Err(StatusCode::UNAUTHORIZED);
         }
-        sqlx::query(
+        sqlx::query!(
             r#"
                 DELETE FROM otps
                 WHERE email = $1
                 AND purpose = 'password_reset'
             "#,
+            self.email
         )
-        .bind(&email)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
@@ -248,25 +234,22 @@ impl UpdatePassword {
         Ok(data.claims)
     }
 
-    pub async fn update_password(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
-    ) -> Result<Json<serde_json::Value>, StatusCode> {
+    pub async fn update_password(self, db:DB) -> Result<Json<serde_json::Value>, StatusCode> {
         //VErifying Token
-        Self::verify_reset_token(&payload.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        Self::verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
 
         //Updating Password
-        sqlx::query(
+        sqlx::query!(
             "
                 UPDATE users
                 SET password = $1
                 WHERE email = $2
 
             ",
+            self.new_password,
+            self.email
         )
-        .bind(payload.new_password)
-        .bind(payload.email)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
