@@ -1,6 +1,7 @@
-use axum::{Json, extract::Extension, http::StatusCode};
+use axum::{Json, extract::Extension};
 use serde::Deserialize;
 use utils::db::AppState;
+use utils::error::AppError;
 
 #[derive(Deserialize)]
 pub struct Login {
@@ -12,7 +13,7 @@ impl Login {
     pub async fn login(
         Extension(state): Extension<AppState>,
         Json(payload): Json<Self>,
-    ) -> Result<(), StatusCode> {
+    ) -> Result<(), AppError> {
         let res = sqlx::query(
             r#"
                 SELECT
@@ -27,12 +28,12 @@ impl Login {
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
         match res {
             Some(_) => Ok(()),
-            None => Err(StatusCode::NOT_FOUND),
+            None => Err(AppError::NotFound("USER".to_string())),
         }
     }
 }
