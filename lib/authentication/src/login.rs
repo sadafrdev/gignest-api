@@ -1,7 +1,6 @@
-use axum::{http::StatusCode};
 use serde::Deserialize;
 use sqlx::query;
-use utils::db::DB;
+use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Debug)]
 pub struct Login {
@@ -12,7 +11,7 @@ pub struct Login {
 impl Login {
     pub async fn login(
        self, db: DB
-    ) -> Result<(), StatusCode> {
+    ) -> Result<(), AppError> {
         let res = query!(
             "
                 SELECT
@@ -29,9 +28,11 @@ impl Login {
             AppError::InternalServerError
         })?;
 
-        match res {
-            Some(_) => Ok(()),
-            None => Err(AppError::NotFound("USER".to_string())),
-        }
+        Ok(())
+
+        // match res {
+        //     Some(_) => Ok(()),
+        //     None => Err(AppError::NotFound("USER".to_string())),
+        // }
     }
 }

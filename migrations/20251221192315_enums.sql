@@ -6,9 +6,27 @@ CREATE TYPE country AS ENUM (
 
 CREATE TYPE user_role AS ENUM ('client', 'freelancer');
 
-CREATE TYPE language AS ENUM ('ENGLISH', 'URDU', 'SPANISH', 'CHINESE', 'KOREAN', 'FRENCH', 'RUSSIAN', 'GERMAN', 'ARABIC', 'HINDI', 'PERSIAN', 'TURKISH', 'BENGALI');
+CREATE TYPE language AS ENUM (
+  "English",
+  "Urdu",
+  "Spanish",
+  "Chinese",
+  "Korean",
+  "French",
+  "Russian",
+  "Germany",
+  "Arabic",
+  "Hindi",
+  "Persian",
+  "Turkish",
+  "Bengali"
+  );
 
-CREATE TYPE language_level AS ENUM ('BEGINNER', 'INTERMEDIATE', 'FLUENT');
+CREATE TYPE language_level AS ENUM ( 
+  "Begginer",
+  "Intermediate",
+  "Fluent",
+);
 
 CREATE TYPE skills_enum AS ENUM (
   'WEB_DEVELOPMENT',
@@ -33,6 +51,6 @@ CREATE TYPE skills_enum AS ENUM (
   'VIDEO_EDITING',
   'UI_UX_DESIGN'
 );
-CREATE TYPE job_type AS ENUM ('FIXED', 'HOURLY');
+CREATE TYPE job_type AS ENUM ('Fixed', 'Hourly');
 
-CREATE TYPE proposal_status AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED');
+CREATE TYPE proposal_status AS ENUM ('Pending', 'Accepted', 'Rejected');
