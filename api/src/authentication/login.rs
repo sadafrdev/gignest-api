@@ -7,9 +7,9 @@ use utils::db::AppState;
 
 pub async fn login(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Login>,
+    Json(form): Json<Login>,
 ) -> Result<(), StatusCode> {
-    Login::login(Extension(state), Json(payload)).await
+    form.login(state.db).await
 }
 
 pub fn router(state: AppState) -> Router {
