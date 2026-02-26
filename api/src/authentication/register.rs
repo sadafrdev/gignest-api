@@ -7,9 +7,9 @@ use utils::db::AppState;
 
 pub async fn register(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Register>,
+    Json(form): Json<Register>,
 ) -> Result<(), StatusCode> {
-    Register::register(Extension(state), Json(payload)).await
+    form.register(state.db).await
 }
 
 pub fn router(state: AppState) -> Router {

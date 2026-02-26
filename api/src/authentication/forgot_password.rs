@@ -8,23 +8,23 @@ use utils::db::AppState;
 
 pub async fn send_otp(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<SendOtp>,
+    Json(form): Json<SendOtp>,
 ) -> Result<(), StatusCode> {
-    SendOtp::send_otp(Extension(state), Json(payload)).await
+    form.send_otp(state.db).await
 }
 
 pub async fn verify_otp(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<VerifyOtp>,
+    Json(form): Json<VerifyOtp>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
-    VerifyOtp::verify_otp(Extension(state), Json(payload)).await
+    form.verify_otp(state.db).await
 }
 
 pub async fn update_password(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdatePassword>,
+    Json(form): Json<UpdatePassword>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
-    UpdatePassword::update_password(Extension(state), Json(payload)).await
+   form.update_password(state.db).await
 }
 
 pub fn router(state: AppState) -> Router {
