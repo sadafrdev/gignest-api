@@ -83,7 +83,7 @@ CREATE TABLE jobs (
 
 CREATE TABLE proposals (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  user_id BIGINT REFERENCES users(id),
+  freelancer_id BIGINT REFERENCES users(id),
   status proposal_status NOT NULL DEFAULT 'Pending',
   job_id BIGINT REFERENCES jobs(id),
   cover_letter TEXT NOT NULL,
