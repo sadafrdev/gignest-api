@@ -1,8 +1,8 @@
 use authentication::register::Register;
 use axum::Json;
 use axum::Router;
-use axum::routing::post;
 use axum::extract::Extension;
+use axum::routing::post;
 use utils::{db::AppState, error::AppError};
 
 pub async fn register(

@@ -3,6 +3,7 @@ use argon2::{
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 use axum::Json;
+use dotenvy::dotenv;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand;
 use rand::{Rng, distributions::Alphanumeric};
@@ -13,7 +14,6 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime};
-use dotenvy::dotenv;
 use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
@@ -86,7 +86,7 @@ impl SendOtp {
         let otp = Self::otp();
         let email = &self.email.clone();
 
-        let user= sqlx::query!(
+        let user = sqlx::query!(
             r#"
                 SELECT email FROM users WHERE email = $1
             "#,
@@ -171,8 +171,8 @@ impl VerifyOtp {
                         AND purpose = 'password_reset'
                         AND expires_at > now()
                 "#,
-                self.email,
-                otp_hash
+            self.email,
+            otp_hash
         )
         .fetch_optional(&db)
         .await
@@ -234,7 +234,7 @@ impl UpdatePassword {
         Ok(data.claims)
     }
 
-    pub async fn update_password(self, db:DB) -> Result<Json<serde_json::Value>, AppError> {
+    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         //VErifying Token
         Self::verify_reset_token(&self.token).map_err(|_| AppError::UNAUTHORIZED)?;
 

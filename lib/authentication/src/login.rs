@@ -9,9 +9,7 @@ pub struct Login {
 }
 
 impl Login {
-    pub async fn login(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn login(self, db: DB) -> Result<(), AppError> {
         let res = query!(
             "
                 SELECT

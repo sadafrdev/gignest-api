@@ -1,8 +1,8 @@
 use authentication::login::Login;
 use axum::Json;
 use axum::Router;
-use axum::routing::get;
 use axum::extract::Extension;
+use axum::routing::get;
 use utils::{db::AppState, error::AppError};
 
 pub async fn login(

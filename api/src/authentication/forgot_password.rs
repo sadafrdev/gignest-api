@@ -1,9 +1,9 @@
 use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
 use axum::Json;
 use axum::Router;
+use axum::extract::Extension;
 use axum::routing::patch;
 use axum::routing::post;
-use axum::extract::Extension;
 use utils::{db::AppState, error::AppError};
 
 pub async fn send_otp(
@@ -24,7 +24,7 @@ pub async fn update_password(
     Extension(state): Extension<AppState>,
     Json(form): Json<UpdatePassword>,
 ) -> Result<Json<serde_json::Value>, AppError> {
-   form.update_password(state.db).await
+    form.update_password(state.db).await
 }
 
 pub fn router(state: AppState) -> Router {

@@ -1,10 +1,10 @@
 use axum::{Extension, extract::Path};
-use utils::{db::AppState, error::AppError};
 use axum::{
     Json, Router,
     routing::{delete, get, patch, post},
 };
 use freelancers::educations::{Education, UpdateEducation};
+use utils::{db::AppState, error::AppError};
 
 pub async fn create_education(
     Extension(state): Extension<AppState>,
