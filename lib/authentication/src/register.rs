@@ -23,7 +23,7 @@ pub struct Register {
 
 
 #[derive(Debug, Type, Deserialize, Serialize)]
-#[sqlx(type_name = "user_role", rename_all = "lowercase")]
+#[sqlx(type_name = "user_role")]
 pub enum Role {
     Freelancer,
     Client,
@@ -41,18 +41,18 @@ impl Register {
         
         sqlx::query!(
             "
-            INSERT INTO users
-            (first_name, last_name, password, email, phone_number, username, country, role)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ",
-        self.first_name,
-        self.last_name,
-        hashed_password,
-        self.email,
-        self.phone_number,
-        self.username,
-        self.country as Country,
-        self.role as Role
+                INSERT INTO users
+                (first_name, last_name, password, email, phone_number, username, country, role)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ",
+            self.first_name,
+            self.last_name,
+            hashed_password,
+            self.email,
+            self.phone_number,
+            self.username,
+            self.country as Country,
+            self.role as Role
         )
         .execute(&db)
         .await

@@ -9,7 +9,7 @@ CREATE TABLE users (
   username TEXT UNIQUE,
   phone_number TEXT NOT NULL,
   country country NOT NULL,
-  role user_role NOT NULL DEFAULT 'freelancer',
+  role user_role NOT NULL DEFAULT 'Freelancer',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -83,8 +83,8 @@ CREATE TABLE jobs (
 
 CREATE TABLE proposals (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  freelancer_id BIGINT REFERENCES freelancers(id),
-  status proposal_status NOT NULL DEFAULT 'pending',
+  user_id BIGINT REFERENCES users(id),
+  status proposal_status NOT NULL DEFAULT 'Pending',
   job_id BIGINT REFERENCES jobs(id),
   cover_letter TEXT NOT NULL,
   bid_amount NUMERIC(10, 2) NOT NULL,

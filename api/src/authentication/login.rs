@@ -4,11 +4,12 @@ use axum::Router;
 use axum::routing::get;
 use axum::{extract::Extension, http::StatusCode};
 use utils::db::AppState;
+use utils::error::AppError;
 
 pub async fn login(
     Extension(state): Extension<AppState>,
     Json(form): Json<Login>,
-) -> Result<(), StatusCode> {
+) -> Result<(), AppError> {
     form.login(state.db).await
 }
 
