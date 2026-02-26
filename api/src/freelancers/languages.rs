@@ -2,41 +2,40 @@ use axum::Extension;
 use axum::{
     Json, Router,
     extract::Path,
-    http::StatusCode,
     routing::{delete, get, patch, post},
 };
 pub use freelancers::languages::Language;
-use utils::db::AppState;
+use utils::{db::AppState, error::AppError};
 
 pub async fn create_language(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Language>,
-) -> Result<(), StatusCode> {
-    Language::add(Extension(state), Json(payload)).await?;
+    Json(form): Json<Language>,
+) -> Result<(), AppError> {
+    form.add(state.db).await?;
     Ok(())
 }
 
 pub async fn get_languages(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
-) -> Result<Json<Vec<Language>>, StatusCode> {
-    let languages = Language::get(Extension(state), id).await?;
+) -> Result<Json<Vec<Language>>, AppError> {
+    let languages = Language::get(state.db).await?;
     Ok(Json(languages))
 }
 
 pub async fn update_language(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Language>,
-) -> Result<(), StatusCode> {
-    Language::update(Extension(state), Json(payload)).await?;
+    Json(form): Json<Language>,
+) -> Result<(), AppError> {
+    form.update(state.db).await?;
     Ok(())
 }
 
 pub async fn delete_language(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
-) -> Result<(), StatusCode> {
-    Language::delete(Extension(state), id).await?;
+) -> Result<(), AppError> {
+    Language::delete(state.db).await?;
     Ok(())
 }
 

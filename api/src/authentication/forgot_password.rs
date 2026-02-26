@@ -3,27 +3,27 @@ use axum::Json;
 use axum::Router;
 use axum::routing::patch;
 use axum::routing::post;
-use axum::{extract::Extension, http::StatusCode};
-use utils::db::AppState;
+use axum::extract::Extension;
+use utils::{db::AppState, error::AppError};
 
 pub async fn send_otp(
     Extension(state): Extension<AppState>,
     Json(form): Json<SendOtp>,
-) -> Result<(), StatusCode> {
+) -> Result<(), AppError> {
     form.send_otp(state.db).await
 }
 
 pub async fn verify_otp(
     Extension(state): Extension<AppState>,
     Json(form): Json<VerifyOtp>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
+) -> Result<Json<serde_json::Value>, AppError> {
     form.verify_otp(state.db).await
 }
 
 pub async fn update_password(
     Extension(state): Extension<AppState>,
     Json(form): Json<UpdatePassword>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
+) -> Result<Json<serde_json::Value>, AppError> {
    form.update_password(state.db).await
 }
 

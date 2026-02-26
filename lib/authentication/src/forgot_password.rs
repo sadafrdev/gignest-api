@@ -2,7 +2,7 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
-use axum::{Json, http::StatusCode};
+use axum::Json;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand;
 use rand::{Rng, distributions::Alphanumeric};
@@ -14,7 +14,7 @@ use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime};
 use dotenvy::dotenv;
-use utils::db::DB;
+use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct SendOtp {
@@ -50,7 +50,7 @@ impl SendOtp {
             .await
             .map_err(|e| {
                 eprintln!("Email sending error: {:?}", e);
-                StatusCode::INTERNAL_SERVER_ERROR
+                AppError::InternalServerError
             });
 
         match res {
@@ -81,7 +81,7 @@ impl SendOtp {
             .to_string()
     }
 
-    pub async fn send_otp(self, db: DB) -> Result<(), StatusCode> {
+    pub async fn send_otp(self, db: DB) -> Result<(), AppError> {
         let hashed_otp = Self::hash_otp(&Self::otp());
         let otp = Self::otp();
         let email = &self.email.clone();
@@ -94,11 +94,11 @@ impl SendOtp {
         )
         .fetch_optional(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         if user.is_none() {
             println!("Your Email Does Not Exists.");
-            return Err(StatusCode::NOT_FOUND);
+            return Err(AppError::NotFound("USER".to_string()));
         }
         sqlx::query(
             r#"
@@ -112,7 +112,7 @@ impl SendOtp {
         .bind(hashed_otp)
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         Self::send_email(email, otp).await;
 
@@ -156,7 +156,7 @@ impl VerifyOtp {
         )
     }
 
-    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
+    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         let email = self.email.clone();
 
         let otp_str = format!("{:06}", self.otp);
@@ -176,11 +176,11 @@ impl VerifyOtp {
         )
         .fetch_optional(&db)
         .await
-        .map_err(|_| StatusCode::NOT_FOUND)?;
+        .map_err(|_| AppError::NotFound("USER".to_string()))?;
 
         println!("here {:?}, {}", res, self.otp);
         if res.is_none() {
-            return Err(StatusCode::UNAUTHORIZED);
+            return Err(AppError::UNAUTHORIZED);
         }
         sqlx::query!(
             r#"
@@ -192,10 +192,10 @@ impl VerifyOtp {
         )
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         let reset_token =
-            Self::generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            Self::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
 
         return Ok(Json(serde_json::json!({
             "reset_token": reset_token
@@ -234,9 +234,9 @@ impl UpdatePassword {
         Ok(data.claims)
     }
 
-    pub async fn update_password(self, db:DB) -> Result<Json<serde_json::Value>, StatusCode> {
+    pub async fn update_password(self, db:DB) -> Result<Json<serde_json::Value>, AppError> {
         //VErifying Token
-        Self::verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        Self::verify_reset_token(&self.token).map_err(|_| AppError::UNAUTHORIZED)?;
 
         //Updating Password
         sqlx::query!(
@@ -251,7 +251,7 @@ impl UpdatePassword {
         )
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(Json(json!({
             "message": "Password updated successfully"

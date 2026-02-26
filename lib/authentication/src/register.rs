@@ -1,11 +1,10 @@
-use axum::{http::StatusCode};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};
 use utils::enums::Country;
 use validator::Validate;
 use argon2::{Argon2, password_hash::{SaltString, PasswordHasher}};
 use rand_core::OsRng;
-use utils::db::DB;
+use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Register {
@@ -32,7 +31,7 @@ pub enum Role {
 impl Register {
     pub async fn register(
        self, db: DB
-    ) -> Result<(), StatusCode> {
+    ) -> Result<(), AppError> {
         let salt = SaltString::generate(&mut OsRng);
         let hashed_password = Argon2::default()
             .hash_password(self.password.as_bytes(), &salt)
@@ -58,7 +57,7 @@ impl Register {
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
         Ok(())

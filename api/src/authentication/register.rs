@@ -2,13 +2,13 @@ use authentication::register::Register;
 use axum::Json;
 use axum::Router;
 use axum::routing::post;
-use axum::{extract::Extension, http::StatusCode};
-use utils::db::AppState;
+use axum::extract::Extension;
+use utils::{db::AppState, error::AppError};
 
 pub async fn register(
     Extension(state): Extension<AppState>,
     Json(form): Json<Register>,
-) -> Result<(), StatusCode> {
+) -> Result<(), AppError> {
     form.register(state.db).await
 }
 

@@ -2,40 +2,39 @@ use axum::Extension;
 use axum::{
     Json, Router,
     extract::Path,
-    http::StatusCode,
     routing::{delete, get, patch, post},
 };
 use freelancers::certificates::Certificate;
-use utils::db::AppState;
+use utils::{db::AppState, error::AppError};
 
 pub async fn create_certificate(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Certificate>,
-) -> Result<(), StatusCode> {
-    Certificate::generate(Extension(state), Json(payload)).await?;
+    Json(form): Json<Certificate>,
+) -> Result<(), AppError> {
+    form.generate(state.db).await?;
     Ok(())
 }
 
 pub async fn get_certificates(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
-) -> Result<Json<Vec<Certificate>>, StatusCode> {
-    Certificate::get(Extension(state), id).await
+) -> Result<Json<Vec<Certificate>>, AppError> {
+    Certificate.get(state.db).await
 }
 
 pub async fn update_certificate(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Certificate>,
-) -> Result<(), StatusCode> {
-    Certificate::update(Extension(state), Json(payload)).await?;
+    Json(form): Json<Certificate>,
+) -> Result<(), AppError> {
+    form.update(state.db).await?;
     Ok(())
 }
 
 pub async fn delete_certificate(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
-) -> Result<(), StatusCode> {
-    Certificate::delete(Extension(state), id).await?;
+) -> Result<(), AppError> {
+    form.delete(state.db).await?;
     Ok(())
 }
 
