@@ -26,10 +26,12 @@ impl Login {
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
-        println!("{:?}", res);
-        Ok(())
+        match res {
+            Some(_) => Ok(()),
+            None => Err(AppError::NotFound("USER".to_string())),
+        }
     }
 }
