@@ -180,7 +180,7 @@ impl VerifyOtp {
 
         println!("here {:?}, {}", res, self.otp);
         if res.is_none() {
-            return Err(AppError::UNAUTHORIZED);
+            return Err(AppError::Unauthorized);
         }
         sqlx::query!(
             r#"
@@ -236,7 +236,7 @@ impl UpdatePassword {
 
     pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         //VErifying Token
-        Self::verify_reset_token(&self.token).map_err(|_| AppError::UNAUTHORIZED)?;
+        Self::verify_reset_token(&self.token).map_err(|_| AppError::Unauthorized)?;
 
         //Updating Password
         sqlx::query!(

@@ -1,37 +1,37 @@
 use axum::Json;
 use axum::routing::{delete, get, post, put};
-use axum::{extract::Extension, http::StatusCode};
+use axum::extract::Extension;
 use clients::jobs::{ClientID, Job, JobID, UpdateJob};
-use utils::db::AppState;
+use utils::{db::AppState, error::AppError};
 
 pub async fn get_jobs(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<ClientID>,
-) -> Result<Json<Option<Job>>, StatusCode> {
-    let jobs = Job::get_jobs(Extension(state), Json(payload)).await?;
+    Json(form): Json<ClientID>,
+) -> Result<Json<Option<Job>>, AppError> {
+    let jobs = Job::get_jobs(state.db).await?;
     Ok(Json(jobs))
 }
 
 pub async fn create_job(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<Job>,
-) -> Result<(), StatusCode> {
-    Job::create_job(Extension(state), Json(payload)).await
+    Json(form): Json<Job>,
+) -> Result<(), AppError> {
+    form.create_job(state.db).await
 }
 
 pub async fn update_job(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdateJob>,
-) -> Result<(), StatusCode> {
-    Job::update_job(Extension(state), Json(payload)).await
+    Json(form): Json<UpdateJob>,
+) -> Result<(), AppError> {
+    form.update_job(state.db).await
 }
 
 pub async fn delete_job(
     Extension(state): Extension<AppState>,
-    Json(payload): Json<JobID>,
-) -> Result<(), StatusCode> {
+    Json(form): Json<JobID>,
+) -> Result<(), AppError> {
     println!("Deleted job with ID:");
-    Job::delete_job(Extension(state), Json(payload)).await
+    UpdateJob::delete_job(state.db).await
 }
 
 pub fn router(state: AppState) -> axum::Router {

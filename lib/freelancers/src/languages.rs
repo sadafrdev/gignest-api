@@ -1,8 +1,6 @@
-use axum::http::StatusCode;
-use axum::{Extension, Json};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use utils::db::AppState;
+use utils::{db::DB, error::AppError};
 use utils::enums::{LanguageEnum, LanguageLevel};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -15,54 +13,51 @@ pub struct Language {
 
 impl Language {
     pub async fn add(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
-    ) -> Result<StatusCode, StatusCode> {
-        sqlx::query(
+       self, db: DB
+    ) -> Result<(), AppError> {
+        sqlx::query!(
             r#"
-            INSERT INTO languages (id, user_id, language, language_level)
-            VALUES ($1, $2, $3, $4)
+                INSERT INTO languages (id, user_id, language, language_level)
+                VALUES ($1, $2, $3, $4)
             "#,
+            self.id,
+            self.user_id,
+            self.language as LanguageEnum,
+            self.language_level as LanguageLevel
         )
-        .bind(payload.id)
-        .bind(payload.user_id)
-        .bind(payload.language as LanguageEnum)
-        .bind(payload.language_level as LanguageLevel)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
-        Ok(StatusCode::OK)
+        Ok(())
     }
 
     pub async fn delete(
-        Extension(state): Extension<AppState>,
-        id: i64,
-    ) -> Result<StatusCode, StatusCode> {
-        sqlx::query(
+       self, db: DB
+    ) -> Result<(), AppError> {
+        sqlx::query!(
             r#"
             DELETE FROM languages
             WHERE id = $1
             "#,
+            self.id
         )
-        .bind(id)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
-        Ok(StatusCode::OK)
+        Ok(())
     }
 
     pub async fn get(
-        Extension(state): Extension<AppState>,
-        id: i64,
-    ) -> Result<Vec<Self>, StatusCode> {
+       self, db: DB
+    ) -> Result<Vec<Self>, AppError> {
         let languages = sqlx::query_as::<_, Self>(
             r#"
             SELECT user_id, language, language_level
@@ -70,36 +65,36 @@ impl Language {
             WHERE user_id = $1
             "#,
         )
-        .bind(id)
-        .fetch_all(&state.db)
+        .bind(self.id)
+        .fetch_all(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
         Ok(languages)
     }
 
     pub async fn update(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
-    ) -> Result<(), StatusCode> {
-        sqlx::query(
+       self, db: DB
+    ) -> Result<(), AppError> {
+        sqlx::query!(
             r#"
             UPDATE languages
             SET language = $2, language_level = $3
             WHERE id = $1
             "#,
+            self.id,
+            self.language as LanguageEnum,
+            self.language_level as LanguageLevel
         )
-        .bind(payload.id)
-        .bind(payload.language as LanguageEnum)
-        .bind(payload.language_level as LanguageLevel)
-        .execute(&state.db)
+       
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
         Ok(())

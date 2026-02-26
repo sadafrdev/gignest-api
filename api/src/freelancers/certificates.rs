@@ -19,7 +19,7 @@ pub async fn get_certificates(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<Vec<Certificate>>, AppError> {
-    Certificate.get(state.db).await
+    Certificate::get(state.db).await
 }
 
 pub async fn update_certificate(

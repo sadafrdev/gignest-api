@@ -18,7 +18,7 @@ pub async fn get_educations(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Json<Vec<Education>>, AppError> {
-    let educations = Education.get(state.db).await?;
+    let educations = Education::get(state.db).await?;
     Ok(educations)
 }
 
@@ -34,7 +34,7 @@ pub async fn delete_education(
     Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
 ) -> Result<(), AppError> {
-    Education.delete(state.db).await?;
+    Education::delete(state.db).await?;
     Ok(())
 }
 
