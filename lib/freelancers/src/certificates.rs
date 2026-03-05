@@ -59,7 +59,17 @@ impl Certificate {
 
         Ok(Json(certificates))
     }
+}
 
+#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
+pub struct UpdateCertificate {
+    pub id: i64,
+    pub name: String,
+    pub certificate_by: String,
+    pub year: NaiveDate,
+}
+
+impl UpdateCertificate{
     pub async fn update(
        self, db: DB
     ) -> Result<(), AppError> {
@@ -70,12 +80,12 @@ impl Certificate {
                     name = $1,
                     certificate_by = $2,
                     year = $3
-                WHERE user_id = $4
+                WHERE id = $4
             "#,
             self.name,
             self.certificate_by,
             self.year,
-            self.user_id
+            self.id
         )
         .execute(&db)
         .await
@@ -90,7 +100,15 @@ impl Certificate {
 
         Ok(())
     }
+}
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteCertificate {
+   id: i64
+}
+
+impl DeleteCertificate {
+     
     pub async fn delete(
         self, db: DB
     ) -> Result<(), AppError> {

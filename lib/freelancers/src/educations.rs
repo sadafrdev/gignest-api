@@ -15,21 +15,6 @@ pub struct Education {
     pub year_of_graduation: NaiveDate,
 }
 
-#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
-pub struct UpdateEducation {
-    pub id: i64,
-    pub country: Country,
-    pub degree: String,
-    pub institute: String,
-    pub major: String,
-    pub year_of_graduation: NaiveDate,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct DeleteEducation {
-    pub id: i64,
-}
-
 impl Education {
     pub async fn create(
        self, db: DB
@@ -83,6 +68,20 @@ impl Education {
         Ok(Json(educations))
     }
 
+}
+
+#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
+pub struct UpdateEducation {
+    pub id: i64,
+    pub country: Country,
+    pub degree: String,
+    pub institute: String,
+    pub major: String,
+    pub year_of_graduation: NaiveDate,
+}
+
+impl UpdateEducation {
+    
     pub async fn update(
         self, db: DB
     ) -> Result<(), AppError> {
@@ -108,6 +107,15 @@ impl Education {
 
         Ok(())
     }
+
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteEducation {
+    pub id: i64,
+}
+
+impl DeleteEducation {
 
     pub async fn delete(
        self, db: DB

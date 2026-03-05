@@ -4,7 +4,7 @@ use axum::{
     extract::Path,
     routing::{delete, get, patch, post},
 };
-use freelancers::certificates::Certificate;
+use freelancers::certificates::{Certificate, UpdateCertificate};
 use utils::{db::AppState, error::AppError};
 
 pub async fn create_certificate(
@@ -24,7 +24,7 @@ pub async fn get_certificates(
 
 pub async fn update_certificate(
     Extension(state): Extension<AppState>,
-    Json(form): Json<Certificate>,
+    Json(form): Json<UpdateCertificate>,
 ) -> Result<(), AppError> {
     form.update(state.db).await?;
     Ok(())

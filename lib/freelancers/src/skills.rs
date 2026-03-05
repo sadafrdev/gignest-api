@@ -36,20 +36,15 @@ pub struct Skills {
     pub skill: SkillsEnum,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct UpdateSkill {
-    pub id: i64,
-    pub skill: SkillsEnum,
-}
-
 impl Skills {
     pub async fn create(
        self, db: DB
     ) -> Result<(), AppError> {
-        let findskill = sqlx::query!(
+        let findskill= sqlx::query!(
             "
-            SELECT * FROM skills
-            WHERE user_id = $1 AND skill = $2",
+                SELECT * FROM skills
+                WHERE user_id = $1 AND skill = $2
+            ",
             self.user_id,
             self.skill as SkillsEnum
         )
@@ -91,7 +86,7 @@ impl Skills {
                 WHERE user_id = $1
             "#,
         )
-        .bind(user_id)
+        .bind(self.user_id)
         .fetch_all(&db)
         .await
         .map_err(|e| {
@@ -101,15 +96,24 @@ impl Skills {
 
         Ok(Json(skills))
     }
+}
 
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UpdateSkill {
+    pub id: i64,
+    pub skill: SkillsEnum,
+}
+
+impl UpdateSkill {
     pub async fn update(
        self, db: DB
     ) -> Result<(), AppError> {
-        sqlx::query(
+        sqlx::query!(
             "
-            UPDATE skills
-            SET skill = $1
-            WHERE id = $2",
+                UPDATE skills
+                SET skill = $1
+                WHERE id = $2
+            ",
             self.skill as SkillsEnum,
             self.id
         )
@@ -122,12 +126,23 @@ impl Skills {
 
         Ok(())
     }
+}
+
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DeleteSkill {
+    pub id: i64,
+    pub skill: SkillsEnum,
+}
+
+impl DeleteSkill{
 
     pub async fn delete(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
-            DELETE FROM skills
-            WHERE id = $1",
+                DELETE FROM skills
+                WHERE id = $1
+            ",
             self.id
         )
         .execute(&db)
