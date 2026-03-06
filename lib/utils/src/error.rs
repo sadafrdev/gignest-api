@@ -16,6 +16,8 @@ pub enum AppError{
     DatabaseError(#[from] sqlx::Error), 
     #[error("Internal server error")]
     InternalServerError,
+    #[error("Unauthorized")]
+    Unauthorized
 }
 
 #[derive(Serialize)]
@@ -33,6 +35,7 @@ impl IntoResponse for AppError{
                 (StatusCode::INTERNAL_SERVER_ERROR, "Database operation failed".to_string())
             },
             AppError::InternalServerError => (StatusCode::INTERNAL_SERVER_ERROR, "An unexpected error occurred".to_string()),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
         };
 
         let body = Json(ErrorResponse{
