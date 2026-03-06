@@ -34,31 +34,6 @@ impl Certificate {
 
         Ok(())
     }
-
-    pub async fn get(
-        self, db: DB
-    ) -> Result<Json<Vec<Self>>, AppError> {
-        let certificates = sqlx::query_as::<_, Self>(
-            r#"
-            SELECT
-                user_id,
-                name,
-                certificate_by,
-                year
-            FROM certificates
-            WHERE user_id = $1
-            "#,
-        )
-        .bind(self.user_id)
-        .fetch_all(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
-        })?;
-
-        Ok(Json(certificates))
-    }
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -103,11 +78,11 @@ impl UpdateCertificate{
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct DeleteCertificate {
+pub struct CertificateID {
    id: i64
 }
 
-impl DeleteCertificate {
+impl CertificateID {
      
     pub async fn delete(
         self, db: DB
@@ -132,4 +107,33 @@ impl DeleteCertificate {
 
         Ok(())
     }
+}
+
+
+
+pub async fn get(
+    db: DB
+) -> Result<Json<Vec<Certificate>>, AppError> {
+    let id = Certificate.user_id;
+    
+    let certificates = sqlx::query_as::<_, Certificate>(
+        r#"
+        SELECT
+            user_id,
+            name,
+            certificate_by,
+            year
+        FROM certificates
+        WHERE user_id = $1
+        "#,
+    )
+    .bind(Certificate.user_id)
+    .fetch_all(&db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {e:?}");
+        AppError::InternalServerError
+    })?;
+
+    Ok(Json(certificates))
 }
