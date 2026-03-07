@@ -1,7 +1,8 @@
-use axum::{http::StatusCode};
 use serde::Deserialize;
 use sqlx::query;
-use utils::db::DB;
+use utils::{db::DB, error::AppError};
+use argon2::{Argon2, PasswordVerifier};
+use argon2::password_hash::PasswordHash;
 
 #[derive(Deserialize, Debug)]
 pub struct Login {
@@ -12,7 +13,8 @@ pub struct Login {
 impl Login {
     pub async fn login(
        self, db: DB
-    ) -> Result<(), StatusCode> {
+    ) -> Result<(), AppError>{
+        
         let res = query!(
             "
                 SELECT
@@ -22,16 +24,20 @@ impl Login {
             ",
             self.email
         )
-        .fetch_optional(&db)
+        .fetch_one(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
             AppError::InternalServerError
         })?;
 
-        match res {
-            Some(_) => Ok(()),
-            None => Err(AppError::NotFound("USER".to_string())),
-        }
+        let parsed_hash = PasswordHash::new(&res.password)
+        .map_err(|_| AppError::InternalServerError)?;
+
+        Argon2::default()    
+        .verify_password(self.password.as_bytes(), &parsed_hash)
+        .map_err(|_| AppError::ValidationError("Invalid credentials".to_string()))?;
+
+        Ok(())
     }
 }
