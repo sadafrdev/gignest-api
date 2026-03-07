@@ -3,7 +3,12 @@ use axum::{
     middleware::Next,  
     response::Response,  
 };
-use crate::{error::AppError, jwt::verify_jwt};  
+use crate::{error::AppError, jwt::verify_jwt};
+ 
+#[derive(Clone, Debug)]
+pub struct AuthUser {
+    pub id: i64,
+}
 
 pub async fn from_func(
     mut req: Request,
@@ -19,8 +24,7 @@ pub async fn from_func(
     let claims = verify_jwt(token)
         .map_err(|_| AppError::InternalServerError)?;
 
-    req.extensions_mut().insert(claims.sub);
 
+    req.extensions_mut().insert(AuthUser { id: claims.sub });
     Ok(next.run(req).await)
-
 }

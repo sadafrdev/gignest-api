@@ -6,12 +6,14 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 use freelancers::certificates::Certificate;
-use utils::db::AppState;
+use utils::{db::AppState, middleware::AuthUser};
 
 pub async fn create_certificate(
+    Extension(user): Extension<AuthUser>,
     Extension(state): Extension<AppState>,
     Json(payload): Json<Certificate>,
 ) -> Result<(), StatusCode> {
+    println!("language user: {}", user.id);
     Certificate::generate(Extension(state), Json(payload)).await?;
     Ok(())
 }
