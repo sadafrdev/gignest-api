@@ -1,36 +1,7 @@
 use serde::Deserialize;
 use sqlx::query;
-use utils::{db::DB, error::AppError};
+use utils::{db::DB, error::AppError, jwt::create_jwt};
 use serde::Serialize;
-use jsonwebtoken::{encode, EncodingKey, Header};
-use chrono::{Utc, Duration};
-
-#[derive(Serialize, Deserialize)]
-struct Claims {
-    sub: i64,
-    exp: usize,
-}
-
-fn create_jwt(user_id: i64) -> Result<String, AppError> {
-    const SECRET: &[u8] = b"123456";
-
-    let expiration = Utc::now()
-        .checked_add_signed(Duration::hours(1))
-        .unwrap()
-        .timestamp() as usize;
-
-    let claims = Claims {
-        sub: user_id,
-        exp: expiration,
-    };
-
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(SECRET),
-    )
-    .map_err(|_| AppError::InternalServerError)
-}
 
 #[derive(Serialize)]
 pub struct LoginResponse {
@@ -64,13 +35,13 @@ impl Login {
             Some(u) => u,
             None => return Err(AppError::NotFound("USER".to_string())),
         };
-
         if user.password != self.password {
             return Err(AppError::Unauthorized);
         }
-
-        let token = create_jwt(user.id)?;
-
+        
+        let token = create_jwt(user.id)
+            .map_err(|_| AppError::InternalServerError)?;
+        
         Ok(LoginResponse { token })
     }
 }

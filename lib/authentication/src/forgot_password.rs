@@ -137,7 +137,7 @@ pub struct ResetTokenClaims {
 impl VerifyOtp {
     pub fn generate_reset_token(email: &str) -> Result<String, jsonwebtoken::errors::Error> {
         dotenv::dotenv().ok();
-        let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+        let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not set");
 
         let now = OffsetDateTime::now_utc().unix_timestamp();
         let exp = (OffsetDateTime::now_utc() + Duration::minutes(10)).unix_timestamp();
@@ -214,7 +214,7 @@ impl UpdatePassword {
     pub fn verify_reset_token(
         token: &str,
     ) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
-        let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
+        let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not set");
 
         let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_exp = true;
