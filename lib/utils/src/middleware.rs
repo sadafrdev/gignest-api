@@ -21,8 +21,7 @@ pub async fn from_func(
         .and_then(|v| v.strip_prefix("Bearer "))
         .ok_or(AppError::Unauthorized)?;
 
-    let claims = verify_jwt(token)
-        .map_err(|_| AppError::InternalServerError)?;
+    let claims = verify_jwt(token)?;
 
 
     req.extensions_mut().insert(AuthUser { id: claims.sub });
