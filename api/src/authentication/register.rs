@@ -1,19 +1,14 @@
 use authentication::register::Register;
-use axum::Json;
-use axum::Router;
-use axum::routing::post;
-use axum::{extract::Extension, http::StatusCode};
-use utils::db::AppState;
+use axum::{Json, Router, extract::Extension, http::StatusCode, routing::post};
+use sqlx::PgPool;
 
 pub async fn register(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<PgPool>,
     Json(form): Json<Register>,
 ) -> Result<(), StatusCode> {
-    form.register(state.db).await
+    form.register(db).await
 }
 
-pub fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/register", post(register))
-        .layer(Extension(state))
+pub fn router() -> Router {
+    Router::new().route("/register", post(register))
 }

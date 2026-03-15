@@ -15,27 +15,27 @@ CREATE TYPE language_level AS ENUM (
 );
 
 CREATE TYPE skills_enum AS ENUM (
-  'WEB_DEVELOPMENT',
-  'APP_DEVELOPMENT',
-  'DATA_SCIENCE',
-  'CYBER_SECURITY',
-  'CLOUD_COMPUTING',
-  'RUST_PROGRAMMING',
-  'PYTHON_PROGRAMMING',
-  'JAVA_PROGRAMMING',
-  'FRONTEND_DEVELOPMENT',
-  'BACKEND_DEVELOPMENT',
-  'HTML_CSS',
-  'JAVASCRIPT',
-  'MOBILE_DEVELOPMENT',
-  'GRAPHIC_DESIGN',
-  'DIGITAL_MARKETING',
-  'CONTENT_WRITING',
-  'DATA_ANALYSIS',
-  'PROJECT_MANAGEMENT',
-  'SEO_SPECIALIST',
-  'VIDEO_EDITING',
-  'UI_UX_DESIGN'
+  'WebDevelopment',
+  'AppDevelopment',
+  'DataScience',
+  'CyberSecurity',
+  'CloudComputing',
+  'RustProgramming',
+  'PythonProgramming',
+  'JaveProgramming',
+  'FrontendDevelopment',
+  'BackendDevelopment',
+  'HtmlCss',
+  'Javascript',
+  'MobileDevelopment',
+  'GraphicDesign',
+  'DigitalMarketing',
+  'ContentWriting',
+  'DataAnalysis',
+  'ProjectManagement',
+  'SeoSpeciallities',
+  'VideoEditing',
+  'UiUxDesign'
 );
 
 CREATE TYPE job_type AS ENUM ('Fixed', 'Hourly');

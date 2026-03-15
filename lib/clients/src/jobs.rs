@@ -1,13 +1,13 @@
+use axum::Json;
 use axum::http::StatusCode;
-use axum::{Extension, Json};
 use bigdecimal::BigDecimal;
 use core::str;
 use serde::{Deserialize, Serialize};
-use utils::db::AppState;
+use sqlx::PgPool;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Job {
-    pub client_id: i64,
+    pub client_id: Option<i64>,
     pub title: String,
     pub description: String,
     pub budget_min: BigDecimal,
@@ -34,21 +34,19 @@ pub struct JobID {
 }
 
 impl Job {
-    pub async fn create_job(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Job>,
-    ) -> Result<(), StatusCode> {
+    pub async fn create_job(db: PgPool, Json(payload): Json<Job>) -> Result<(), StatusCode> {
         sqlx::query(
             "
-            INSERT INTO jobs (client_id, title, description, budget_min, budget_max)
-            VALUES ($1, $2, $3, $4, $5)",
+                INSERT INTO jobs (client_id, title, description, budget_min, budget_max)
+                VALUES ($1, $2, $3, $4, $5)
+            ",
         )
         .bind(payload.client_id)
         .bind(&payload.title)
         .bind(&payload.description)
         .bind(payload.budget_min)
         .bind(payload.budget_max)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
@@ -59,11 +57,12 @@ impl Job {
     }
 
     pub async fn get_jobs(
-        Extension(state): Extension<AppState>,
+        db: PgPool,
         Json(payload): Json<ClientID>,
     ) -> Result<Option<Job>, StatusCode> {
-        let jobs = sqlx::query_as::<_, Job>(
-            r#"
+        let jobs = sqlx::query_as!(
+            Job,
+            "
             SELECT
                 client_id,
                 title,
@@ -72,10 +71,10 @@ impl Job {
                 budget_max
             FROM jobs
             WHERE client_id = $1
-            "#,
+            ",
+            payload.client_id
         )
-        .bind(payload.client_id)
-        .fetch_optional(&state.db)
+        .fetch_optional(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {e:?}");
@@ -85,12 +84,9 @@ impl Job {
         Ok(jobs)
     }
 
-    pub async fn update_job(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<UpdateJob>,
-    ) -> Result<(), StatusCode> {
+    pub async fn update_job(db: PgPool, Json(payload): Json<UpdateJob>) -> Result<(), StatusCode> {
         sqlx::query(
-            r#"
+            "
                 UPDATE jobs
                 SET
                     title = $1,
@@ -98,14 +94,14 @@ impl Job {
                     budget_min = $3,
                     budget_max = $4
                 WHERE id = $5
-            "#,
+            ",
         )
         .bind(&payload.title)
         .bind(&payload.description)
         .bind(payload.budget_min)
         .bind(payload.budget_max)
         .bind(payload.id)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
@@ -115,23 +111,15 @@ impl Job {
         Ok(())
     }
 
-    pub async fn delete_job(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<JobID>,
-    ) -> Result<(), StatusCode> {
-        sqlx::query(
-            r#"
-                DELETE FROM jobs
-                WHERE id = $1
-            "#,
-        )
-        .bind(payload.id)
-        .execute(&state.db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+    pub async fn delete_job(db: PgPool, Json(payload): Json<JobID>) -> Result<(), StatusCode> {
+        sqlx::query(" DELETE FROM jobs WHERE id = $1 ")
+            .bind(payload.id)
+            .execute(&db)
+            .await
+            .map_err(|e| {
+                eprintln!("SQL ERROR: {:?}", e);
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?;
 
         Ok(())
     }

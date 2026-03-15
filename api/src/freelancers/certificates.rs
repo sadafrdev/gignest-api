@@ -1,49 +1,47 @@
-use axum::Extension;
 use axum::{
-    Json, Router,
+    Extension, Json, Router,
     extract::Path,
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
 use freelancers::certificates::Certificate;
-use utils::db::AppState;
+use sqlx::PgPool;
 
 pub async fn create_certificate(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<PgPool>,
     Json(payload): Json<Certificate>,
 ) -> Result<(), StatusCode> {
-    Certificate::generate(Extension(state), Json(payload)).await?;
+    Certificate::generate(db, Json(payload)).await?;
     Ok(())
 }
 
 pub async fn get_certificates(
-    Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
+    Extension(db): Extension<PgPool>,
 ) -> Result<Json<Vec<Certificate>>, StatusCode> {
-    Certificate::get(Extension(state), id).await
+    Certificate::get(db, id).await
 }
 
 pub async fn update_certificate(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<PgPool>,
     Json(payload): Json<Certificate>,
 ) -> Result<(), StatusCode> {
-    Certificate::update(Extension(state), Json(payload)).await?;
+    Certificate::update(db, Json(payload)).await?;
     Ok(())
 }
 
 pub async fn delete_certificate(
-    Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
+    Extension(db): Extension<PgPool>,
 ) -> Result<(), StatusCode> {
-    Certificate::delete(Extension(state), id).await?;
+    Certificate::delete(db, id).await?;
     Ok(())
 }
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/certificates/{id}", get(get_certificates))
         .route("/certificate", post(create_certificate))
         .route("/update-certificate", patch(update_certificate))
         .route("/delete-certificate/{id}", delete(delete_certificate))
-        .layer(Extension(state))
 }

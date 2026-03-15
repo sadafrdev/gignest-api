@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[sqlx(type_name = "language_level")]
 pub enum LanguageLevel {
     Begginer,
@@ -9,7 +9,7 @@ pub enum LanguageLevel {
     Fluent,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[sqlx(type_name = "language")]
 pub enum LanguageEnum {
     English,
@@ -65,4 +65,11 @@ pub enum ProposalStatus {
     Pending,
     Accepted,
     Rejected,
+}
+
+#[derive(Debug, Type, Deserialize, Serialize)]
+#[sqlx(type_name = "user_role")]
+pub enum Role {
+    Freelancer,
+    Client,
 }

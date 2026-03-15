@@ -1,20 +1,15 @@
 use authentication::login::Login;
-use axum::Json;
-use axum::Router;
-use axum::routing::get;
-use axum::{extract::Extension, http::StatusCode};
-use utils::db::AppState;
+use axum::{Json, Router, extract::Extension, routing::get};
+use sqlx::PgPool;
 use utils::error::AppError;
 
 pub async fn login(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<PgPool>,
     Json(form): Json<Login>,
 ) -> Result<(), AppError> {
-    form.login(state.db).await
+    form.login(db).await
 }
 
-pub fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/login", get(login))
-        .layer(Extension(state))
+pub fn router() -> Router {
+    Router::new().route("/login", get(login))
 }

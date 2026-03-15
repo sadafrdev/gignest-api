@@ -1,14 +1,12 @@
-use axum::http::StatusCode;
-use axum::{Json, extract::Extension};
+use axum::{Json, http::StatusCode};
 use core::str;
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::NaiveDate;
-use utils::db::AppState;
+use sqlx::{PgPool, types::chrono::NaiveDate};
 use utils::enums::Country;
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Education {
-    pub user_id: i64,
+    pub user_id: Option<i64>,
     pub country: Country,
     pub degree: String,
     pub institute: String,
@@ -32,10 +30,7 @@ pub struct DeleteEducation {
 }
 
 impl Education {
-    pub async fn create(
-        Extension(state): Extension<AppState>,
-        Json(payload): Json<Self>,
-    ) -> Result<(), StatusCode> {
+    pub async fn create(db: PgPool, Json(payload): Json<Self>) -> Result<(), StatusCode> {
         sqlx::query(
             "
             INSERT INTO educations
@@ -48,7 +43,7 @@ impl Education {
         .bind(payload.institute)
         .bind(payload.major)
         .bind(payload.year_of_graduation)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
@@ -58,15 +53,13 @@ impl Education {
         Ok(())
     }
 
-    pub async fn get(
-        Extension(state): Extension<AppState>,
-        id: i64,
-    ) -> Result<Json<Vec<Self>>, StatusCode> {
-        let educations = sqlx::query_as::<_, Self>(
+    pub async fn get(db: PgPool, id: i64) -> Result<Json<Vec<Self>>, StatusCode> {
+        let educations = sqlx::query_as!(
+            Self,
             r#"
                 SELECT
                     user_id,
-                    country,
+                    country as "country: Country",
                     degree,
                     institute,
                     major,
@@ -74,9 +67,9 @@ impl Education {
                 FROM educations
                 WHERE user_id = $1
             "#,
+            id
         )
-        .bind(id)
-        .fetch_all(&state.db)
+        .fetch_all(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {e:?}");
@@ -87,7 +80,7 @@ impl Education {
     }
 
     pub async fn update(
-        Extension(state): Extension<AppState>,
+        db: PgPool,
         Json(payload): Json<UpdateEducation>,
     ) -> Result<(), StatusCode> {
         sqlx::query(
@@ -103,7 +96,7 @@ impl Education {
         .bind(payload.institute)
         .bind(payload.major)
         .bind(payload.year_of_graduation)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
@@ -113,10 +106,7 @@ impl Education {
         Ok(())
     }
 
-    pub async fn delete(
-        Extension(state): Extension<AppState>,
-        id: i64,
-    ) -> Result<StatusCode, StatusCode> {
+    pub async fn delete(db: PgPool, id: i64) -> Result<StatusCode, StatusCode> {
         let result = sqlx::query(
             "
                 DELETE FROM educations
@@ -124,7 +114,7 @@ impl Education {
             ",
         )
         .bind(id)
-        .execute(&state.db)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
