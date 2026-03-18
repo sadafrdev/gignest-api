@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use sqlx::query;
 use utils::{db::DB, error::AppError};
+use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Debug)]
 pub struct Login {
@@ -20,11 +21,8 @@ impl Login {
             self.email
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?
+        .ok_or(AppError::InternalServerError)?;
 
         Ok(())
 

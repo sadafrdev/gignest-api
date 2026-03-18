@@ -1,3 +1,4 @@
+use axum::Json;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};
@@ -5,7 +6,8 @@ use utils::enums::{LanguageEnum, LanguageLevel};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Language {
-    pub user_id: i64,
+    pub id: Option<i64>,
+    pub user_id: Option<i64>,
     pub language: LanguageEnum,
     pub language_level: LanguageLevel,
 }
@@ -33,17 +35,16 @@ impl Language {
         Ok(())
     }
 
-    pub async fn get(
-       self, db: DB
-    ) -> Result<Vec<Self>, AppError> {
-        let languages = sqlx::query_as::<_, Self>(
+    pub async fn get(self, id: i64) -> Result<Json<Vec<Self>>, AppError> {
+        let languages = sqlx::query_as!(
+            Language,
             r#"
-            SELECT user_id, language, language_level
-            FROM languages
-            WHERE user_id = $1
+                SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
+                FROM languages
+                WHERE user_id = $1
             "#,
+            id
         )
-        .bind(self.user_id)
         .fetch_all(&db)
         .await
         .map_err(|e| {
@@ -51,7 +52,7 @@ impl Language {
             AppError::InternalServerError
         })?;
 
-        Ok(languages)
+        Ok(Json(languages))
     }
 }
 
@@ -94,7 +95,6 @@ pub struct User{
 }
 
 impl  User {
-
     pub async fn delete(
         self, db: DB
     ) -> Result<(), AppError> {

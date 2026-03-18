@@ -41,19 +41,16 @@ impl Skills {
        self, db: DB
     ) -> Result<(), AppError> {
         let findskill= sqlx::query!(
-            "
-                SELECT * FROM skills
-                WHERE user_id = $1 AND skill = $2
-            ",
+            " SELECT * FROM skills  WHERE user_id = $1 AND skill = $2 ",
             self.user_id,
             self.skill as SkillsEnum
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?
+        .ok_or(AppError::InternalServerError);
 
         if findskill.is_some() {
-            return Err(AppError::NotFound("Skill".to_string()));
+            return Err(AppError::NotFound("Skill"));
         }
 
         sqlx::query!(
@@ -74,19 +71,18 @@ impl Skills {
         Ok(())
     }
 
-    pub async fn get(
-        self, db: DB
-    ) -> Result<Json<Vec<Self>>, AppError> {
-        let skills = sqlx::query_as::<_, Self>(
+    pub async fn get(db: PgPool, user_id: i64) -> Result<Json<Vec<Self>>, AppError> {
+        let skills = sqlx::query_as!(
+            Self,
             r#"
                 SELECT
                     user_id,
-                    skill
-                FROM skills
+                    skill AS "skill: SkillsEnum"
+                FROM skills 
                 WHERE user_id = $1
             "#,
+            user_id
         )
-        .bind(self.user_id)
         .fetch_all(&db)
         .await
         .map_err(|e| {
@@ -109,11 +105,7 @@ impl UpdateSkill {
        self, db: DB
     ) -> Result<(), AppError> {
         sqlx::query!(
-            "
-                UPDATE skills
-                SET skill = $1
-                WHERE id = $2
-            ",
+            " UPDATE skills SET skill = $1 WHERE id = $2 ",
             self.skill as SkillsEnum,
             self.id
         )
@@ -136,13 +128,9 @@ pub struct DeleteSkill {
 }
 
 impl DeleteSkill{
-
     pub async fn delete(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
-            "
-                DELETE FROM skills
-                WHERE id = $1
-            ",
+            " DELETE FROM skills  WHERE id = $1  ",
             self.id
         )
         .execute(&db)

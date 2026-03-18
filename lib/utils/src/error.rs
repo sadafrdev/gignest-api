@@ -9,9 +9,9 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum AppError {
     #[error("Invalid input data: {0}")]
-    ValidationError(String),
+    ValidationError(&'static str),
     #[error("Resource not found: {0}")]
-    NotFound(String),
+    NotFound(&'static str),
     #[error("Database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
     #[error("Internal server error")]
@@ -22,7 +22,7 @@ pub enum AppError {
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
-    message: String,
+    message: &'static str,
 }
 
 impl IntoResponse for AppError {
@@ -34,14 +34,14 @@ impl IntoResponse for AppError {
                 eprintln!("Database error: {:?}", err);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "Database operation failed".to_string(),
+                    "Database operation failed",
                 )
             }
             AppError::InternalServerError => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred".to_string(),
+                "An unexpected error occurred",
             ),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
         };
 
         let body = Json(ErrorResponse {

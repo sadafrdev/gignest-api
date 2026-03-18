@@ -1,13 +1,12 @@
 use axum::Json;
 use core::str;
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::NaiveDate;
-use utils::{db::DB, error::AppError};
-use utils::enums::Country;
+use sqlx::{types::chrono::NaiveDate, PgPool};
+use utils::{error::AppError, enums::Country};
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
 pub struct Education {
-    pub user_id: i64,
+    pub user_id: Option<i64>,
     pub country: Country,
     pub degree: String,
     pub institute: String,
@@ -17,13 +16,10 @@ pub struct Education {
 
 impl Education {
     pub async fn create(
-       self, db: DB
+       self, db: PgPool
     ) -> Result<(), AppError> {
         sqlx::query!(
-            "
-            INSERT INTO educations
-            (user_id, country, degree, institute, major, year_of_graduation)
-            VALUES ($1, $2, $3, $4, $5, $6)",
+            " INSERT INTO educations (user_id, country, degree, institute, major, year_of_graduation) VALUES ($1, $2, $3, $4, $5, $6)",
             self.user_id,
             self.country as Country,
             self.degree,
@@ -41,14 +37,13 @@ impl Education {
         Ok(())
     }
 
-    pub async fn get(
-       self, db: DB
-    ) -> Result<Json<Vec<Self>>, AppError> {
-        let educations = sqlx::query_as::<_, Self>(
+    pub async fn get(db: PgPool, id: i64) -> Result<Json<Vec<Self>>, AppError> {
+        let educations = sqlx::query_as!(
+            Self,
             r#"
                 SELECT
                     user_id,
-                    country,
+                    country AS "country: Country",
                     degree,
                     institute,
                     major,
@@ -56,8 +51,8 @@ impl Education {
                 FROM educations
                 WHERE user_id = $1
             "#,
+            id
         )
-        .bind(self.user_id)
         .fetch_all(&db)
         .await
         .map_err(|e| {
@@ -81,15 +76,19 @@ pub struct UpdateEducation {
 }
 
 impl UpdateEducation {
-    
     pub async fn update(
-        self, db: DB
+        self, db: PgPool
     ) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE educations
-                SET country = $1, degree = $2, institute = $3, major = $4, year_of_graduation = $5
-                WHERE id = $6
+                SET 
+                    country = $2, 
+                    degree = $3, 
+                    institute = $4, 
+                    major = $5, 
+                    year_of_graduation = $6
+                WHERE id = $1
             ",
             self.country as Country,
             self.degree,
@@ -118,15 +117,12 @@ pub struct DeleteEducation {
 impl DeleteEducation {
 
     pub async fn delete(
-       self, db: DB
+       self, db: PgPool
     ) -> Result<(), AppError> {
-        let result = sqlx::query(
-            "
-                DELETE FROM educations
-                WHERE id = $1
-            ",
+        let result = sqlx::query!(
+            " DELETE FROM educations WHERE id = $1 ",
+            self.id
         )
-        .bind(self.id)
         .execute(&db)
         .await
         .map_err(|e| {
@@ -135,7 +131,7 @@ impl DeleteEducation {
         })?;
 
         if result.rows_affected() == 0 {
-            return Err(AppError::NotFound("Education".to_string()));
+            return Err(AppError::NotFound("Education"));
         }
 
         Ok(())

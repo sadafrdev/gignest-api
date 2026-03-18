@@ -4,9 +4,11 @@ use argon2::{
 };
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, Type};
-use utils::enums::Country;
-use utils::{db::DB, error::AppError};
+use sqlx::FromRow;
+use utils::{
+    db::DB,
+    enums::{Country, Role},
+};
 use validator::Validate;
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
@@ -37,6 +39,7 @@ impl Register {
             .hash_password(self.password.as_bytes(), &salt)
             .unwrap()
             .to_string();
+
 
         sqlx::query!(
             "

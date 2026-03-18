@@ -1,45 +1,44 @@
-use axum::Extension;
 use axum::{
-    Json, Router,
+    Extension, Json, Router,
     extract::Path,
     routing::{delete, get, post, put},
 };
-use freelancers::skills::{Skills, UpdateSkill};
+use sqlx::PgPool;
 use utils::{db::AppState, error::AppError};
+use freelancers::skills::{Skills, UpdateSkill, DeleteSkill};
 
 pub async fn add_skill(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<PgPool>,
     Json(form): Json<Skills>,
 ) -> Result<(), AppError> {
-    form.create(state.db).await
+    form.create(db).await
 }
 
 pub async fn get_skills(
-    Extension(state): Extension<AppState>,
     Path(user_id): Path<i64>,
+    Extension(db): Extension<PgPool>,
 ) -> Result<Json<Vec<Skills>>, AppError> {
-    Skills::get(state.db).await
+    Skills::get(db).await.map(Json)
 }
 
 pub async fn update_skill(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<PgPool>,
     Json(form): Json<UpdateSkill>,
 ) -> Result<(), AppError> {
-    form.update(state.db).await
+    form.update(db).await
 }
 
 pub async fn delete_skill(
-    Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
+    Extension(db): Extension<PgPool>,
 ) -> Result<(), AppError> {
-    Skills::delete(state.db).await
+    DeleteSkill::delete(db).await
 }
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/skill", post(add_skill))
         .route("/skills/{id}", get(get_skills))
         .route("/update-skill", put(update_skill))
         .route("/delete-skill/{id}", delete(delete_skill))
-        .layer(Extension(state))
 }
