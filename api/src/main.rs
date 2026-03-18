@@ -1,9 +1,9 @@
+use std::net::SocketAddr;
+use utils::db::AppState;
 mod authentication;
 pub mod clients;
 pub mod freelancers;
 pub mod routes;
-use std::net::SocketAddr;
-use utils::db::AppState;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {

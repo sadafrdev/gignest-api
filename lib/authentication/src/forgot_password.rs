@@ -3,17 +3,15 @@ use argon2::{
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
 use axum::{Json, http::StatusCode};
+use dotenvy::dotenv;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use rand;
-use rand::{Rng, distributions::Alphanumeric};
+use rand::{Rng, distributions::Alphanumeric, thread_rng};
 use reqwest::Client;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime};
-use dotenvy::dotenv;
 use utils::db::DB;
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
@@ -66,7 +64,7 @@ impl SendOtp {
     }
 
     pub fn otp() -> String {
-        rand::thread_rng()
+        thread_rng()
             .sample_iter(&Alphanumeric)
             .take(6)
             .map(char::from)
@@ -86,10 +84,8 @@ impl SendOtp {
         let otp = Self::otp();
         let email = &self.email.clone();
 
-        let user= sqlx::query!(
-            r#"
-                SELECT email FROM users WHERE email = $1
-            "#,
+        let user = sqlx::query!(
+            " SELECT email FROM users WHERE email = $1 ",
             self.email
         )
         .fetch_optional(&db)
@@ -101,12 +97,12 @@ impl SendOtp {
             return Err(StatusCode::NOT_FOUND);
         }
         sqlx::query(
-            r#"
+            "
                 INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
                 VALUES (
                     $1, $2, 'password_reset', NOW(), NOW() + INTERVAL '10 minutes'
                 )
-            "#,
+            ",
         )
         .bind(email)
         .bind(hashed_otp)
@@ -163,31 +159,30 @@ impl VerifyOtp {
         let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
 
         let res = sqlx::query!(
-            r#"
-                    SELECT email
-                    FROM otps
-                    WHERE email = $1
-                        AND otp_hash = $2
-                        AND purpose = 'password_reset'
-                        AND expires_at > now()
-                "#,
-                self.email,
-                otp_hash
+            "
+                SELECT email
+                FROM otps
+                WHERE email = $1
+                    AND otp_hash = $2
+                    AND purpose = 'password_reset'
+                    AND expires_at > now()
+            ",
+            self.email,
+            otp_hash
         )
         .fetch_optional(&db)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
 
-        println!("here {:?}, {}", res, self.otp);
         if res.is_none() {
             return Err(StatusCode::UNAUTHORIZED);
         }
         sqlx::query!(
-            r#"
+            "
                 DELETE FROM otps
                 WHERE email = $1
                 AND purpose = 'password_reset'
-            "#,
+            ",
             self.email
         )
         .execute(&db)
@@ -234,18 +229,13 @@ impl UpdatePassword {
         Ok(data.claims)
     }
 
-    pub async fn update_password(self, db:DB) -> Result<Json<serde_json::Value>, StatusCode> {
-        //VErifying Token
+    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
+        //Verifying Token
         Self::verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
 
         //Updating Password
         sqlx::query!(
-            "
-                UPDATE users
-                SET password = $1
-                WHERE email = $2
-
-            ",
+            " UPDATE users SET password = $1 WHERE email = $2 ",
             self.new_password,
             self.email
         )
