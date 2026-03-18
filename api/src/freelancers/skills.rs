@@ -4,8 +4,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, post, put},
 };
-use freelancers::skills::{Skills, UpdateSkill};
 use sqlx::PgPool;
+use freelancers::skills::{Skills, UpdateSkill};
 
 pub async fn add_skill(
     Extension(db): Extension<PgPool>,

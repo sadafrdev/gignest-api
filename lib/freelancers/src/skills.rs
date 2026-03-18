@@ -84,7 +84,7 @@ impl Skills {
             r#"
                 SELECT
                     user_id,
-                    skill as "skill: SkillsEnum"
+                    skill AS "skill: SkillsEnum"
                 FROM skills 
                 WHERE user_id = $1
             "#,
@@ -102,10 +102,7 @@ impl Skills {
 
     pub async fn update(db: PgPool, Json(payload): Json<UpdateSkill>) -> Result<(), StatusCode> {
         sqlx::query(
-            "
-            UPDATE skills
-            SET skill = $1
-            WHERE id = $2",
+            " UPDATE skills SET skill = $1 WHERE id = $ ",
         )
         .bind(payload.skill as SkillsEnum)
         .bind(payload.id)

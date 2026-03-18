@@ -15,11 +15,6 @@ pub struct Job {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct ClientID {
-    pub client_id: i64,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub struct UpdateJob {
     pub id: i64,
     pub title: String,
@@ -54,34 +49,6 @@ impl Job {
         })?;
 
         Ok(())
-    }
-
-    pub async fn get_jobs(
-        db: PgPool,
-        Json(payload): Json<ClientID>,
-    ) -> Result<Option<Job>, StatusCode> {
-        let jobs = sqlx::query_as!(
-            Job,
-            "
-            SELECT
-                client_id,
-                title,
-                description,
-                budget_min,
-                budget_max
-            FROM jobs
-            WHERE client_id = $1
-            ",
-            payload.client_id
-        )
-        .fetch_optional(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
-
-        Ok(jobs)
     }
 
     pub async fn update_job(db: PgPool, Json(payload): Json<UpdateJob>) -> Result<(), StatusCode> {
@@ -122,5 +89,39 @@ impl Job {
             })?;
 
         Ok(())
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Jobs {
+    pub client_id: i64,
+}
+impl Jobs {
+    pub async fn find(
+        db: PgPool,
+        Json(payload): Json<Self>,
+    ) -> Result<Option<Job>, StatusCode> {
+        let jobs = sqlx::query_as!(
+            Job,
+            "
+            SELECT
+                client_id,
+                title,
+                description,
+                budget_min,
+                budget_max
+            FROM jobs
+            WHERE client_id = $1
+            ",
+            payload.client_id
+        )
+        .fetch_optional(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {e:?}");
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+        Ok(jobs)
     }
 }

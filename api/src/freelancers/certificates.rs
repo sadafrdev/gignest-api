@@ -4,8 +4,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use freelancers::certificates::Certificate;
 use sqlx::PgPool;
+use freelancers::certificates::Certificate;
 
 pub async fn create_certificate(
     Extension(db): Extension<PgPool>,

@@ -68,7 +68,7 @@ impl ProposalID {
             Proposal,
             r#"
                 SELECT
-                    freelancer_id, cover_letter, job_id, bid_amount, job_type as "job_type: JobType", status as "status: ProposalStatus"
+                    freelancer_id, cover_letter, job_id, bid_amount, job_type AS "job_type: JobType", status AS "status: ProposalStatus"
                 FROM proposals
                 WHERE id = $1
             "#,
@@ -86,7 +86,7 @@ impl ProposalID {
             Proposal,
             r#"
                 SELECT
-                    freelancer_id, cover_letter, job_id, bid_amount, job_type as "job_type: JobType", status as "status: ProposalStatus"
+                    freelancer_id, cover_letter, job_id, bid_amount, job_type AS "job_type: JobType", status AS "status: ProposalStatus"
                 FROM proposals
                 WHERE job_id = $1
             "#,
@@ -104,7 +104,7 @@ impl ProposalID {
             Proposal,
             r#"
                 SELECT
-                    freelancer_id, cover_letter, job_id, bid_amount, job_type as "job_type: JobType", status as "status: ProposalStatus"
+                    freelancer_id, cover_letter, job_id, bid_amount, job_type AS "job_type: JobType", status AS "status: ProposalStatus"
                 FROM proposals
                 WHERE freelancer_id = $1
             "#,

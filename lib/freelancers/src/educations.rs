@@ -33,9 +33,10 @@ impl Education {
     pub async fn create(db: PgPool, Json(payload): Json<Self>) -> Result<(), StatusCode> {
         sqlx::query(
             "
-            INSERT INTO educations
-            (user_id, country, degree, institute, major, year_of_graduation)
-            VALUES ($1, $2, $3, $4, $5, $6)",
+                INSERT INTO educations
+                (user_id, country, degree, institute, major, year_of_graduation)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ",
         )
         .bind(payload.user_id)
         .bind(payload.country as Country)
@@ -59,7 +60,7 @@ impl Education {
             r#"
                 SELECT
                     user_id,
-                    country as "country: Country",
+                    country AS "country: Country",
                     degree,
                     institute,
                     major,
@@ -86,7 +87,12 @@ impl Education {
         sqlx::query(
             "
                 UPDATE educations
-                SET country = $2, degree = $3, institute = $4, major = $5, year_of_graduation = $6
+                SET 
+                    country = $2, 
+                    degree = $3, 
+                    institute = $4, 
+                    major = $5, 
+                    year_of_graduation = $6
                 WHERE id = $1
             ",
         )
@@ -108,10 +114,7 @@ impl Education {
 
     pub async fn delete(db: PgPool, id: i64) -> Result<StatusCode, StatusCode> {
         let result = sqlx::query(
-            "
-                DELETE FROM educations
-                WHERE id = $1
-            ",
+            " DELETE FROM educations WHERE id = $1 ",
         )
         .bind(id)
         .execute(&db)

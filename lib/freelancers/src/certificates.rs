@@ -14,11 +14,7 @@ pub struct Certificate {
 impl Certificate {
     pub async fn generate(db: PgPool, Json(payload): Json<Self>) -> Result<(), StatusCode> {
         sqlx::query(
-            "
-                INSERT INTO certificates
-                (user_id, name, certificate_by, year)
-                VALUES ($1, $2, $3, $4)
-            ",
+            " INSERT INTO certificates (user_id, name, certificate_by, year) VALUES ($1, $2, $3, $4) ",
         )
         .bind(payload.user_id)
         .bind(payload.name)
@@ -38,11 +34,7 @@ impl Certificate {
         let certificates = sqlx::query_as!(
             Self,
             "
-                SELECT
-                    user_id,
-                    name,
-                    certificate_by,
-                    year
+                SELECT user_id, name, certificate_by, year
                 FROM certificates
                 WHERE user_id = $1
             ",

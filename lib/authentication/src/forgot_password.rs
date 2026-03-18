@@ -85,9 +85,7 @@ impl SendOtp {
         let email = &self.email.clone();
 
         let user = sqlx::query!(
-            "
-                SELECT email FROM users WHERE email = $1
-            ",
+            " SELECT email FROM users WHERE email = $1 ",
             self.email
         )
         .fetch_optional(&db)
@@ -232,7 +230,7 @@ impl UpdatePassword {
     }
 
     pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
-        //VErifying Token
+        //Verifying Token
         Self::verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
 
         //Updating Password

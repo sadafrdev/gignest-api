@@ -1,4 +1,3 @@
-use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
 use axum::{
     Json, Router,
     extract::Extension,
@@ -6,6 +5,7 @@ use axum::{
     routing::{patch, post},
 };
 use sqlx::PgPool;
+use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
 
 pub async fn send_otp(
     Extension(db): Extension<PgPool>,

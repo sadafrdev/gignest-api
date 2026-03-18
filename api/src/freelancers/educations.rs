@@ -4,8 +4,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use freelancers::educations::{Education, UpdateEducation};
 use sqlx::PgPool;
+use freelancers::educations::{Education, UpdateEducation};
 
 pub async fn create_education(
     Extension(db): Extension<PgPool>,
@@ -19,8 +19,7 @@ pub async fn get_educations(
     Path(id): Path<i64>,
     Extension(db): Extension<PgPool>,
 ) -> Result<Json<Vec<Education>>, StatusCode> {
-    let educations = Education::get(db, id).await?;
-    Ok(educations)
+    Education::get(db, id).await
 }
 
 pub async fn update_education(

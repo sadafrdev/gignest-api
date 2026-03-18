@@ -4,8 +4,8 @@ use axum::{
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-pub use freelancers::languages::Language;
 use sqlx::PgPool;
+pub use freelancers::languages::Language;
 
 pub async fn create_language(
     Extension(db): Extension<PgPool>,
@@ -19,8 +19,7 @@ pub async fn get_languages(
     Path(id): Path<i64>,
     Extension(db): Extension<PgPool>,
 ) -> Result<Json<Vec<Language>>, StatusCode> {
-    let languages = Language::get(db, id).await?;
-    Ok(languages)
+   Language::get(db, id).await
 }
 
 pub async fn update_language(

@@ -55,7 +55,7 @@ impl Language {
         let languages = sqlx::query_as!(
             Language,
             r#"
-                SELECT id, user_id, language as "language: LanguageEnum", language_level as "language_level: LanguageLevel"
+                SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
                 FROM languages
                 WHERE user_id = $1
             "#,
