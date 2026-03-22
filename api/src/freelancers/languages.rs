@@ -3,36 +3,36 @@ use axum::{
     extract::Path,
     routing::{delete, get, patch, post},
 };
-use sqlx::PgPool;
-use utils::{db::AppState, error::AppError};
-use freelancers::languages::{Language, UpdateLanguage, User};
+use utils::{db::DB, error::AppError};
+use freelancers::languages::{Language, UpdateLanguage, fetch};
+use freelancers::languages;
 
 pub async fn create_language(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<Language>,
 ) -> Result<(), AppError> {
-    form.add(db).await?
+    form.add(db).await
 }
 
 pub async fn get_languages(
     Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Language>>, AppError> {
-    Language::get(state.db).await.map(Json)
+    fetch(id, db).await
 }
 
 pub async fn update_language(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<UpdateLanguage>,
 ) -> Result<(), AppError> {
-    form.update(db).await?
+    form.update(db).await
 }
 
 pub async fn delete_language(
     Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    User::delete(db).await?;
+    languages::delete(id, db).await
 }
 
 pub fn router() -> Router {

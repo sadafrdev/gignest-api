@@ -3,36 +3,35 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
-use sqlx::PgPool;
-use utils::{db::AppState, error::AppError};
-use freelancers::skills::{Skills, UpdateSkill, DeleteSkill};
+use utils::{db::DB, error::AppError};
+use freelancers::skills::{Skills, SkillUserID, Skill};
 
 pub async fn add_skill(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<Skills>,
 ) -> Result<(), AppError> {
     form.create(db).await
 }
 
 pub async fn get_skills(
-    Path(user_id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Path(id): Path<SkillUserID>,
+    Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Skills>>, AppError> {
-    Skills::get(db).await.map(Json)
+    id.get(db).await
 }
 
 pub async fn update_skill(
-    Extension(db): Extension<PgPool>,
-    Json(form): Json<UpdateSkill>,
+    Extension(db): Extension<DB>,
+    Json(form): Json<Skill>,
 ) -> Result<(), AppError> {
     form.update(db).await
 }
 
 pub async fn delete_skill(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Path(id): Path<Skill>,
+    Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    DeleteSkill::delete(db).await
+    id.delete(db).await
 }
 
 pub fn router() -> Router {

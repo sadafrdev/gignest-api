@@ -46,10 +46,8 @@ impl SendOtp {
             .json(&body)
             .send()
             .await
-            .map_err(|e| {
-                eprintln!("Email sending error: {:?}", e);
-                AppError::InternalServerError
-            });
+            .inspect_err(|e| eprintln!("Email sending error: {:?}", e))
+            .map_err(|_| AppError::InternalServerError);
 
         match res {
             Ok(response) => {
@@ -85,14 +83,11 @@ impl SendOtp {
         let email = &self.email.clone();
 
         let user = sqlx::query!(
-            r#"
-                SELECT email FROM users WHERE email = $1
-            "#,
+            " SELECT email FROM users WHERE email = $1 ",
             self.email
         )
         .fetch_optional(&db)
-        .await?
-        .ok_or(AppError::InternalServerError);
+        .await?;
     
         if user.is_none() {
             println!("Your Email Does Not Exists.");
@@ -173,8 +168,7 @@ impl VerifyOtp {
             otp_hash
         )
         .fetch_optional(&db)
-        .await?
-        .ok_or(AppError::NotFound("User"))?;
+        .await?;
 
         if res.is_none() {
             return Err(AppError::Unauthorized);
@@ -208,7 +202,7 @@ pub struct UpdatePassword {
 }
 
 impl UpdatePassword {
-    pub fn verify_reset_token(
+    pub async fn verify_reset_token(
         token: &str,
     ) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
         let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
@@ -233,7 +227,7 @@ impl UpdatePassword {
 
     pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         //Verifying Token
-        Self::verify_reset_token(&self.token).map_err(|_| AppError::Unauthorized)?;
+        Self::verify_reset_token(&self.token).await;
 
         //Updating Password
         sqlx::query!(

@@ -3,36 +3,35 @@ use axum::{
     Json, Router,
     routing::{delete, get, patch, post},
 };
-use sqlx::PgPool;
-use utils::{db::AppState, error::AppError};
-use freelancers::educations::{Education, UpdateEducation, DeleteEducation};
+use utils::{db::DB, error::AppError};
+use freelancers::educations::{Education, UpdateEducation, EducationID};
 
 pub async fn create_education(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<Education>,
 ) -> Result<(), AppError> {
-    form.create(db).await?
+    form.create(db).await
 }
 
 pub async fn get_educations(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Path(id): Path<EducationID>,
+    Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Education>>, AppError> {
-    Education::get(db).await.map(Json).map(Json)
+    id.get(db).await
 }
 
 pub async fn update_education(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<UpdateEducation>,
 ) -> Result<(), AppError> {
-    form.update(Extension(db)).await?
+    form.update(db).await
 }
 
 pub async fn delete_education(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Path(id): Path<EducationID>,
+    Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    DeleteEducation::delete(db).await?
+    id.delete(db).await
 }
 
 pub fn router() -> Router {

@@ -1,6 +1,6 @@
 use axum::Json;
 use serde::{Deserialize, Serialize};
-use sqlx::types::chrono::NaiveDate;
+use sqlx::{PgPool, types::chrono::NaiveDate};
 use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -75,14 +75,13 @@ impl UpdateCertificate{
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct CertificateID {
+pub struct CertificateDelete {
    id: i64
 }
 
-impl CertificateID {
-     
+impl CertificateDelete {
     pub async fn delete(
-        self, db: DB
+        self, db: PgPool
     ) -> Result<(), AppError> {
         let result = sqlx::query!(
             " DELETE FROM certificates WHERE id = $1",
@@ -103,31 +102,36 @@ impl CertificateID {
     }
 }
 
+#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
+pub struct User {
+    pub user_id: Option<i64>
+}
 
-pub async fn get(
-    db: DB
-) -> Result<Json<Vec<Certificate>>, AppError> {
-    let id = Certificate.user_id;
-    
-    let certificates = sqlx::query_as!(
-        Certificate,
-        "
-            SELECT
-                user_id,
-                name,
-                certificate_by,
-                year
-            FROM certificates
-            WHERE user_id = $1
-        ",
-        id
-    )
-    .fetch_all(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {e:?}");
-        AppError::InternalServerError
-    })?;
+impl  User{
+    pub async fn get(
+        self,
+        db: DB
+    ) -> Result<Json<Vec<Certificate>>, AppError> {
+        let certificates = sqlx::query_as!(
+            Certificate,
+            "
+                SELECT
+                    user_id,
+                    name,
+                    certificate_by,
+                    year
+                FROM certificates
+                WHERE user_id = $1
+            ",
+            self.user_id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {e:?}");
+            AppError::InternalServerError
+        })?;
 
-    Ok(Json(certificates))
+        Ok(Json(certificates))
+    }
 }

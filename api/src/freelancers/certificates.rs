@@ -3,37 +3,35 @@ use axum::{
     extract::Path,
     routing::{delete, get, patch, post},
 };
-use utils::{db::AppState, error::AppError};
-use freelancers::certificates::{Certificate, UpdateCertificate};
+use utils::{db::DB, error::AppError};
+use freelancers::certificates::{Certificate, UpdateCertificate, User, CertificateDelete};
 
 pub async fn create_certificate(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<Certificate>,
 ) -> Result<(), AppError> {
-    form.generate(db).await?;
+    form.generate(db).await
 }
 
 pub async fn get_certificates(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Path(id): Path<User>,
+    Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Certificate>>, AppError> {
-    Certificate::get(db).await
+    id.get(db).await
 }
 
 pub async fn update_certificate(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<UpdateCertificate>,
 ) -> Result<(), AppError> {
-    form.update(db).await?;
-    Ok(())
+    form.update(db).await
 }
 
 pub async fn delete_certificate(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
+    Path(id): Path<CertificateDelete>,
+    Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    form.delete(db).await?;
-    Ok(())
+    id.delete(db).await
 }
 
 pub fn router() -> Router {

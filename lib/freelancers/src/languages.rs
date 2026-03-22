@@ -17,10 +17,7 @@ impl Language {
        self, db: DB
     ) -> Result<(), AppError> {
         sqlx::query!(
-            r#"
-                INSERT INTO languages (user_id, language, language_level)
-                VALUES ($1, $2, $3)
-            "#,
+            " INSERT INTO languages (user_id, language, language_level) VALUES ($1, $2, $3) ",
             self.user_id,
             self.language as LanguageEnum,
             self.language_level as LanguageLevel
@@ -33,26 +30,6 @@ impl Language {
         })?;
 
         Ok(())
-    }
-
-    pub async fn get(self, id: i64) -> Result<Json<Vec<Self>>, AppError> {
-        let languages = sqlx::query_as!(
-            Language,
-            r#"
-                SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
-                FROM languages
-                WHERE user_id = $1
-            "#,
-            id
-        )
-        .fetch_all(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
-
-        Ok(Json(languages))
     }
 }
 
@@ -69,11 +46,11 @@ impl UpdateLanguage {
        self, db: DB
     ) -> Result<(), AppError> {
         sqlx::query!(
-            r#"
-            UPDATE languages
-            SET language = $2, language_level = $3
-            WHERE id = $1
-            "#,
+            "
+                UPDATE languages
+                SET language = $2, language_level = $3
+                WHERE id = $1
+            ",
             self.id,
             self.language as LanguageEnum,
             self.language_level as LanguageLevel
@@ -90,28 +67,39 @@ impl UpdateLanguage {
     }
 }
 
-pub struct User{
-    id: i64
+pub async fn delete(
+    id: i64, db: DB
+) -> Result<(), AppError> {
+    sqlx::query!(
+        " DELETE FROM languages WHERE id = $1 ",
+        id
+    )
+    .execute(&db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        AppError::InternalServerError
+    })?;
+
+    Ok(())
 }
 
-impl  User {
-    pub async fn delete(
-        self, db: DB
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            r#"
-            DELETE FROM languages
-            WHERE id = $1
-            "#,
-            self.id
-        )
-        .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+pub async fn fetch(id: i64, db: DB) -> Result<Json<Vec<Language>>, AppError> {
+    let languages = sqlx::query_as!(
+        Language,
+        r#"
+            SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
+            FROM languages
+            WHERE user_id = $1
+        "#,
+        id
+    )
+    .fetch_all(&db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        AppError::InternalServerError
+    })?;
 
-        Ok(())
-    }
+    Ok(Json(languages))
 }

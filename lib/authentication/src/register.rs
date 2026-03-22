@@ -8,6 +8,7 @@ use sqlx::FromRow;
 use utils::{
     db::DB,
     enums::{Country, Role},
+    error::AppError
 };
 use validator::Validate;
 
@@ -25,13 +26,6 @@ pub struct Register {
     pub role: Role,
 }
 
-#[derive(Debug, Type, Deserialize, Serialize)]
-#[sqlx(type_name = "user_role", rename_all = "lowercase")]
-pub enum Role {
-    Freelancer,
-    Client,
-}
-
 impl Register {
     pub async fn register(self, db: DB) -> Result<(), AppError> {
         let salt = SaltString::generate(&mut OsRng);
@@ -42,7 +36,7 @@ impl Register {
 
 
         sqlx::query!(
-            "
+        "
             INSERT INTO users
             (first_name, last_name, password, email, phone_number, username, country, role)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -58,10 +52,8 @@ impl Register {
         )
         .execute(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(())
     }

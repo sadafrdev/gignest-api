@@ -1,7 +1,5 @@
-use axum::Json;
 use bigdecimal::BigDecimal;
 use core::str;
-use sqlx::PgPool;
 use serde::{Deserialize, Serialize};
 use utils::{db::DB, error::AppError};
 
@@ -12,20 +10,6 @@ pub struct Job {
     pub description: String,
     pub budget_min: BigDecimal,
     pub budget_max: BigDecimal,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct UpdateJob {
-    pub id: i64,
-    pub title: String,
-    pub description: String,
-    pub budget_min: BigDecimal,
-    pub budget_max: BigDecimal,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct JobID {
-    id: i64,
 }
 
 impl Job {
@@ -42,37 +26,21 @@ impl Job {
         )
         .execute(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
-
+        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+        .map_err(|_| AppError::InternalServerError)?;
+        
         Ok(())
     }
+    
+}
 
-    pub async fn get_jobs(
-       self, db: DB
-    ) -> Result<Job, AppError> {
-        let jobs = sqlx::query_as!(
-            Job,
-            "
-                SELECT
-                    client_id,
-                    title,
-                    description,
-                    budget_min,
-                    budget_max
-                FROM jobs
-                WHERE client_id = $1
-            ",
-            self.client_id
-        )
-        .fetch_optional(&db)
-        .await?
-        .ok_or(AppError::InternalServerError);
-
-        Ok(jobs)
-    }
+#[derive(Deserialize, Serialize, Debug)]
+pub struct UpdateJob {
+    pub id: i64,
+    pub title: String,
+    pub description: String,
+    pub budget_min: BigDecimal,
+    pub budget_max: BigDecimal,
 }
 
 impl UpdateJob{
@@ -97,14 +65,20 @@ impl UpdateJob{
         )
         .execute(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        });
+        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(())
     }
 
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct JobID {
+    id: i64,
+}
+
+impl JobID {
     pub async fn delete_job(
         self, db: DB
     ) -> Result<(), AppError> {
@@ -114,10 +88,8 @@ impl UpdateJob{
         )
         .execute(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(())
     }
@@ -127,8 +99,9 @@ impl UpdateJob{
 pub struct Jobs {
     pub client_id: i64,
 }
+
 impl Jobs {
-    pub async fn find(self,  db: PgPool ) -> Result<Job, AppError> {
+    pub async fn find(self,  db: DB ) -> Result<Job, AppError> {
         sqlx::query_as!(
             Job,
             "
@@ -145,6 +118,7 @@ impl Jobs {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::InternalServerError)
+        .ok_or(AppError::NotFound("JOB"))
+
     }
 }
