@@ -3,11 +3,14 @@ use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};
 use utils::enums::Country;
 use validator::Validate;
-use argon2::{
-    password_hash::{SaltString, PasswordHasher, rand_core::OsRng},
-    Argon2,
-};
-use utils::db::DB;
+use utils::{db::DB, security::hash_password};
+
+#[derive(Debug, Type, Deserialize, Serialize)]
+#[sqlx(type_name = "user_role")]
+pub enum Role {
+    Freelancer,
+    Client,
+}
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Register {
@@ -23,32 +26,17 @@ pub struct Register {
     pub role: Role,
 }
 
-#[derive(Debug, Type, Deserialize, Serialize)]
-#[sqlx(type_name = "user_role", rename_all = "lowercase")]
-pub enum Role {
-    Freelancer,
-    Client,
-}
-
-pub fn hash_password(pswd: String) -> Result<String, argon2::password_hash::Error> {
-    let salt = SaltString::generate(&mut OsRng);
-
-    let hashed_password = Argon2::default()
-        .hash_password(pswd.as_bytes(), &salt)?
-        .to_string();
-
-    Ok(hashed_password)
-}
-
 impl Register {
     pub async fn register(
        self, db: DB
     ) -> Result<(), StatusCode> {
-        let hashed_password = hash_password(self.password)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;     
+        let hashed_password = hash_password(self.password).map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
         sqlx::query!(
-            "
+        "
             INSERT INTO users
             (first_name, last_name, password, email, phone_number, username, country, role)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)

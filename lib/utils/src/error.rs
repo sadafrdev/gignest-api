@@ -1,26 +1,27 @@
-use serde::Serialize;
-use thiserror::Error;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
+use thiserror::Error;
+use serde::Serialize;
+use sqlx::Error;
 
 #[derive(Error, Debug)]
 pub enum AppError{
     #[error("Invalid input data: {0}")]
-    ValidationError(String),
+    ValidationError(&'static str),
     #[error("Resource not found: {0}")]
-    NotFound(String),
+    NotFound(&'static str),
     #[error("Database error: {0}")]
-    DatabaseError(#[from] sqlx::Error), 
+    DatabaseError(#[from] Error), 
     #[error("Internal server error")]
     InternalServerError,
 }
 
 #[derive(Serialize)]
 pub struct ErrorResponse{
-    message: String
+    message: &'static str
 }
 
 impl IntoResponse for AppError{
@@ -30,9 +31,9 @@ impl IntoResponse for AppError{
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             AppError::DatabaseError(err) => {
                 eprintln!("Database error: {:?}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database operation failed".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, "Database operation failed")
             },
-            AppError::InternalServerError => (StatusCode::INTERNAL_SERVER_ERROR, "An unexpected error occurred".to_string()),
+            AppError::InternalServerError => (StatusCode::INTERNAL_SERVER_ERROR, "An unexpected error occurred"),
         };
 
         let body = Json(ErrorResponse{

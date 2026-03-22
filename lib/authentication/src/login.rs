@@ -1,8 +1,7 @@
 use serde::Deserialize;
 use sqlx::query;
-use utils::{db::DB, error::AppError};
-use argon2::{Argon2, PasswordVerifier};
-use argon2::password_hash::PasswordHash;
+use utils::{db::DB, error::AppError, security::verify};
+
 
 #[derive(Deserialize, Debug)]
 pub struct Login {
@@ -14,7 +13,7 @@ impl Login {
     pub async fn login(
        self, db: DB
     ) -> Result<(), AppError>{
-        
+
         let res = query!(
             "
                 SELECT
@@ -31,13 +30,8 @@ impl Login {
             AppError::InternalServerError
         })?;
 
-        let parsed_hash = PasswordHash::new(&res.password)
-        .map_err(|_| AppError::InternalServerError)?;
-
-        Argon2::default()    
-        .verify_password(self.password.as_bytes(), &parsed_hash)
-        .map_err(|_| AppError::ValidationError("Invalid credentials".to_string()))?;
-
+        verify(&res.password, self.password)?;
+        
         Ok(())
     }
 }

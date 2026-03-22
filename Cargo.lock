@@ -2758,6 +2758,7 @@ name = "utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "argon2",
  "axum",
  "bcrypt",
  "bigdecimal",
