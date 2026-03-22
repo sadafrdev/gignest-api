@@ -10,13 +10,13 @@ pub struct Login {
 
 impl Login {
     pub async fn login(self, db: DB) -> Result<(), AppError> {
-        let res = query!(" SELECT password FROM users WHERE email = $1 ", self.email)
-            .fetch_optional(&db)
-            .await
-            .map_err(|e| {
-                eprintln!("SQL ERROR: {:?}", e);
-                AppError::InternalServerError
-            })?;
+        let res = query!(
+            " SELECT password FROM users WHERE email = $1 ",
+            self.email
+        )
+        .fetch_optional(&db)
+        .await?
+        .ok_or(AppError::InternalServerError)?;
 
         Ok(())
 

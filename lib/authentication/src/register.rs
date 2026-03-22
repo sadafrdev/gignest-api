@@ -2,13 +2,13 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString},
 };
-use axum::http::StatusCode;
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utils::{
     db::DB,
     enums::{Country, Role},
+    error::AppError
 };
 use validator::Validate;
 
@@ -27,19 +27,20 @@ pub struct Register {
 }
 
 impl Register {
-    pub async fn register(self, db: DB) -> Result<(), StatusCode> {
+    pub async fn register(self, db: DB) -> Result<(), AppError> {
         let salt = SaltString::generate(&mut OsRng);
         let hashed_password = Argon2::default()
             .hash_password(self.password.as_bytes(), &salt)
             .unwrap()
             .to_string();
 
+
         sqlx::query!(
-            "
-                INSERT INTO users
-                (first_name, last_name, password, email, phone_number, username, country, role)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ",
+        "
+            INSERT INTO users
+            (first_name, last_name, password, email, phone_number, username, country, role)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        ",
             self.first_name,
             self.last_name,
             hashed_password,
@@ -51,10 +52,8 @@ impl Register {
         )
         .execute(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(())
     }

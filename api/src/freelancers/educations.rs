@@ -1,41 +1,37 @@
 use axum::{
-    Extension, Json, Router,
-    extract::Path,
-    http::StatusCode,
+    Extension, extract::Path,
+    Json, Router,
     routing::{delete, get, patch, post},
 };
-use sqlx::PgPool;
-use freelancers::educations::{Education, UpdateEducation};
+use utils::{db::DB, error::AppError};
+use freelancers::educations::{Education, UpdateEducation, EducationID};
 
 pub async fn create_education(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Education>,
-) -> Result<(), StatusCode> {
-    Education::create(db, Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<Education>,
+) -> Result<(), AppError> {
+    form.create(db).await
 }
 
 pub async fn get_educations(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
-) -> Result<Json<Vec<Education>>, StatusCode> {
-    Education::get(db, id).await
+    Path(id): Path<EducationID>,
+    Extension(db): Extension<DB>,
+) -> Result<Json<Vec<Education>>, AppError> {
+    id.get(db).await
 }
 
 pub async fn update_education(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<UpdateEducation>,
-) -> Result<(), StatusCode> {
-    Education::update(db, Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateEducation>,
+) -> Result<(), AppError> {
+    form.update(db).await
 }
 
 pub async fn delete_education(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
-) -> Result<(), StatusCode> {
-    Education::delete(db, id).await?;
-    Ok(())
+    Path(id): Path<EducationID>,
+    Extension(db): Extension<DB>,
+) -> Result<(), AppError> {
+    id.delete(db).await
 }
 
 pub fn router() -> Router {

@@ -1,38 +1,33 @@
-use axum::{
-    Json, Router,
-    extract::Extension,
-    http::StatusCode,
-    routing::{delete, get, post, put},
-};
-use sqlx::PgPool;
+use axum::{Json, routing::{delete, get, post, put}, extract::Extension, Router};
+use utils::{db::DB, error::AppError};
 use clients::jobs::{Jobs, Job, JobID, UpdateJob};
 
 pub async fn get_jobs(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Jobs>,
-) -> Result<Json<Option<Job>>, StatusCode> {
-    Jobs::find(db, Json(payload)).await.map(Json)
+    Extension(db): Extension<DB>,
+    Json(form): Json<Jobs>,
+) -> Result<Json<Job>, AppError> {
+    form.find(db).await.map(Json)
 }
 
 pub async fn create_job(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Job>,
-) -> Result<(), StatusCode> {
-    Job::create_job(db, Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<Job>,
+) -> Result<(), AppError> {
+    form.create_job(db).await
 }
 
 pub async fn update_job(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<UpdateJob>,
-) -> Result<(), StatusCode> {
-    Job::update_job(db, Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateJob>,
+) -> Result<(), AppError> {
+    form.update_job(db).await
 }
 
 pub async fn delete_job(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<JobID>,
-) -> Result<(), StatusCode> {
-    Job::delete_job(db, Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<JobID>,
+) -> Result<(), AppError> {
+    form.delete_job(db).await
 }
 
 pub fn router() -> Router {

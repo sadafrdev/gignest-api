@@ -1,41 +1,37 @@
 use axum::{
     Extension, Json, Router,
     extract::Path,
-    http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use sqlx::PgPool;
-use freelancers::certificates::Certificate;
+use utils::{db::DB, error::AppError};
+use freelancers::certificates::{Certificate, UpdateCertificate, User, CertificateDelete};
 
 pub async fn create_certificate(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Certificate>,
-) -> Result<(), StatusCode> {
-    Certificate::generate(db, Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<Certificate>,
+) -> Result<(), AppError> {
+    form.generate(db).await
 }
 
 pub async fn get_certificates(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
-) -> Result<Json<Vec<Certificate>>, StatusCode> {
-    Certificate::get(db, id).await
+    Path(id): Path<User>,
+    Extension(db): Extension<DB>,
+) -> Result<Json<Vec<Certificate>>, AppError> {
+    id.get(db).await
 }
 
 pub async fn update_certificate(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Certificate>,
-) -> Result<(), StatusCode> {
-    Certificate::update(db, Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateCertificate>,
+) -> Result<(), AppError> {
+    form.update(db).await
 }
 
 pub async fn delete_certificate(
-    Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
-) -> Result<(), StatusCode> {
-    Certificate::delete(db, id).await?;
-    Ok(())
+    Path(id): Path<CertificateDelete>,
+    Extension(db): Extension<DB>,
+) -> Result<(), AppError> {
+    id.delete(db).await
 }
 
 pub fn router() -> Router {

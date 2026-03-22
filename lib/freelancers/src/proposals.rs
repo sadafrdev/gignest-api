@@ -29,18 +29,14 @@ impl Proposal {
             self.freelancer_id
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         if exists.is_some() {
-            return Err(AppError::NotFound("FREELANCER".to_string()));
+            return Err(AppError::NotFound("FREELANCER"));
         }
 
         sqlx::query!(
-            "
-                INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status)
-                VALUES ($1, $2, $3, $4, $5, $6)
-            ",
+            " INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status) VALUES ($1, $2, $3, $4, $5, $6) ",
             self.freelancer_id,
             self.cover_letter,
             self.job_id,
@@ -68,7 +64,12 @@ impl ProposalID {
             Proposal,
             r#"
                 SELECT
-                    freelancer_id, cover_letter, job_id, bid_amount, job_type AS "job_type: JobType", status AS "status: ProposalStatus"
+                    freelancer_id, 
+                    cover_letter, 
+                    job_id, 
+                    bid_amount, 
+                    job_type AS "job_type: JobType", 
+                    status AS "status: ProposalStatus"
                 FROM proposals
                 WHERE id = $1
             "#,
@@ -86,7 +87,12 @@ impl ProposalID {
             Proposal,
             r#"
                 SELECT
-                    freelancer_id, cover_letter, job_id, bid_amount, job_type AS "job_type: JobType", status AS "status: ProposalStatus"
+                    freelancer_id, 
+                    cover_letter, 
+                    job_id, 
+                    bid_amount, 
+                    job_type AS "job_type: JobType", 
+                    status AS "status: ProposalStatus"
                 FROM proposals
                 WHERE job_id = $1
             "#,
@@ -104,7 +110,12 @@ impl ProposalID {
             Proposal,
             r#"
                 SELECT
-                    freelancer_id, cover_letter, job_id, bid_amount, job_type AS "job_type: JobType", status AS "status: ProposalStatus"
+                    freelancer_id, 
+                    cover_letter, 
+                    job_id, 
+                    bid_amount, 
+                    job_type AS "job_type: JobType", 
+                    status AS "status: ProposalStatus"
                 FROM proposals
                 WHERE freelancer_id = $1
             "#,

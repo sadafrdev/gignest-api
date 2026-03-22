@@ -1,41 +1,38 @@
 use axum::{
     Extension, Json, Router,
     extract::Path,
-    http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use sqlx::PgPool;
-pub use freelancers::languages::Language;
+use utils::{db::DB, error::AppError};
+use freelancers::languages::{Language, UpdateLanguage, fetch};
+use freelancers::languages;
 
 pub async fn create_language(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Language>,
-) -> Result<(), StatusCode> {
-    Language::add(db, Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<Language>,
+) -> Result<(), AppError> {
+    form.add(db).await
 }
 
 pub async fn get_languages(
     Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
-) -> Result<Json<Vec<Language>>, StatusCode> {
-   Language::get(db, id).await
+    Extension(db): Extension<DB>,
+) -> Result<Json<Vec<Language>>, AppError> {
+    fetch(id, db).await
 }
 
 pub async fn update_language(
-    Extension(db): Extension<PgPool>,
-    Json(payload): Json<Language>,
-) -> Result<(), StatusCode> {
-    Language::update(db, Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateLanguage>,
+) -> Result<(), AppError> {
+    form.update(db).await
 }
 
 pub async fn delete_language(
     Path(id): Path<i64>,
-    Extension(db): Extension<PgPool>,
-) -> Result<(), StatusCode> {
-    Language::delete(db, id).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+) -> Result<(), AppError> {
+    languages::delete(id, db).await
 }
 
 pub fn router() -> Router {

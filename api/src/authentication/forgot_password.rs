@@ -1,30 +1,30 @@
 use axum::{
     Json, Router,
     extract::Extension,
-    http::StatusCode,
     routing::{patch, post},
 };
-use sqlx::PgPool;
+use serde_json::Value;
+use utils::{db::DB, error::AppError};
 use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
 
 pub async fn send_otp(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<SendOtp>,
-) -> Result<(), StatusCode> {
+) -> Result<(), AppError> {
     form.send_otp(db).await
 }
 
 pub async fn verify_otp(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<VerifyOtp>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
+) -> Result<Json<Value>, AppError> {
     form.verify_otp(db).await
 }
 
 pub async fn update_password(
-    Extension(db): Extension<PgPool>,
+    Extension(db): Extension<DB>,
     Json(form): Json<UpdatePassword>,
-) -> Result<Json<serde_json::Value>, StatusCode> {
+) -> Result<Json<Value>, AppError> {
     form.update_password(db).await
 }
 

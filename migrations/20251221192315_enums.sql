@@ -22,7 +22,7 @@ CREATE TYPE skills_enum AS ENUM (
   'CloudComputing',
   'RustProgramming',
   'PythonProgramming',
-  'JaveProgramming',
+  'JavaProgramming',
   'FrontendDevelopment',
   'BackendDevelopment',
   'HtmlCss',

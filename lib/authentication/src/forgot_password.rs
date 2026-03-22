@@ -2,7 +2,7 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
-use axum::{Json, http::StatusCode};
+use axum::Json;
 use dotenvy::dotenv;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand::{Rng, distributions::Alphanumeric, thread_rng};
@@ -12,7 +12,7 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime};
-use utils::db::DB;
+use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct SendOtp {
@@ -46,10 +46,8 @@ impl SendOtp {
             .json(&body)
             .send()
             .await
-            .map_err(|e| {
-                eprintln!("Email sending error: {:?}", e);
-                StatusCode::INTERNAL_SERVER_ERROR
-            });
+            .inspect_err(|e| eprintln!("Email sending error: {:?}", e))
+            .map_err(|_| AppError::InternalServerError);
 
         match res {
             Ok(response) => {
@@ -79,7 +77,7 @@ impl SendOtp {
             .to_string()
     }
 
-    pub async fn send_otp(self, db: DB) -> Result<(), StatusCode> {
+    pub async fn send_otp(self, db: DB) -> Result<(), AppError> {
         let hashed_otp = Self::hash_otp(&Self::otp());
         let otp = Self::otp();
         let email = &self.email.clone();
@@ -89,12 +87,11 @@ impl SendOtp {
             self.email
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
+        .await?;
+    
         if user.is_none() {
             println!("Your Email Does Not Exists.");
-            return Err(StatusCode::NOT_FOUND);
+            return Err(AppError::NotFound("USER"));
         }
         sqlx::query(
             "
@@ -108,7 +105,7 @@ impl SendOtp {
         .bind(hashed_otp)
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         Self::send_email(email, otp).await;
 
@@ -152,7 +149,7 @@ impl VerifyOtp {
         )
     }
 
-    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
+    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         let email = self.email.clone();
 
         let otp_str = format!("{:06}", self.otp);
@@ -171,11 +168,10 @@ impl VerifyOtp {
             otp_hash
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|_| StatusCode::NOT_FOUND)?;
+        .await?;
 
         if res.is_none() {
-            return Err(StatusCode::UNAUTHORIZED);
+            return Err(AppError::Unauthorized);
         }
         sqlx::query!(
             "
@@ -187,10 +183,10 @@ impl VerifyOtp {
         )
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         let reset_token =
-            Self::generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            Self::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
 
         return Ok(Json(serde_json::json!({
             "reset_token": reset_token
@@ -206,7 +202,7 @@ pub struct UpdatePassword {
 }
 
 impl UpdatePassword {
-    pub fn verify_reset_token(
+    pub async fn verify_reset_token(
         token: &str,
     ) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
         let secret = std::env::var("JWT_RESET_SECRET").expect("JWT_RESET_SECRET not set");
@@ -229,9 +225,9 @@ impl UpdatePassword {
         Ok(data.claims)
     }
 
-    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
+    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         //Verifying Token
-        Self::verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+        Self::verify_reset_token(&self.token).await;
 
         //Updating Password
         sqlx::query!(
@@ -241,7 +237,7 @@ impl UpdatePassword {
         )
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(Json(json!({
             "message": "Password updated successfully"

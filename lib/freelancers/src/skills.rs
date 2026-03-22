@@ -1,12 +1,10 @@
 use axum::Json;
-use axum::http::StatusCode;
 use core::str;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use utils::{db::DB, error::AppError};
 
 #[derive(Debug, Clone, Copy, serde::Deserialize, serde::Serialize, sqlx::Type)]
-#[sqlx(type_name = "skills_enum", rename_all = "SCREAMING_SNAKE_CASE")]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[sqlx(type_name = "skills_enum", rename_all = "PascalCase")]
 pub enum SkillsEnum {
     WebDevelopment,
     AppDevelopment,
@@ -26,7 +24,7 @@ pub enum SkillsEnum {
     ContentWriting,
     DataAnalysis,
     ProjectManagement,
-    SeoSpecialist,
+    SeoSpeciallities,
     VideoEditing,
     UiUxDesign,
 }
@@ -37,50 +35,94 @@ pub struct Skills {
     pub skill: SkillsEnum,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct UpdateSkill {
-    pub id: i64,
-    pub skill: SkillsEnum,
-}
-
 impl Skills {
-    pub async fn create(db: PgPool, Json(payload): Json<Skills>) -> Result<(), StatusCode> {
-        let findskill = sqlx::query(
+    pub async fn create(
+       self, db: DB
+    ) -> Result<(), AppError> {
+        let findskill = sqlx::query!(
             "
-            SELECT * FROM skills
-            WHERE user_id = $1 AND skill = $2",
+                SELECT user_id 
+                FROM skills 
+                WHERE user_id = $1 AND skill = $2::skills_enum
+            ",
+            self.user_id,
+            self.skill as SkillsEnum
         )
-        .bind(payload.user_id)
-        .bind(payload.skill as SkillsEnum)
         .fetch_optional(&db)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .await?;
 
         if findskill.is_some() {
-            return Err(StatusCode::NOT_FOUND);
+            return Err(AppError::NotFound("Skill"));
         }
 
-        sqlx::query(
-            "
-            INSERT INTO skills
-            (user_id, skill)
-            VALUES ($1, $2)",
+        sqlx::query!(
+            " INSERT INTO skills (user_id, skill) VALUES ($1, $2) ",
+            self.user_id,
+            self.skill as SkillsEnum
         )
-        .bind(payload.user_id)
-        .bind(payload.skill as SkillsEnum)
         .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
         Ok(())
     }
 
-    pub async fn get(db: PgPool, user_id: i64) -> Result<Json<Vec<Self>>, StatusCode> {
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Skill {
+    pub id: i64,
+    pub skill: SkillsEnum,
+}
+
+impl Skill {
+    pub async fn update(
+       self, db: DB
+    ) -> Result<(), AppError> {
+        sqlx::query!(
+            " UPDATE skills SET skill = $1 WHERE id = $2 ",
+            self.skill as SkillsEnum,
+            self.id
+        )
+        .execute(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            AppError::InternalServerError
+        })?;
+
+        Ok(())
+    }
+
+    pub async fn delete(self, db: DB) -> Result<(), AppError> {
+        sqlx::query!(
+            " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
+            self.id,
+            self.skill as SkillsEnum
+        )
+        .execute(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            AppError::InternalServerError
+        })?;
+
+        Ok(())
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SkillUserID {
+    pub user_id: i64,
+}
+
+impl SkillUserID{
+    pub async fn get(self, db: DB) -> Result<Json<Vec<Skills>>, AppError> {
         let skills = sqlx::query_as!(
-            Self,
+            Skills,
             r#"
                 SELECT
                     user_id,
@@ -88,44 +130,15 @@ impl Skills {
                 FROM skills 
                 WHERE user_id = $1
             "#,
-            user_id
+            self.user_id
         )
         .fetch_all(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            AppError::InternalServerError
         })?;
 
         Ok(Json(skills))
-    }
-
-    pub async fn update(db: PgPool, Json(payload): Json<UpdateSkill>) -> Result<(), StatusCode> {
-        sqlx::query(
-            " UPDATE skills SET skill = $1 WHERE id = $ ",
-        )
-        .bind(payload.skill as SkillsEnum)
-        .bind(payload.id)
-        .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
-
-        Ok(())
-    }
-
-    pub async fn delete(db: PgPool, id: i64) -> Result<(), StatusCode> {
-        sqlx::query(" DELETE FROM skills WHERE id = $1 ")
-            .bind(id)
-            .execute(&db)
-            .await
-            .map_err(|e| {
-                eprintln!("SQL ERROR: {:?}", e);
-                StatusCode::INTERNAL_SERVER_ERROR
-            })?;
-
-        Ok(())
     }
 }
