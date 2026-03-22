@@ -1,44 +1,39 @@
-use axum::Json;
-use axum::routing::{delete, get, post, put};
-use axum::{extract::Extension, http::StatusCode};
-use clients::jobs::{ClientID, Job, JobID, UpdateJob};
-use utils::db::AppState;
+use axum::{Json, routing::{delete, get, post, put}, extract::Extension, Router};
+use utils::{db::DB, error::AppError};
+use clients::jobs::{Jobs, Job, JobID, UpdateJob};
 
 pub async fn get_jobs(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<ClientID>,
-) -> Result<Json<Option<Job>>, StatusCode> {
-    let jobs = Job::get_jobs(Extension(state), Json(payload)).await?;
-    Ok(Json(jobs))
+    Extension(db): Extension<DB>,
+    Json(form): Json<Jobs>,
+) -> Result<Json<Job>, AppError> {
+    form.find(db).await.map(Json)
 }
 
 pub async fn create_job(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<Job>,
-) -> Result<(), StatusCode> {
-    Job::create_job(Extension(state), Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<Job>,
+) -> Result<(), AppError> {
+    form.create_job(db).await
 }
 
 pub async fn update_job(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdateJob>,
-) -> Result<(), StatusCode> {
-    Job::update_job(Extension(state), Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateJob>,
+) -> Result<(), AppError> {
+    form.update_job(db).await
 }
 
 pub async fn delete_job(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<JobID>,
-) -> Result<(), StatusCode> {
-    println!("Deleted job with ID:");
-    Job::delete_job(Extension(state), Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<JobID>,
+) -> Result<(), AppError> {
+    form.delete_job(db).await
 }
 
-pub fn router(state: AppState) -> axum::Router {
-    axum::Router::new()
+pub fn router() -> Router {
+    Router::new()
         .route("/job", post(create_job))
         .route("/jobs", get(get_jobs))
         .route("/update-job", put(update_job))
         .route("/delete-job", delete(delete_job))
-        .layer(Extension(state))
 }

@@ -1,50 +1,43 @@
-use axum::{Extension, extract::Path};
-use utils::db::AppState;
-
 use axum::{
+    Extension, extract::Path,
     Json, Router,
-    http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use freelancers::educations::{Education, UpdateEducation};
+use utils::{db::DB, error::AppError};
+use freelancers::educations::{Education, UpdateEducation, EducationID};
 
 pub async fn create_education(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<Education>,
-) -> Result<(), StatusCode> {
-    Education::create(Extension(state), Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<Education>,
+) -> Result<(), AppError> {
+    form.create(db).await
 }
 
 pub async fn get_educations(
-    Extension(state): Extension<AppState>,
-    Path(id): Path<i64>,
-) -> Result<Json<Vec<Education>>, StatusCode> {
-    let educations = Education::get(Extension(state), id).await?;
-    Ok(educations)
+    Path(id): Path<EducationID>,
+    Extension(db): Extension<DB>,
+) -> Result<Json<Vec<Education>>, AppError> {
+    id.get(db).await
 }
 
 pub async fn update_education(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdateEducation>,
-) -> Result<(), StatusCode> {
-    Education::update(Extension(state), Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateEducation>,
+) -> Result<(), AppError> {
+    form.update(db).await
 }
 
 pub async fn delete_education(
-    Extension(state): Extension<AppState>,
-    Path(id): Path<i64>,
-) -> Result<(), StatusCode> {
-    Education::delete(Extension(state), id).await?;
-    Ok(())
+    Path(id): Path<EducationID>,
+    Extension(db): Extension<DB>,
+) -> Result<(), AppError> {
+    id.delete(db).await
 }
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/education", post(create_education))
         .route("/educations/{id}", get(get_educations))
         .route("/update-education", patch(update_education))
         .route("/delete-education/{id}", delete(delete_education))
-        .layer(Extension(state))
 }

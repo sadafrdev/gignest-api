@@ -1,19 +1,14 @@
+use axum::{Json, Router, extract::Extension,routing::post};
+use utils::{db::DB, error::AppError};
 use authentication::register::Register;
-use axum::Json;
-use axum::Router;
-use axum::routing::post;
-use axum::{extract::Extension, http::StatusCode};
-use utils::db::AppState;
 
 pub async fn register(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<DB>,
     Json(form): Json<Register>,
-) -> Result<(), StatusCode> {
-    form.register(state.db).await
+) -> Result<(), AppError> {
+    form.register(db).await
 }
 
-pub fn router(state: AppState) -> Router {
-    Router::new()
-        .route("/register", post(register))
-        .layer(Extension(state))
+pub fn router() -> Router {
+    Router::new().route("/register", post(register))
 }

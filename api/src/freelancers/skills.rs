@@ -1,46 +1,43 @@
-use axum::Extension;
 use axum::{
-    Json, Router,
+    Extension, Json, Router,
     extract::Path,
-    http::StatusCode,
     routing::{delete, get, post, put},
 };
-use freelancers::skills::{Skills, UpdateSkill};
-use utils::db::AppState;
+use utils::{db::DB, error::AppError};
+use freelancers::skills::{Skills, SkillUserID, Skill};
 
 pub async fn add_skill(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<Skills>,
-) -> Result<(), StatusCode> {
-    Skills::create(Extension(state), Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<Skills>,
+) -> Result<(), AppError> {
+    form.create(db).await
 }
 
 pub async fn get_skills(
-    Extension(state): Extension<AppState>,
-    Path(user_id): Path<i64>,
-) -> Result<Json<Vec<Skills>>, StatusCode> {
-    Skills::get(Extension(state), user_id).await
+    Path(id): Path<SkillUserID>,
+    Extension(db): Extension<DB>,
+) -> Result<Json<Vec<Skills>>, AppError> {
+    id.get(db).await
 }
 
 pub async fn update_skill(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<UpdateSkill>,
-) -> Result<(), StatusCode> {
-    Skills::update(Extension(state), Json(payload)).await
+    Extension(db): Extension<DB>,
+    Json(form): Json<Skill>,
+) -> Result<(), AppError> {
+    form.update(db).await
 }
 
 pub async fn delete_skill(
-    Extension(state): Extension<AppState>,
-    Path(id): Path<i64>,
-) -> Result<(), StatusCode> {
-    Skills::delete(Extension(state), id).await
+    Path(id): Path<Skill>,
+    Extension(db): Extension<DB>,
+) -> Result<(), AppError> {
+    id.delete(db).await
 }
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/skill", post(add_skill))
         .route("/skills/{id}", get(get_skills))
         .route("/update-skill", put(update_skill))
         .route("/delete-skill/{id}", delete(delete_skill))
-        .layer(Extension(state))
 }

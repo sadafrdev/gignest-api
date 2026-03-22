@@ -1,16 +1,13 @@
-use axum::{http::StatusCode};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, Type};
-use utils::enums::Country;
+use sqlx::{FromRow, query};
+use utils::{
+    db::DB,
+    enums::{Country, Role},
+    error::AppError,
+    security::hash_password
+};
 use validator::Validate;
-use utils::{db::DB, security::hash_password};
 
-#[derive(Debug, Type, Deserialize, Serialize)]
-#[sqlx(type_name = "user_role")]
-pub enum Role {
-    Freelancer,
-    Client,
-}
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Register {
@@ -29,33 +26,28 @@ pub struct Register {
 impl Register {
     pub async fn register(
        self, db: DB
-    ) -> Result<(), StatusCode> {
-        let hashed_password = hash_password(self.password).map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+    ) -> Result<(), AppError> {
+        let hashed_password = hash_password(self.password).map_err(|_| AppError::InternalServerError)?;
 
-        sqlx::query!(
-        "
-            INSERT INTO users
-            (first_name, last_name, password, email, phone_number, username, country, role)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ",
-        self.first_name,
-        self.last_name,
-        hashed_password,
-        self.email,
-        self.phone_number,
-        self.username,
-        self.country as Country,
-        self.role as Role
+        query!(
+            "
+                INSERT INTO users
+                (first_name, last_name, password, email, phone_number, username, country, role)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ",
+            self.first_name,
+            self.last_name,
+            hashed_password,
+            self.email,
+            self.phone_number,
+            self.username,
+            self.country as Country,
+            self.role as Role
         )
         .execute(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?;
+        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(())
     }

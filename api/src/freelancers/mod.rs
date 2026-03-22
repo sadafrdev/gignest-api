@@ -1,16 +1,16 @@
-use axum::{Extension, Router};
-use utils::db::AppState;
 pub mod certificates;
 pub mod educations;
 pub mod languages;
+pub mod proposals;
 pub mod skills;
+use axum::Router;
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     let freelancer_routes = Router::new()
-        .merge(certificates::router(state.clone()))
-        .merge(skills::router(state.clone()))
-        .merge(languages::router(state.clone()))
-        .merge(educations::router(state.clone()))
-        .layer(Extension(state));
+        .merge(certificates::router())
+        .merge(skills::router())
+        .merge(languages::router())
+        .merge(educations::router())
+        .merge(proposals::router());
     Router::new().nest("/freelancer", freelancer_routes)
 }
