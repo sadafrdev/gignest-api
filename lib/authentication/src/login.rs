@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use sqlx::query;
-use utils::{db::DB, error::AppError};
+use utils::{db::DB, error::AppError, security::verify};
 
 #[derive(Deserialize, Debug)]
 pub struct Login {
@@ -18,11 +18,8 @@ impl Login {
         .await?
         .ok_or(AppError::InternalServerError)?;
 
+        verify(&res.password, self.password)?;
+        
         Ok(())
-
-        // match res {
-        //     Some(_) => Ok(()),
-        //     None => Err(AppError::NotFound("USER".to_string())),
-        // }
     }
 }

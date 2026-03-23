@@ -1,16 +1,13 @@
-use argon2::{
-    Argon2,
-    password_hash::{PasswordHasher, SaltString},
-};
-use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
+use sqlx::{FromRow, query};
 use utils::{
     db::DB,
     enums::{Country, Role},
-    error::AppError
+    error::AppError,
+    security::hash_password
 };
 use validator::Validate;
+
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Register {
@@ -27,20 +24,17 @@ pub struct Register {
 }
 
 impl Register {
-    pub async fn register(self, db: DB) -> Result<(), AppError> {
-        let salt = SaltString::generate(&mut OsRng);
-        let hashed_password = Argon2::default()
-            .hash_password(self.password.as_bytes(), &salt)
-            .unwrap()
-            .to_string();
+    pub async fn register(
+       self, db: DB
+    ) -> Result<(), AppError> {
+        let hashed_password = hash_password(self.password).map_err(|_| AppError::InternalServerError)?;
 
-
-        sqlx::query!(
-        "
-            INSERT INTO users
-            (first_name, last_name, password, email, phone_number, username, country, role)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ",
+        query!(
+            "
+                INSERT INTO users
+                (first_name, last_name, password, email, phone_number, username, country, role)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ",
             self.first_name,
             self.last_name,
             hashed_password,
