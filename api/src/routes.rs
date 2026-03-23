@@ -1,10 +1,10 @@
 use axum::{Extension, Router};
-use utils::db::AppState;
+use sqlx::PgPool;
 use crate::authentication;
 use crate::clients;
 use crate::freelancers;
 
-pub fn router(state: AppState) -> Router {
+pub fn router(state: PgPool) -> Router {
     Router::new()
         .merge(freelancers::router())
         .merge(authentication::router())

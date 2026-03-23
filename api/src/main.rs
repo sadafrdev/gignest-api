@@ -1,5 +1,4 @@
 use std::net::SocketAddr;
-use utils::db::AppState;
 mod authentication;
 pub mod clients;
 pub mod freelancers;
@@ -15,9 +14,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let database_url = &database_url;
     let db = sqlx::PgPool::connect(&database_url).await?;
 
-    let state = AppState { db };
+    let state = db;
 
-    let app = routes::router(state.clone());
+    let app = routes::router(state);
 
     let addr: SocketAddr = "127.0.0.1:3000".parse().unwrap();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
