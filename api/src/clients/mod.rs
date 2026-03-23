@@ -1,10 +1,7 @@
-use axum::{Extension, Router};
-use utils::db::AppState;
+use axum::Router;
 pub mod jobs;
 
-pub fn router(state: AppState) -> Router {
-    let clients_routes = Router::new()
-        .merge(jobs::router(state.clone()))
-        .layer(Extension(state));
+pub fn router() -> Router {
+    let clients_routes = Router::new().merge(jobs::router());
     Router::new().nest("/client", clients_routes)
 }

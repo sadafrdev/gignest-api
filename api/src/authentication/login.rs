@@ -1,21 +1,16 @@
+use axum::{Json, Router, extract::Extension, routing::get};
+use utils::{db::DB, error::AppError};
 use authentication::login::{Login, LoginResponse};
-use axum::Json;
-use axum::Router;
-use axum::routing::post;
-use axum::extract::Extension;
-use utils::{db::AppState, error::AppError};
 
 pub async fn login(
-    Extension(state): Extension<AppState>,
+    Extension(db): Extension<DB>,
     Json(form): Json<Login>,
 ) -> Result<Json<LoginResponse>, AppError> {
-    let res = form.login(state.db).await?;
+    form.login(db).await
 
-    Ok(Json(res))
 }
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     Router::new()
-        .route("/login", post(login))
-        .layer(Extension(state))
+        .route("/login", get(login))
 }

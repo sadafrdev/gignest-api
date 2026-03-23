@@ -1,50 +1,44 @@
-use axum::Extension;
 use axum::{
-    Json, Router,
+    Extension, Json, Router,
     extract::Path,
-    http::StatusCode,
     routing::{delete, get, patch, post},
 };
-pub use freelancers::languages::Language;
-use utils::db::AppState;
+use utils::{db::DB, error::AppError};
+use freelancers::languages::{Language, UpdateLanguage, fetch};
+use freelancers::languages;
 
 pub async fn create_language(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<Language>,
-) -> Result<(), StatusCode> {
-    Language::add(Extension(state), Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<Language>,
+) -> Result<(), AppError> {
+    form.add(db).await
 }
 
 pub async fn get_languages(
-    Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
-) -> Result<Json<Vec<Language>>, StatusCode> {
-    let languages = Language::get(Extension(state), id).await?;
-    Ok(Json(languages))
+    Extension(db): Extension<DB>,
+) -> Result<Json<Vec<Language>>, AppError> {
+    fetch(id, db).await
 }
 
 pub async fn update_language(
-    Extension(state): Extension<AppState>,
-    Json(payload): Json<Language>,
-) -> Result<(), StatusCode> {
-    Language::update(Extension(state), Json(payload)).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+    Json(form): Json<UpdateLanguage>,
+) -> Result<(), AppError> {
+    form.update(db).await
 }
 
 pub async fn delete_language(
-    Extension(state): Extension<AppState>,
     Path(id): Path<i64>,
-) -> Result<(), StatusCode> {
-    Language::delete(Extension(state), id).await?;
-    Ok(())
+    Extension(db): Extension<DB>,
+) -> Result<(), AppError> {
+    languages::delete(id, db).await
 }
 
-pub fn router(state: AppState) -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/language", post(create_language))
         .route("/delete-language/{id}", delete(delete_language))
         .route("/languages", get(get_languages))
         .route("/update-language/{id}", patch(update_language))
-        .layer(Extension(state))
 }

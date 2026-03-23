@@ -2,19 +2,17 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
-use axum::{Json, http::StatusCode};
+use axum::Json;
+use dotenvy::dotenv;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use rand;
-use rand::{Rng, distributions::Alphanumeric};
+use rand::{Rng, distributions::Alphanumeric, thread_rng};
 use reqwest::Client;
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use time::{Duration, OffsetDateTime};
-use dotenvy::dotenv;
-use utils::db::DB;
+use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct SendOtp {
@@ -48,10 +46,8 @@ impl SendOtp {
             .json(&body)
             .send()
             .await
-            .map_err(|e| {
-                eprintln!("Email sending error: {:?}", e);
-                StatusCode::INTERNAL_SERVER_ERROR
-            });
+            .inspect_err(|e| eprintln!("Email sending error: {:?}", e))
+            .map_err(|_| AppError::InternalServerError);
 
         match res {
             Ok(response) => {
@@ -66,7 +62,7 @@ impl SendOtp {
     }
 
     pub fn otp() -> String {
-        rand::thread_rng()
+        thread_rng()
             .sample_iter(&Alphanumeric)
             .take(6)
             .map(char::from)
@@ -81,38 +77,32 @@ impl SendOtp {
             .to_string()
     }
 
-    pub async fn send_otp(self, db: DB) -> Result<(), StatusCode> {
+    pub async fn send_otp(self, db: DB) -> Result<(), AppError> {
         let hashed_otp = Self::hash_otp(&Self::otp());
         let otp = Self::otp();
         let email = &self.email.clone();
 
-        let user= sqlx::query!(
-            r#"
-                SELECT email FROM users WHERE email = $1
-            "#,
+        let user = sqlx::query!(
+            " SELECT email FROM users WHERE email = $1 ",
             self.email
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .await?
+        .ok_or(AppError::NotFound("EMAIL"));
 
-        if user.is_none() {
-            println!("Your Email Does Not Exists.");
-            return Err(StatusCode::NOT_FOUND);
-        }
         sqlx::query(
-            r#"
+            "
                 INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
                 VALUES (
                     $1, $2, 'password_reset', NOW(), NOW() + INTERVAL '10 minutes'
                 )
-            "#,
+            ",
         )
         .bind(email)
         .bind(hashed_otp)
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         Self::send_email(email, otp).await;
 
@@ -156,46 +146,38 @@ impl VerifyOtp {
         )
     }
 
-    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, StatusCode> {
+    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         let email = self.email.clone();
 
         let otp_str = format!("{:06}", self.otp);
         let otp_hash = format!("{:x}", Sha256::digest(otp_str.as_bytes()));
 
-        let res = sqlx::query!(
-            r#"
-                    SELECT email
-                    FROM otps
-                    WHERE email = $1
-                        AND otp_hash = $2
-                        AND purpose = 'password_reset'
-                        AND expires_at > now()
-                "#,
-                self.email,
-                otp_hash
+        sqlx::query!(
+            "
+                SELECT email
+                FROM otps
+                WHERE email = $1
+                    AND otp_hash = $2
+                    AND purpose = 'password_reset'
+                    AND expires_at > now()
+            ",
+            self.email,
+            otp_hash
         )
         .fetch_optional(&db)
-        .await
-        .map_err(|_| StatusCode::NOT_FOUND)?;
+        .await?
+        .ok_or(AppError::Unauthorized);
 
-        println!("here {:?}, {}", res, self.otp);
-        if res.is_none() {
-            return Err(StatusCode::UNAUTHORIZED);
-        }
         sqlx::query!(
-            r#"
-                DELETE FROM otps
-                WHERE email = $1
-                AND purpose = 'password_reset'
-            "#,
+            " DELETE FROM otps WHERE email = $1 AND purpose = 'password_reset' ",
             self.email
         )
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         let reset_token =
-            Self::generate_reset_token(&email).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            Self::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
 
         return Ok(Json(serde_json::json!({
             "reset_token": reset_token
@@ -211,7 +193,7 @@ pub struct UpdatePassword {
 }
 
 impl UpdatePassword {
-    pub fn verify_reset_token(
+    pub async fn verify_reset_token(
         token: &str,
     ) -> Result<ResetTokenClaims, jsonwebtoken::errors::Error> {
         let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not set");
@@ -234,24 +216,19 @@ impl UpdatePassword {
         Ok(data.claims)
     }
 
-    pub async fn update_password(self, db:DB) -> Result<Json<serde_json::Value>, StatusCode> {
-        //VErifying Token
-        Self::verify_reset_token(&self.token).map_err(|_| StatusCode::UNAUTHORIZED)?;
+    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
+        //Verifying Token
+        Self::verify_reset_token(&self.token).await;
 
         //Updating Password
         sqlx::query!(
-            "
-                UPDATE users
-                SET password = $1
-                WHERE email = $2
-
-            ",
+            " UPDATE users SET password = $1 WHERE email = $2 ",
             self.new_password,
             self.email
         )
         .execute(&db)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| AppError::InternalServerError)?;
 
         Ok(Json(json!({
             "message": "Password updated successfully"

@@ -1,16 +1,15 @@
+use axum::{Extension, Router, middleware};
+use utils::middleware::from_func;
+use sqlx::PgPool;
 use crate::authentication;
 use crate::clients;
 use crate::freelancers;
-use axum::{Extension, Router};
-use utils::db::AppState;
-use axum::{middleware};
-use utils::middleware::from_func;
 
-pub fn router(state: AppState) -> Router {
+pub fn router(state: PgPool) -> Router {
     Router::new()
-        .merge(freelancers::router(state.clone()))
-        .merge(authentication::router(state.clone()))
-        .merge(clients::router(state.clone()))
+        .merge(freelancers::router())
+        .merge(authentication::router())
+        .merge(clients::router())
         .layer(Extension(state))
         .layer(middleware::from_fn(from_func))
 }
