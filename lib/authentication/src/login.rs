@@ -1,7 +1,7 @@
 use axum::Json;
 use serde::Deserialize;
 use sqlx::query;
-use utils::{db::DB, error::AppError, jwt::create_jwt, security::verify};
+use utils::{db::DB, error::AppError, jwt::create_jwt, encryption::verify_password};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -25,10 +25,9 @@ impl Login {
         .await?
         .ok_or(AppError::InternalServerError)?;
 
-        verify(&res.password, self.password)?;
+        verify_password(&res.password, self.password)?;
         
-        let token = create_jwt(res.id)
-            .map_err(|_| AppError::InternalServerError)?;
+        let token = create_jwt(res.id)?;
         
         Ok(Json(LoginResponse { token }))
     }

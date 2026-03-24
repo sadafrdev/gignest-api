@@ -1,7 +1,6 @@
 use serde::{Serialize, Deserialize};
-use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
 use chrono::{Utc, Duration};
-use crate::error::AppError;
+use crate::{encryption::{encoding, decoding}, error::AppError};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -10,7 +9,6 @@ pub struct Claims {
 }
 
 pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
-    let secret = std::env::var("JWT_SECRET").map_err(|_| AppError::InternalServerError)?;
     
     let expiration = Utc::now()
         .checked_add_signed(Duration::hours(24))
@@ -22,24 +20,9 @@ pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
         exp: expiration,
     };
 
-    let token = encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(secret.as_bytes()),
-    )
-    .map_err(|_| AppError::InternalServerError)?;
-
-    Ok(token)
+   encoding(claims)
 }
 
 pub fn verify_jwt(token: &str) -> Result<Claims, AppError> {
-    let secret = std::env::var("JWT_SECRET").map_err(|_| AppError::InternalServerError)?;
-
-    let data = decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(secret.as_bytes()),
-        &Validation::default(),
-    ).map_err(|_| AppError::Unauthorized)?;
-
-    Ok(data.claims)
+    decoding::<Claims>(token)
 }

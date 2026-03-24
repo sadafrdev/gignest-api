@@ -19,7 +19,7 @@ pub struct Proposal {
 
 impl Proposal {
     pub async fn create(self, db: DB) -> Result<(), AppError> {
-        let exists = sqlx::query!(
+        sqlx::query!(
             "
                 SELECT job_id
                 FROM proposals
@@ -32,7 +32,6 @@ impl Proposal {
         .await?
         .ok_or( AppError::NotFound("FREELANCER"));
        
-
         sqlx::query!(
             " INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status) VALUES ($1, $2, $3, $4, $5, $6) ",
             self.freelancer_id,

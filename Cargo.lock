@@ -2764,6 +2764,7 @@ dependencies = [
  "bigdecimal",
  "chrono",
  "dotenv",
+ "dotenvy",
  "jsonwebtoken",
  "rand",
  "reqwest",
