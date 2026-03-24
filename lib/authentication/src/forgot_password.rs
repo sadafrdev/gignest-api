@@ -12,7 +12,8 @@ pub struct SendOtp {
 
 impl SendOtp {
 
-    pub async fn send_otp(self, db: DB) -> Result<(), AppError> {
+    pub async fn send_otp(self, db: DB, sendgrid_api_key: &str, from_email: &str ) -> Result<(), AppError> {
+
         let hashed_otp = hashing(otp());
         let email = &self.email.clone();
 
@@ -23,7 +24,7 @@ impl SendOtp {
         .fetch_optional(&db)
         .await?
         .ok_or(AppError::NotFound("EMAIL"));
-
+    
         sqlx::query!(
             "
                 INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
@@ -38,7 +39,7 @@ impl SendOtp {
         .await
         .map_err(|_| AppError::InternalServerError)?;
 
-        send_email(email, otp()).await;
+        send_email(email, otp(), sendgrid_api_key, from_email).await;
 
         Ok(())
     }

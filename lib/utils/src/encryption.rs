@@ -2,7 +2,6 @@ use argon2::{Argon2, PasswordVerifier, password_hash::PasswordHash};
 use argon2::{
     password_hash::{SaltString, PasswordHasher, rand_core::OsRng}
 };
-use dotenvy::dotenv;
 use rand::{Rng, distributions::Alphanumeric, thread_rng};
 use reqwest::Client;
 use time::{Duration, OffsetDateTime};
@@ -10,6 +9,7 @@ use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode}
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde::de::DeserializeOwned;
+use crate::ENV;
 use crate::error::AppError;
 
 pub fn verify_password(db_password: &str, password: String ) -> Result<(), AppError>{
@@ -38,12 +38,7 @@ pub fn hashing(pswd: String) -> String {
         .to_string()
 }
 
-pub async fn send_email(email: &String, otp: String) {
-    dotenv().ok();
-    let api_key = std::env::var("SENDGRID_API_KEY").expect("SENDGRID_API_KEY not set");
-
-    let from_email = std::env::var("FROM_EMAIL").expect("FROM_EMAIL not set");
-
+pub async fn send_email(email: &String, otp: String, sendgrid_api_key: &str, from_email: &str ) {
     let client = Client::new();
 
     let body = json!({
@@ -60,7 +55,7 @@ pub async fn send_email(email: &String, otp: String) {
 
     let res = client
         .post("https://api.sendgrid.com/v3/mail/send")
-        .bearer_auth(api_key)
+        .bearer_auth(sendgrid_api_key)
         .json(&body)
         .send()
         .await
@@ -79,9 +74,15 @@ pub async fn send_email(email: &String, otp: String) {
     }
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Env{
+    jwt_secret: String
+}
+
 pub fn encoding<T: Serialize>( claims: T ) -> Result<String, AppError>{
-    dotenv::dotenv().ok();
-    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not set");
+
+    let env_var: Env = ENV::load();
+    let secret = env_var.jwt_secret;
 
     encode(
         &Header::default(),
@@ -92,8 +93,8 @@ pub fn encoding<T: Serialize>( claims: T ) -> Result<String, AppError>{
 }
 
 pub fn decoding<T: DeserializeOwned>( token: &str ) -> Result<T, AppError>{
-    dotenv::dotenv().ok();
-    let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not set");
+    let env_var: Env = ENV::load();
+    let secret = env_var.jwt_secret;
 
     let data = decode(
         token,

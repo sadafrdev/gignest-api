@@ -1,4 +1,5 @@
-use axum::{Json, Router, extract::Extension, routing::get};
+use axum::{Json, Router, extract::{Extension, State}, routing::get};
+use serde::Deserialize;
 use utils::{db::DB, error::AppError};
 use authentication::login::{Login, LoginResponse};
 
@@ -9,7 +10,6 @@ pub async fn login(
     form.login(db).await
 
 }
-
 pub fn router() -> Router {
     Router::new()
         .route("/login", get(login))

@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
-
-use utils::db::establish_connection;
+use utils::{ENV, db::establish_connection};
 mod authentication;
 pub mod clients;
 pub mod freelancers;
@@ -8,9 +7,10 @@ pub mod routes;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    ENV::load_file();
 
     let connection = establish_connection().await?;
-    let app = routes::router(connection);
+    let app = routes::router(connection );
 
     let addr: SocketAddr = "127.0.0.1:3000".parse().unwrap();
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
@@ -21,3 +21,4 @@ async fn main() -> Result<(), anyhow::Error> {
 
     Ok(())
 }
+ 
