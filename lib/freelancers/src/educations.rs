@@ -118,7 +118,7 @@ impl EducationID {
     pub async fn delete(
        self, db: DB
     ) -> Result<(), AppError> {
-        let result = sqlx::query!(
+        sqlx::query!(
             " DELETE FROM educations WHERE id = $1 ",
             self.id
         )
@@ -128,10 +128,6 @@ impl EducationID {
             eprintln!("SQL ERROR: {:?}", e);
             AppError::InternalServerError
         })?;
-
-        if result.rows_affected() == 0 {
-            return Err(AppError::NotFound("Education"));
-        }
 
         Ok(())
     }

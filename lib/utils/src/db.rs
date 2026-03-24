@@ -1,5 +1,6 @@
-use anyhow::Result;
 use sqlx::{PgPool, Pool, Postgres};
+use dotenvy::dotenv;
+use crate::error::AppError;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -8,11 +9,10 @@ pub struct AppState {
 
 pub type DB = PgPool;
 
-pub async fn establish_connection() -> Result<AppState> {
+pub async fn establish_connection() -> Result<Pool<Postgres>, AppError> {
+    dotenv().ok();
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL is missing. Put it in .env or export it before running.");
 
-    let db = PgPool::connect(&database_url).await?;
-
-    Ok(AppState { db })
+    PgPool::connect(&database_url).await.map_err(|_| AppError::InternalServerError)
 }

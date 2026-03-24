@@ -78,6 +78,7 @@ pub async fn send_email(email: &String, otp: String) {
         }
     }
 }
+
 pub fn encoding<T: Serialize>( claims: T ) -> Result<String, AppError>{
     dotenv::dotenv().ok();
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not set");
