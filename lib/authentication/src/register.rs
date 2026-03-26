@@ -45,7 +45,6 @@ impl Register {
         .await
         .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
         .map_err(|_| AppError::InternalServerError)?;
-    print!("im 3");
 
         Ok(())
     }

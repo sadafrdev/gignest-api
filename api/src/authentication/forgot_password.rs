@@ -9,7 +9,7 @@ use utils::{db::DB, error::AppError};
 use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
 
 pub async fn send_otp(
-    State(env): State<EnvVars>,
+    State(env): State<ENV>,
     Extension(db): Extension<DB>,
     Json(form): Json<SendOtp>,
 ) -> Result<(), AppError> {
@@ -31,13 +31,13 @@ pub async fn update_password(
 }
 
 #[derive(Deserialize, Clone)]
-pub struct EnvVars{
+pub struct ENV{
     from_email: String,
     sendgrid_api_key: String
 }
 
 pub fn router() -> Router {
-    let env: EnvVars = utils::ENV::load();
+    let env: ENV = utils::ENV::load();
     Router::new()
         .route("/forgot-password/send-otp", post(send_otp))
         .route("/forgot-password/verify-otp", post(verify_otp))
