@@ -45,7 +45,7 @@ impl UpdateCertificate{
     pub async fn update(
        self, db: DB
     ) -> Result<(), AppError> {
-        let result = sqlx::query!(
+        sqlx::query!(
             "
                 UPDATE certificates
                 SET
@@ -66,10 +66,6 @@ impl UpdateCertificate{
             AppError::InternalServerError
         })?;
 
-        if result.rows_affected() == 0 {
-            return Err(AppError::NotFound("USER"));
-        }
-
         Ok(())
     }
 }
@@ -83,7 +79,7 @@ impl CertificateDelete {
     pub async fn delete(
         self, db: PgPool
     ) -> Result<(), AppError> {
-        let result = sqlx::query!(
+        sqlx::query!(
             " DELETE FROM certificates WHERE id = $1",
             self.id
         )
@@ -93,10 +89,6 @@ impl CertificateDelete {
             eprintln!("SQL ERROR: {:?}", e);
             AppError::InternalServerError
         })?;
-
-        if result.rows_affected() == 0 {
-            return Err(AppError::NotFound("USER"));
-        }
 
         Ok(())
     }

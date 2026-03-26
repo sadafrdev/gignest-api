@@ -1,3 +1,6 @@
+
+use axum::{Extension, middleware};
+use utils::middleware::from_func;
 pub mod certificates;
 pub mod educations;
 pub mod languages;
@@ -11,6 +14,8 @@ pub fn router() -> Router {
         .merge(skills::router())
         .merge(languages::router())
         .merge(educations::router())
-        .merge(proposals::router());
+        .merge(proposals::router())
+        .layer(middleware::from_fn(from_func));
+
     Router::new().nest("/freelancer", freelancer_routes)
 }

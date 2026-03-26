@@ -30,8 +30,7 @@ impl Job {
         .map_err(|_| AppError::InternalServerError)?;
         
         Ok(())
-    }
-    
+    } 
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -119,6 +118,5 @@ impl Jobs {
         .fetch_optional(&db)
         .await?
         .ok_or(AppError::NotFound("JOB"))
-
     }
 }

@@ -1,10 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, query};
 use utils::{
-    db::DB,
-    enums::{Country, Role},
-    error::AppError,
-    security::hash_password
+    db::DB, encryption::hashing, enums::{Country, Role}, error::AppError
 };
 use validator::Validate;
 
@@ -27,7 +24,7 @@ impl Register {
     pub async fn register(
        self, db: DB
     ) -> Result<(), AppError> {
-        let hashed_password = hash_password(self.password).map_err(|_| AppError::InternalServerError)?;
+        let hashed_password = hashing(self.password);
 
         query!(
             "

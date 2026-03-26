@@ -1,5 +1,6 @@
-use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Pool, Postgres};
+use crate::{ENV, error::AppError};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -8,11 +9,15 @@ pub struct AppState {
 
 pub type DB = PgPool;
 
-pub async fn establish_connection() -> Result<AppState> {
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL is missing. Put it in .env or export it before running.");
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Env{
+    database_url: String
+}
 
-    let db = PgPool::connect(&database_url).await?;
+pub async fn establish_connection() -> Result<Pool<Postgres>, AppError> {
+    
+    let env_var: Env = ENV::load();
+    let database_url = env_var.database_url;
 
-    Ok(AppState { db })
+    PgPool::connect(&database_url).await.map_err(|_| AppError::InternalServerError)
 }
