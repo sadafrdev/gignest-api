@@ -69,19 +69,6 @@ impl Contract {
 
 }
 
-pub async fn client_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
-    let contracts = sqlx::query_as!(
-        Contract,
-        r#"SELECT client_id, freelancer_id, job_id, status as "status: ContractStatus" FROM contract WHERE client_id = $1"#,
-        id
-    )
-    .fetch_all(&db)
-    .await
-    .map_err(|_| AppError::InternalServerError)?;
-
-    Ok(Json(contracts))
-}
-
 pub async fn freelancer_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
     let contracts = sqlx::query_as!(
         Contract,
@@ -95,9 +82,22 @@ pub async fn freelancer_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>
     Ok(Json(contracts))
 }
 
-pub async fn delete_contract(id: i64, db: DB) -> Result<(), AppError> {
+pub async fn client_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
+    let contracts = sqlx::query_as!(
+        Contract,
+        r#"SELECT client_id, freelancer_id, job_id, status as "status: ContractStatus" FROM contract WHERE client_id = $1"#,
+        id
+    )
+    .fetch_all(&db)
+    .await
+    .map_err(|_| AppError::InternalServerError)?;
+
+    Ok(Json(contracts))
+}
+
+pub async fn complete_contract(id: i64, db: DB) -> Result<(), AppError> {
     sqlx::query!(
-        "DELETE FROM contract WHERE id = $1",
+        "UPDATE contract SET status = 'Completed' WHERE id = $1",
         id
     )
     .execute(&db)
