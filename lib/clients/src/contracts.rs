@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::Type;
 use utils::{db::DB, error::AppError};
 
-#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct AcceptProposal {
     client_id: i64,
     freelancer_id: i64,
@@ -66,4 +66,16 @@ impl AcceptProposal {
         Ok(())
     }
 
+}
+
+pub async fn delete_contract(id: i64, db: DB) -> Result<(), AppError> {
+    sqlx::query!(
+        "DELETE FROM contract WHERE id = $1",
+        id
+    )
+    .execute(&db)
+    .await
+    .map_err(|_| AppError::InternalServerError)?;
+
+    Ok(())
 }
