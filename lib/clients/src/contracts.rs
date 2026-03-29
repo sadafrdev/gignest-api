@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
 use utils::{db::DB, error::AppError};
+use axum::Json;
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct AcceptProposal {
+pub struct Contract {
     client_id: i64,
     freelancer_id: i64,
     job_id: i64,
@@ -17,7 +18,7 @@ pub enum ContractStatus {
     Completed
 }
 
-impl AcceptProposal {
+impl Contract {
     pub async fn accept_proposal_and_create_contract(self, db: DB) -> Result<(), AppError> {
        let record = sqlx::query!(
             r#"
@@ -66,6 +67,32 @@ impl AcceptProposal {
         Ok(())
     }
 
+}
+
+pub async fn client_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
+    let contracts = sqlx::query_as!(
+        Contract,
+        r#"SELECT client_id, freelancer_id, job_id, status as "status: ContractStatus" FROM contract WHERE client_id = $1"#,
+        id
+    )
+    .fetch_all(&db)
+    .await
+    .map_err(|_| AppError::InternalServerError)?;
+
+    Ok(Json(contracts))
+}
+
+pub async fn freelancer_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
+    let contracts = sqlx::query_as!(
+        Contract,
+        r#"SELECT client_id, freelancer_id, job_id, status as "status: ContractStatus" FROM contract WHERE freelancer_id = $1"#,
+        id
+    )
+    .fetch_all(&db)
+    .await
+    .map_err(|_| AppError::InternalServerError)?;
+
+    Ok(Json(contracts))
 }
 
 pub async fn delete_contract(id: i64, db: DB) -> Result<(), AppError> {
