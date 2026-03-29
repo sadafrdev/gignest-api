@@ -1,5 +1,5 @@
 
-use axum::{Extension, middleware};
+use axum::middleware;
 use utils::middleware::from_func;
 pub mod certificates;
 pub mod educations;
