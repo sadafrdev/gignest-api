@@ -6,7 +6,7 @@ use crate::{encryption::{decoding, encoding}, enums::Role, error::AppError};
 pub struct Claims {
     pub sub: i64,
     pub exp: usize,
-    pub role: String,
+    pub role: Role,
 }
 
 pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
@@ -19,7 +19,7 @@ pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
     let claims = Claims {
         sub: user_id,
         exp: expiration,
-        role: String::from("client"),
+        role: Role::Client
     };
 
    encoding(claims)

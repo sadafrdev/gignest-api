@@ -67,7 +67,7 @@ pub enum ProposalStatus {
     Rejected,
 }
 
-#[derive(Debug, Type, Deserialize, Serialize)]
+#[derive(Debug, Type, Deserialize, Serialize, PartialEq, Eq)]
 #[sqlx(type_name = "user_role")]
 pub enum Role {
     Freelancer,

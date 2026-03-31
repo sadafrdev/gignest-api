@@ -1,7 +1,7 @@
 use axum::{  
     extract::{OriginalUri, Request}, middleware::Next, response::Response  
 };
-use crate::{error::AppError, jwt::verify_jwt};
+use crate::{enums::Role, error::AppError, jwt::verify_jwt};
  
 #[derive(Clone, Debug)]
 pub struct AuthUser {
@@ -31,7 +31,7 @@ pub async fn from_func(
     Ok(next.run(req).await)
 }
 
-pub async fn role_middleware(
+pub async fn verify_role(
     OriginalUri(uri): OriginalUri,
     req: Request,
     next: Next,
@@ -52,12 +52,12 @@ pub async fn role_middleware(
 
     let role = claims.role;
     
-    if path.starts_with("/client") && role == "freelancer" {
+    if path.starts_with("/client") && role != Role::Client {
         println!("Unauthorized access attempt to client route with role: {:?}", role);
         return Err(AppError::Unauthorized);
     }
     
-    if path.starts_with("/freelancer") && role == "client" {
+    if path.starts_with("/freelancer") && role != Role::Freelancer {
         println!("Unauthorized access attempt to freelancer route with role: {:?}", role);
         return Err(AppError::Unauthorized);
     }
