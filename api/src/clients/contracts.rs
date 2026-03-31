@@ -10,18 +10,18 @@ pub async fn accept_proposal(
     form.accept_proposal_and_create_contract(db).await
 }
 
-pub async fn client_contracts(
+pub async fn client_contracts_by_id(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Contract>>, AppError> {
-    contracts::client_contracts(id, db).await
+    contracts::client_contracts_by_id(id, db).await
 }
 
-pub async fn freelancer_contracts(
+pub async fn freelancer_contracts_by_id(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Contract>>, AppError> {
-    contracts::freelancer_contracts(id, db).await
+    contracts::freelancer_contracts_by_id(id, db).await
 }
 
 pub async fn complete_contract(
@@ -34,7 +34,7 @@ pub async fn complete_contract(
 pub fn router() -> Router {
     Router::new()
         .route("/accept-proposal", post(accept_proposal))
-        .route("/get-client-contracts/{id}", get(client_contracts))
-        .route("/get-freelancer-contracts/{id}", get(freelancer_contracts))
+        .route("/get-client-contracts/{id}", get(client_contracts_by_id))
+        .route("/get-freelancer-contracts/{id}", get(freelancer_contracts_by_id))
         .route("/complete-contract/{id}", post(complete_contract))
 }

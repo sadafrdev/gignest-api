@@ -64,7 +64,7 @@ impl Contract {
 
 }
 
-pub async fn freelancer_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
+pub async fn freelancer_contracts_by_id(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
     let contracts = sqlx::query_as!(
         Contract,
         r#"
@@ -72,7 +72,7 @@ pub async fn freelancer_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>
                 client_id, 
                 freelancer_id, 
                 job_id,
-                status as "status: ContractStatus" 
+                status AS "status: ContractStatus" 
             FROM contract 
             WHERE freelancer_id = $1
         "#,
@@ -84,7 +84,7 @@ pub async fn freelancer_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>
     Ok(Json(contracts))
 }
 
-pub async fn client_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
+pub async fn client_contracts_by_id(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
     let contracts = sqlx::query_as!(
         Contract,
         r#"
@@ -92,7 +92,7 @@ pub async fn client_contracts(id: i64, db: DB) -> Result<Json<Vec<Contract>>, Ap
                 client_id, 
                 freelancer_id, 
                 job_id, 
-                status as "status: ContractStatus" 
+                status AS "status: ContractStatus" 
             FROM contract 
             WHERE client_id = $1
         "#,
