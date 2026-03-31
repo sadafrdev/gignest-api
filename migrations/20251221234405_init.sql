@@ -91,3 +91,13 @@ CREATE TABLE proposals (
   job_type job_type NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE reviews (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  reviewer_id BIGINT NOT NULL,
+  reviewee_id BIGINT NOT NULL,
+  contract_id BIGINT REFERENCES contracts(id),
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
