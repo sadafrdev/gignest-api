@@ -3,7 +3,7 @@ use sqlx::types::BigDecimal;
 use utils::{db::DB, error::AppError};
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Debug)]
-pub struct Clients {
+pub struct Client {
     pub id: Option<i64>,
     pub username: Option<String>,
     pub email: Option<String>,
@@ -19,9 +19,9 @@ pub struct SearchClients {
 }
 
 impl SearchClients{
-    pub async fn search(self, db: DB) -> Result<Vec<Clients>, AppError> {
+    pub async fn search(self, db: DB) -> Result<Vec<Client>, AppError> {
         let record = sqlx::query_as!(
-            Clients,
+            Client,
             r#"
                 SELECT DISTINCT 
                     u.id,
