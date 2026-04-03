@@ -1,21 +1,19 @@
 
 use axum::middleware;
-use utils::middleware::verify_token;
+use utils::middleware::{verify_token, verify_role};
 pub mod certificates;
 pub mod educations;
 pub mod languages;
 pub mod proposals;
 pub mod skills;
-use axum::Router;
 
 pub fn router() -> Router {
-    let freelancer_routes = Router::new()
+    Router::new()
         .merge(certificates::router())
         .merge(skills::router())
         .merge(languages::router())
         .merge(educations::router())
         .merge(proposals::router())
-        .layer(middleware::from_fn(verify_token));
-
-    Router::new().nest("/freelancer", freelancer_routes)
+        .layer(middleware::from_fn(verify_role))
+        .layer(middleware::from_fn(verify_token))
 }
