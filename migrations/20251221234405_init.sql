@@ -78,6 +78,7 @@ CREATE TABLE jobs (
   description TEXT NOT NULL,
   budget_min NUMERIC NOT NULL,
   budget_max NUMERIC NOT NULL,
+  job_type job_type NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

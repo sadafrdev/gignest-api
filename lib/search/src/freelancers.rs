@@ -18,7 +18,7 @@ pub struct SearchFreelancer {
 }
 
 impl SearchFreelancer {
-    pub async fn search(self,  db: DB  ) -> Result<Vec<Freelancer>, AppError> {
+    pub async fn search(self,  db: DB) -> Result<Vec<Freelancer>, AppError> {
         let record = sqlx::query_as!(
             Freelancer,
             r#"
