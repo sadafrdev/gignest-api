@@ -1,12 +1,11 @@
 use axum::Router;
 use axum::middleware;
-use utils::middleware::from_func;
+use utils::middleware::{from_func, verify_role};
 pub mod jobs;
 
 pub fn router() -> Router {
-    let clients_routes = Router::new()
+    Router::new()
         .merge(jobs::router())
-        .layer(middleware::from_fn(from_func));
-
-    Router::new().nest("/client", clients_routes)
+        .layer(middleware::from_fn(verify_role))
+        .layer(middleware::from_fn(from_func))
 }

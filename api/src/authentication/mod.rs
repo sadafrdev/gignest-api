@@ -8,5 +8,4 @@ pub fn router() -> Router {
         .merge(login::router())
         .merge(register::router())
         .merge(forgot_password::router())
-
 }
