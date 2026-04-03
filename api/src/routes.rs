@@ -6,7 +6,7 @@ use crate::clients;
 use crate::freelancers;
 
 pub fn router(state: DB) -> Router {
-    let routes =Router::new()
+    let routes = Router::new()
         .nest("/freelancer", freelancers::router())
         .nest("/client", clients::router())
         .layer(middleware::from_fn(from_func));
