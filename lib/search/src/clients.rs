@@ -24,14 +24,14 @@ impl SearchClients{
             Client,
             r#"
                 SELECT DISTINCT 
-                    u.id,
-                    u.username,
-                    u.email,
-                    u.phone_number AS phone
-                FROM users u
-                LEFT JOIN jobs j ON j.client_id = u.id
+                    U.id,
+                    U.username,
+                    U.email,
+                    U.phone_number AS phone
+                FROM users U
+                LEFT JOIN jobs J ON J.client_id = U.id
                 WHERE 
-                    u.role = 'Client'
+                    U.role = 'Client'
                     AND ($1::text IS NOT NULL OR title::text ILIKE $1)
                     AND ($2::NUMERIC IS NOT NULL OR budget_min >= $2)
                     AND ($3::NUMERIC IS NOT NULL OR budget_max <= $3)

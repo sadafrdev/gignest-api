@@ -19,7 +19,10 @@ impl Job {
        self, db: DB
     ) -> Result<(), AppError> {
         sqlx::query!(
-            " INSERT INTO jobs (client_id, title, description, job_type , budget_min, budget_max) VALUES ($1, $2, $3, $4, $5, $6)",
+            " 
+                INSERT INTO jobs (client_id, title, description, job_type , budget_min, budget_max) 
+                VALUES ($1, $2, $3, $4, $5, $6)
+            ",
             self.client_id,
             self.title,
             self.description,

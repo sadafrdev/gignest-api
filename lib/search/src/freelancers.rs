@@ -23,18 +23,18 @@ impl SearchFreelancer {
             Freelancer,
             r#"
                 SELECT DISTINCT 
-                    u.id AS user_id,
-                    u.first_name,
-                    u.last_name,
-                    u.country AS "country: Country"
-                FROM users u
-                LEFT JOIN skills s ON s.user_id = u.id
-                LEFT JOIN languages l ON l.user_id = u.id
+                    U.id AS user_id,
+                    U.first_name,
+                    U.last_name,
+                    U.country AS "country: Country"
+                FROM users U
+                LEFT JOIN skills S ON S.user_id = U.id
+                LEFT JOIN languages L ON L.user_id = U.id
                 WHERE 
-                    u.role = 'Freelancer' 
-                    AND ($1::text IS NULL OR s.skill::text ILIKE $1)
-                    AND ($2::text IS NULL OR l.language::text ILIKE $2)
-                    AND ($3::text IS NULL OR u.country::text = $3)
+                    U.role = 'Freelancer' 
+                    AND ($1::text IS NULL OR S.skill::text ILIKE $1)
+                    AND ($2::text IS NULL OR L.language::text ILIKE $2)
+                    AND ($3::text IS NULL OR U.country::text = $3)
             "#,
             self.skill,
             self.language,
