@@ -1,15 +1,18 @@
-use axum::{Extension, Router};
+use axum::{Extension, Router, middleware};
 use utils::db::DB;
+use utils::middleware::{from_func};
 use crate::authentication;
 use crate::clients;
 use crate::freelancers;
-use crate::search;
 
 pub fn router(state: DB) -> Router {
-    Router::new()
-        .merge(freelancers::router())
-        .merge(authentication::router())
-        .merge(clients::router())
-        .merge(search::freelancers::router())
-        .layer(Extension(state))
+    let routes =Router::new()
+        .nest("/freelancer", freelancers::router())
+        .nest("/client", clients::router())
+        .layer(middleware::from_fn(from_func));
+
+        Router::new()
+            .merge(authentication::router())
+            .merge(routes)
+            .layer(Extension(state))
 }
