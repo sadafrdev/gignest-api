@@ -13,5 +13,5 @@ pub async fn search_freelancer(
 
 pub fn router() -> Router {
     Router::new()
-        .route("/", get(search_freelancer))
+        .route("/freelancer/search", get(search_freelancer))
 }

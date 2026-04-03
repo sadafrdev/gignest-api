@@ -12,5 +12,5 @@ pub async fn search_clients(
 
 pub fn router() -> Router {
     Router::new()
-        .route("/", get(search_clients))
+        .route("/client/search", get(search_clients))
 }
