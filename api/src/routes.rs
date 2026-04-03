@@ -3,11 +3,13 @@ use utils::db::DB;
 use crate::authentication;
 use crate::clients;
 use crate::freelancers;
+use crate::search;
 
 pub fn router(state: DB) -> Router {
     Router::new()
         .merge(freelancers::router())
         .merge(authentication::router())
         .merge(clients::router())
+        .merge(search::freelancers::router())
         .layer(Extension(state))
 }

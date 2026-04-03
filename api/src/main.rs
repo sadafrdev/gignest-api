@@ -4,6 +4,7 @@ mod authentication;
 pub mod clients;
 pub mod freelancers;
 pub mod routes;
+pub mod search;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
