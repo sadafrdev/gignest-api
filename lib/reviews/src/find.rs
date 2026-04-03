@@ -1,7 +1,7 @@
 use utils::{db::DB, error::AppError};
 use crate::create::Review;
 
-pub async fn get_reviews_by_reviewee_id(
+pub async fn find_reviews_by_reviewee_id(
     reviewee_id: i64,
     db: DB,
 ) -> Result<Vec<Review>, AppError> {
