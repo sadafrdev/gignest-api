@@ -12,12 +12,15 @@ pub struct Review {
 }
 
 impl Review {
-    pub async fn create_review(
+    pub async fn create(
         self,
         db: DB,
     ) -> Result<(), AppError> {
         sqlx::query!(
-            "INSERT INTO reviews (contract_id, reviewer_id, reviewee_id, rating, comment) VALUES ($1, $2, $3, $4, $5)",
+            "
+                INSERT INTO reviews (contract_id, reviewer_id, reviewee_id, rating, comment) 
+                VALUES ($1, $2, $3, $4, $5)
+            ",
             self.contract_id,
             self.reviewer_id,
             self.reviewee_id,

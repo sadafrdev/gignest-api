@@ -6,7 +6,7 @@ pub async fn create_review(
     Extension(db): Extension<DB>,
     Extension(form): Extension<Review>,
 ) -> Result<(), AppError> {
-    form.create_review(db).await
+    form.create(db).await
 }
 
 pub fn router() -> Router {
