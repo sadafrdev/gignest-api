@@ -1,11 +1,10 @@
-use axum::{Router, middleware};
+use axum::Router;
+use axum::routing::get;
 use utils::middleware::from_func;
-pub mod freelancers;
-pub mod clients;
+pub mod search;
 
 pub fn router() -> Router {
     Router::new()
-        .merge(freelancers::router())
-        .merge(clients::router())
-        .layer(middleware::from_fn(from_func))
+        .route("/client/search", get(search::search_client))
+        .route("/freelancer/search", get(search::search_freelancer))
 }

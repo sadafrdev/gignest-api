@@ -1,2 +1,1 @@
-pub mod freelancers;
-pub mod clients;
+pub mod search;
