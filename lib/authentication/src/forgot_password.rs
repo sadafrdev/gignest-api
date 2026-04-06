@@ -23,7 +23,7 @@ impl SendOtp {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::NotFound("EMAIL"));
+        .ok_or(AppError::NotFound("EMAIL"))?;
     
         sqlx::query!(
             "
@@ -36,8 +36,7 @@ impl SendOtp {
             hashed_otp
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         send_email(email, otp(), sendgrid_api_key, from_email).await;
 
@@ -73,15 +72,14 @@ impl VerifyOtp {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::Unauthorized);
+        .ok_or(AppError::Unauthorized)?;
 
         sqlx::query!(
             " DELETE FROM otps WHERE email = $1 AND purpose = 'password_reset' ",
             self.email
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         let reset_token =
         ResetTokenClaims::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
@@ -112,8 +110,7 @@ impl UpdatePassword {
             self.email
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         Ok(Json(json!({
             "message": "Password updated successfully"

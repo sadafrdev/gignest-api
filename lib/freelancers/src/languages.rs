@@ -23,11 +23,7 @@ impl Language {
             self.language_level as LanguageLevel
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
@@ -57,11 +53,7 @@ impl UpdateLanguage {
         )
        
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
@@ -75,11 +67,7 @@ pub async fn delete(
         id
     )
     .execute(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        AppError::InternalServerError
-    })?;
+    .await?;
 
     Ok(())
 }

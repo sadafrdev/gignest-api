@@ -1,4 +1,5 @@
 use axum::{Extension, Router};
+use crate::reviews;
 use utils::db::DB;
 use crate::authentication;
 use crate::clients;
@@ -9,5 +10,6 @@ pub fn router(state: DB) -> Router {
         .merge(authentication::router())
         .nest("/freelancer", freelancers::router())
         .nest("/client", clients::router())
+        .nest("/reviews", reviews::router())
         .layer(Extension(state))
 }
