@@ -17,7 +17,7 @@ pub async fn get_educations(
     Path(id): Path<EducationID>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Education>>, AppError> {
-    id.get(db).await
+    id.get(db).await.map(Json)
 }
 
 pub async fn update_education(
@@ -38,6 +38,6 @@ pub fn router() -> Router {
     Router::new()
         .route("/education", post(create_education))
         .route("/educations/{id}", get(get_educations))
-        .route("/update-education", patch(update_education))
-        .route("/delete-education/{id}", delete(delete_education))
+        .route("/education/update", patch(update_education))
+        .route("/education/delete/{id}", delete(delete_education))
 }

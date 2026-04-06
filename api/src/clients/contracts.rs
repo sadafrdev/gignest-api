@@ -1,7 +1,6 @@
 use axum::{Json, Router, extract::{Extension, Path}, routing::{post, get}};
 use utils::{db::DB, error::AppError};
-use clients::contracts::{Contract};
-use clients::contracts;
+use clients::contracts::{self, Contract};
 
 pub async fn accept_proposal(
     Extension(db): Extension<DB>,
@@ -14,14 +13,14 @@ pub async fn client_contracts_by_id(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Contract>>, AppError> {
-    contracts::client_contracts_by_id(id, db).await
+    Contract::client_contracts_by_id(id, db).await.map(Json)
 }
 
 pub async fn freelancer_contracts_by_id(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Contract>>, AppError> {
-    contracts::freelancer_contracts_by_id(id, db).await
+    Contract::freelancer_contracts_by_id(id, db).await.map(Json)
 }
 
 pub async fn complete_contract(
@@ -33,8 +32,8 @@ pub async fn complete_contract(
 
 pub fn router() -> Router {
     Router::new()
-        .route("/accept-proposal", post(accept_proposal))
-        .route("/get-client-contracts/{id}", get(client_contracts_by_id))
-        .route("/get-freelancer-contracts/{id}", get(freelancer_contracts_by_id))
-        .route("/complete-contract/{id}", post(complete_contract))
+        .route("/proposal/accept", post(accept_proposal))
+        .route("/client/contracts/{id}", get(client_contracts_by_id))
+        .route("/freelancer/contracts/{id}", get(freelancer_contracts_by_id))
+        .route("/contract/complete/{id}", post(complete_contract))
 }

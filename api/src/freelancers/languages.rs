@@ -18,7 +18,7 @@ pub async fn get_languages(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Language>>, AppError> {
-    fetch(id, db).await
+    fetch(id, db).await.map(Json)
 }
 
 pub async fn update_language(
@@ -38,7 +38,7 @@ pub async fn delete_language(
 pub fn router() -> Router {
     Router::new()
         .route("/language", post(create_language))
-        .route("/delete-language/{id}", delete(delete_language))
+        .route("/language/delete/{id}", delete(delete_language))
         .route("/languages", get(get_languages))
-        .route("/update-language/{id}", patch(update_language))
+        .route("/language/update/{id}", patch(update_language))
 }

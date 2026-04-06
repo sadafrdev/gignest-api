@@ -30,7 +30,7 @@ impl Proposal {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or( AppError::NotFound("FREELANCER"));
+        .ok_or( AppError::NotFound("FREELANCER"))?;
        
         sqlx::query!(
             " INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status) VALUES ($1, $2, $3, $4, $5, $6) ",

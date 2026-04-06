@@ -1,6 +1,4 @@
-
-use axum::middleware;
-use utils::middleware::{verify_token, verify_role};
+use axum::Router;
 pub mod certificates;
 pub mod educations;
 pub mod languages;
@@ -14,6 +12,4 @@ pub fn router() -> Router {
         .merge(languages::router())
         .merge(educations::router())
         .merge(proposals::router())
-        .layer(middleware::from_fn(verify_role))
-        .layer(middleware::from_fn(verify_token))
 }

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use sqlx::Type;
-use axum::Json;
 use utils::{db::DB, error::AppError};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -39,10 +38,10 @@ impl Contract {
 
         sqlx::query!(
             r#"
-                WITH accepted_proposal AS (
+                WITH accept_proposal AS (
                     UPDATE proposals SET status = 'Accepted' WHERE id = $1
                 ),
-                rejected_proposals AS (
+                reject_other_proposals AS (
                    UPDATE proposals SET status = 'Rejected' WHERE job_id = $2 AND id != $1
                 )
                 INSERT INTO contract (client_id, freelancer_id, job_id, status) 
@@ -61,47 +60,47 @@ impl Contract {
 
         Ok(())
     }
+    
+    pub async fn freelancer_contracts_by_id(id: i64, db: DB) -> Result<Vec<Self>, AppError> {
+        let contracts = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT 
+                    client_id, 
+                    freelancer_id, 
+                    job_id,
+                    status AS "status: ContractStatus" 
+                FROM contract 
+                WHERE freelancer_id = $1
+            "#,
+            id
+        )
+        .fetch_all(&db)
+        .await?;
 
-}
+        Ok(contracts)
+    }
 
-pub async fn freelancer_contracts_by_id(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
-    let contracts = sqlx::query_as!(
-        Contract,
-        r#"
-            SELECT 
-                client_id, 
-                freelancer_id, 
-                job_id,
-                status AS "status: ContractStatus" 
-            FROM contract 
-            WHERE freelancer_id = $1
-        "#,
-        id
-    )
-    .fetch_all(&db)
-    .await?;
-
-    Ok(Json(contracts))
-}
-
-pub async fn client_contracts_by_id(id: i64, db: DB) -> Result<Json<Vec<Contract>>, AppError> {
-    let contracts = sqlx::query_as!(
-        Contract,
-        r#"
-            SELECT 
-                client_id, 
-                freelancer_id, 
-                job_id, 
-                status AS "status: ContractStatus" 
-            FROM contract 
-            WHERE client_id = $1
-        "#,
-        id
-    )
-    .fetch_all(&db)
-    .await?;
-
-    Ok(Json(contracts))
+    pub async fn client_contracts_by_id(id: i64, db: DB) -> Result<Vec<Self>, AppError> {
+        let contracts = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT 
+                    client_id, 
+                    freelancer_id, 
+                    job_id, 
+                    status AS "status: ContractStatus" 
+                FROM contract 
+                WHERE client_id = $1
+            "#,
+            id
+        )
+        .fetch_all(&db)
+        .await?;
+    
+        Ok(contracts)
+    }
+    
 }
 
 pub async fn complete_contract(id: i64, db: DB) -> Result<(), AppError> {
