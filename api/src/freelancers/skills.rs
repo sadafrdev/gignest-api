@@ -3,12 +3,12 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
-use freelancers::skills::{self, Skill, Skills, SkillsEnum};
+use freelancers::skills::{Skill, UpdateSkill, SkillsEnum};
 use utils::{db::DB, error::AppError};
 
 pub async fn add_skill(
     Extension(db): Extension<DB>,
-    Json(form): Json<Skills>,
+    Json(form): Json<Skill>,
 ) -> Result<(), AppError> {
     form.create(db).await
 }
@@ -16,13 +16,13 @@ pub async fn add_skill(
 pub async fn get_skills(
     Path(user_id): Path<i64>,
     Extension(db): Extension<DB>,
-) -> Result<Json<Vec<Skills>>, AppError> {
-    Skills::get(db, user_id).await.map(Json)
+) -> Result<Json<Vec<Skill>>, AppError> {
+    Skill::get(db, user_id).await.map(Json)
 }
 
 pub async fn update_skill(
     Extension(db): Extension<DB>,
-    Json(form): Json<Skill>,
+    Json(form): Json<UpdateSkill>,
 ) -> Result<(), AppError> {
     form.update(db).await
 }
@@ -31,7 +31,7 @@ pub async fn delete_skill(
     Path((id, skill)): Path<(i64, SkillsEnum)>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    skills::delete(db, id, skill).await
+    Skill::delete(db, id, skill).await
 }
 
 pub fn router() -> Router {

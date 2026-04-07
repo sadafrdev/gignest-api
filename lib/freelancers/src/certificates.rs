@@ -49,6 +49,14 @@ impl Certificate {
         Ok(certificates)
     }
 
+    pub async fn delete(db: PgPool, id: i64) -> Result<(), AppError> {
+        sqlx::query!(" DELETE FROM certificates WHERE id = $1", id)
+            .execute(&db)
+            .await?;
+    
+        Ok(())
+    }    
+
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -80,12 +88,4 @@ impl UpdateCertificate {
 
         Ok(())
     }
-}
-
-pub async fn delete(db: PgPool, id: i64) -> Result<(), AppError> {
-    sqlx::query!(" DELETE FROM certificates WHERE id = $1", id)
-        .execute(&db)
-        .await?;
-
-    Ok(())
 }

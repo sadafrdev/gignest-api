@@ -15,7 +15,7 @@ pub struct Job {
 }
 
 impl Job {
-    pub async fn create_job(self, db: DB) -> Result<(), AppError> {
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " 
                 INSERT INTO jobs (client_id, title, description, job_type , budget_min, budget_max) 
@@ -54,6 +54,15 @@ impl Job {
         .await?
         .ok_or(AppError::NotFound("JOB"))
     }
+
+    pub async fn delete(db: DB, id: i64) -> Result<(), AppError> {
+        sqlx::query!(" DELETE FROM jobs WHERE id = $1 ", id)
+            .execute(&db)
+            .await?;
+    
+        Ok(())
+    }
+
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -67,7 +76,7 @@ pub struct UpdateJob {
 }
 
 impl UpdateJob {
-    pub async fn update_job(self, db: DB) -> Result<(), AppError> {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE jobs
@@ -89,12 +98,5 @@ impl UpdateJob {
 
         Ok(())
     }
-}
 
-pub async fn delete_job(db: DB, id: i64) -> Result<(), AppError> {
-    sqlx::query!(" DELETE FROM jobs WHERE id = $1 ", id)
-        .execute(&db)
-        .await?;
-
-    Ok(())
 }

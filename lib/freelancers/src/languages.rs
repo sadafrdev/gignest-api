@@ -47,6 +47,14 @@ impl Language {
 
         Ok(languages)
     }
+    
+    pub async fn delete(id: i64, db: DB) -> Result<(), AppError> {
+        sqlx::query!(" DELETE FROM languages WHERE id = $1 ", id)
+            .execute(&db)
+            .await?;
+    
+        Ok(())
+    }
 
 }
 
@@ -74,12 +82,4 @@ impl UpdateLanguage {
 
         Ok(())
     }
-}
-
-pub async fn delete(id: i64, db: DB) -> Result<(), AppError> {
-    sqlx::query!(" DELETE FROM languages WHERE id = $1 ", id)
-        .execute(&db)
-        .await?;
-
-    Ok(())
 }

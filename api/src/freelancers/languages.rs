@@ -3,7 +3,7 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
-use freelancers::languages::{self, Language, UpdateLanguage};
+use freelancers::languages::{Language, UpdateLanguage};
 use utils::{db::DB, error::AppError};
 
 pub async fn create_language(
@@ -31,7 +31,7 @@ pub async fn delete_language(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    languages::delete(id, db).await
+    Language::delete(id, db).await
 }
 
 pub fn router() -> Router {

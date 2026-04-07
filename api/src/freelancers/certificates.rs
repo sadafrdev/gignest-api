@@ -3,7 +3,7 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
-use freelancers::certificates::{self, Certificate, UpdateCertificate};
+use freelancers::certificates::{Certificate, UpdateCertificate};
 use utils::{db::DB, error::AppError};
 
 pub async fn create_certificate(
@@ -31,7 +31,7 @@ pub async fn delete_certificate(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    certificates::delete(db, id).await
+    Certificate::delete(db, id).await
 }
 
 pub fn router() -> Router {
