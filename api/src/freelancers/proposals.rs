@@ -4,7 +4,7 @@ use axum::{
     routing::{get, post},
 };
 use utils::{db::DB, error::AppError};
-use freelancers::proposals::{Proposal, ProposalID};
+use freelancers::proposals::Proposal;
 
 pub async fn create(
     Extension(db): Extension<DB>,

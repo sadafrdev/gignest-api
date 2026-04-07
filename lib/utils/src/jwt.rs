@@ -1,6 +1,10 @@
-use serde::{Serialize, Deserialize};
-use chrono::{Utc, Duration};
-use crate::{encryption::{decoding, encoding}, enums::Role, error::AppError};
+use chrono::{Duration, Utc};
+use serde::{Deserialize, Serialize};
+use crate::{
+    encryption::{decoding, encoding},
+    enums::Role,
+    error::AppError,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -10,7 +14,6 @@ pub struct Claims {
 }
 
 pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
-    
     let expiration = Utc::now()
         .checked_add_signed(Duration::hours(24))
         .ok_or(AppError::InternalServerError)?
@@ -19,10 +22,10 @@ pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
     let claims = Claims {
         sub: user_id,
         exp: expiration,
-        role: Role::Client
+        role: Role::Client,
     };
 
-   encoding(claims)
+    encoding(claims)
 }
 
 pub fn verify_jwt(token: &str) -> Result<Claims, AppError> {

@@ -18,7 +18,7 @@ pub struct SearchClientParam {
     pub job_type: Option<String>,
 }
 
-impl Client{
+impl Client {
     pub async fn search(db: &DB, params: SearchClientParam) -> Result<Vec<Self>, AppError> {
         let record = sqlx::query_as!(
             Self,

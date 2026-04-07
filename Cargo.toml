@@ -3,6 +3,7 @@ members = [
     "lib/authentication",
     "lib/clients",
     "lib/freelancers",
+    "lib/reviews",
     "lib/utils",
     "api",
     "lib/search"

@@ -1,8 +1,7 @@
-use axum::Json;
 use serde::Deserialize;
-use sqlx::query;
-use utils::{db::DB, error::AppError, jwt::create_jwt, encryption::verify_password};
 use serde::Serialize;
+use sqlx::query;
+use utils::{db::DB, encryption::verify_password, error::AppError, jwt::create_jwt};
 
 #[derive(Serialize)]
 pub struct LoginResponse {
@@ -16,7 +15,7 @@ pub struct Login {
 }
 
 impl Login {
-    pub async fn login(self, db: DB) -> Result<Json<LoginResponse>, AppError> {
+    pub async fn login(self, db: DB) -> Result<LoginResponse, AppError> {
         let res = query!(
             " SELECT id, password FROM users WHERE email = $1 ",
             self.email
@@ -26,9 +25,9 @@ impl Login {
         .ok_or(AppError::InternalServerError)?;
 
         verify_password(&res.password, self.password)?;
-        
+
         let token = create_jwt(res.id)?;
-        
-        Ok(Json(LoginResponse { token }))
+
+        Ok(LoginResponse { token })
     }
 }

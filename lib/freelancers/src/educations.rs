@@ -1,7 +1,6 @@
-use axum::Json;
 use core::str;
 use serde::{Deserialize, Serialize};
-use sqlx::{types::chrono::NaiveDate};
+use sqlx::types::chrono::NaiveDate;
 use utils::{db::DB, enums::Country, error::AppError};
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -15,9 +14,7 @@ pub struct Education {
 }
 
 impl Education {
-    pub async fn create(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " INSERT INTO educations (user_id, country, degree, institute, major, year_of_graduation) VALUES ($1, $2, $3, $4, $5, $6)",
             self.user_id,
@@ -28,16 +25,12 @@ impl Education {
             self.year_of_graduation
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
 
-    pub async fn get(db: DB, user_id: i64) -> Result<Json<Vec<Self>>, AppError> {
+    pub async fn get(db: DB, user_id: i64) -> Result<Vec<Self>, AppError> {
         let educations = sqlx::query_as!(
             Self,
             r#"
@@ -60,9 +53,8 @@ impl Education {
             AppError::InternalServerError
         })?;
 
-        Ok(Json(educations))
+        Ok(educations)
     }
-
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -76,9 +68,7 @@ pub struct UpdateEducation {
 }
 
 impl UpdateEducation {
-    pub async fn update(
-        self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE educations
@@ -98,30 +88,20 @@ impl UpdateEducation {
             self.id,
         )
         .execute(&db)
+        .await?;
+
+        Ok(())
+    }
+}
+
+pub async fn delete(db: DB, id: i64) -> Result<(), AppError> {
+    sqlx::query!(" DELETE FROM educations WHERE id = $1 ", id)
+        .execute(&db)
         .await
         .map_err(|e| {
             eprintln!("SQL ERROR: {:?}", e);
             AppError::InternalServerError
         })?;
-
-        Ok(())
-    }
-
-}
-
-pub async fn delete(
-    db: DB, id: i64
-) -> Result<(), AppError> {
-    sqlx::query!(
-        " DELETE FROM educations WHERE id = $1 ",
-        id
-    )
-    .execute(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        AppError::InternalServerError
-    })?;
 
     Ok(())
 }

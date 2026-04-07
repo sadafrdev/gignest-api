@@ -92,3 +92,22 @@ CREATE TABLE proposals (
   job_type job_type NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE contract (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+  freelancer_id BIGINT REFERENCES users(id)  NOT NULL,
+  job_id BIGINT REFERENCES jobs(id)  NOT NULL,
+  client_id BIGINT REFERENCES users(id)  NOT NULL,
+  status contract_status NOT NULL DEFAULT 'Active',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE reviews (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  reviewer_id BIGINT REFERENCES users(id) NOT NULL,
+  reviewee_id BIGINT REFERENCES users(id) NOT NULL,
+  contract_id BIGINT REFERENCES contract(id) NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5) NOT NULL,
+  comment TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

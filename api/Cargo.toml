@@ -9,10 +9,11 @@ freelancers = { path = "../lib/freelancers" }
 clients = { path = "../lib/clients" }
 authentication = { path = "../lib/authentication" }
 search = { path = "../lib/search" }
+reviews = { path = "../lib/reviews" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8.6", features = ["postgres", "chrono", "runtime-tokio"] }
-axum = "0.8.7"
+axum = { version = "0.8.7", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
 anyhow = "1"
 dotenv = "0.15.0"

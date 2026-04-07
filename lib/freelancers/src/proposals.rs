@@ -30,8 +30,8 @@ impl Proposal {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or( AppError::NotFound("FREELANCER"))?;
-       
+        .ok_or(AppError::NotFound("FREELANCER"))?;
+
         sqlx::query!(
             " INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status) VALUES ($1, $2, $3, $4, $5, $6) ",
             self.freelancer_id,
@@ -42,15 +42,13 @@ impl Proposal {
             self.status as ProposalStatus
         )
         .execute(&db)
-        .await
-        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         Ok(())
     }
 
     pub async fn get_by_proposal_id(db: DB, id: i64) -> Result<Self, AppError> {
-        let proposal= sqlx::query_as!(
+        let proposal = sqlx::query_as!(
             Self,
             r#"
                 SELECT
@@ -73,7 +71,7 @@ impl Proposal {
     }
 
     pub async fn get_by_job_id(db: DB, id: i64) -> Result<Self, AppError> {
-        let proposal= sqlx::query_as!(
+        let proposal = sqlx::query_as!(
             Self,
             r#"
                 SELECT
@@ -96,7 +94,7 @@ impl Proposal {
     }
 
     pub async fn get_by_freelancer_id(db: DB, id: i64) -> Result<Self, AppError> {
-        let proposal= sqlx::query_as!(
+        let proposal = sqlx::query_as!(
             Self,
             r#"
                 SELECT

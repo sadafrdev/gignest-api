@@ -1,7 +1,7 @@
 use bigdecimal::BigDecimal;
-use sqlx::Type;
 use core::str;
 use serde::{Deserialize, Serialize};
+use sqlx::Type;
 use utils::{db::DB, enums::JobType, error::AppError};
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow, Type)]
@@ -15,9 +15,7 @@ pub struct Job {
 }
 
 impl Job {
-    pub async fn create_job(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn create_job(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " 
                 INSERT INTO jobs (client_id, title, description, job_type , budget_min, budget_max) 
@@ -31,12 +29,10 @@ impl Job {
             self.budget_max
         )
         .execute(&db)
-        .await
-        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
-        .map_err(|_| AppError::InternalServerError)?;
-        
+        .await?;
+
         Ok(())
-    } 
+    }
 
     pub async fn find(db: DB, client_id: i64) -> Result<Self, AppError> {
         sqlx::query_as!(
@@ -70,10 +66,8 @@ pub struct UpdateJob {
     pub budget_max: BigDecimal,
 }
 
-impl UpdateJob{
-    pub async fn update_job(
-       self, db: DB
-    ) -> Result<(), AppError> {
+impl UpdateJob {
+    pub async fn update_job(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE jobs
@@ -91,26 +85,16 @@ impl UpdateJob{
             self.id
         )
         .execute(&db)
-        .await
-        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         Ok(())
     }
-
 }
 
-pub async fn delete_job(
-    db: DB, id: i64
-) -> Result<(), AppError> {
-    sqlx::query!(
-        " DELETE FROM jobs WHERE id = $1 ",
-        id
-    )
-    .execute(&db)
-    .await
-    .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
-    .map_err(|_| AppError::InternalServerError)?;
+pub async fn delete_job(db: DB, id: i64) -> Result<(), AppError> {
+    sqlx::query!(" DELETE FROM jobs WHERE id = $1 ", id)
+        .execute(&db)
+        .await?;
 
     Ok(())
 }

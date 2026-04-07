@@ -1,4 +1,3 @@
-use axum::Json;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, types::chrono::NaiveDate};
 use utils::{db::DB, error::AppError};
@@ -12,9 +11,7 @@ pub struct Certificate {
 }
 
 impl Certificate {
-    pub async fn generate(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn generate(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " INSERT INTO certificates (user_id, name, certificate_by, year) VALUES ($1, $2, $3, $4)",
             self.user_id,
@@ -23,19 +20,12 @@ impl Certificate {
             self.year,
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
 
-    pub async fn get(
-        db: DB,
-        user_id: i64
-    ) -> Result<Json<Vec<Self>>, AppError> {
+    pub async fn get(db: DB, user_id: i64) -> Result<Vec<Self>, AppError> {
         let certificates = sqlx::query_as!(
             Self,
             "
@@ -56,8 +46,9 @@ impl Certificate {
             AppError::InternalServerError
         })?;
 
-        Ok(Json(certificates))
+        Ok(certificates)
     }
+
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -68,10 +59,8 @@ pub struct UpdateCertificate {
     pub year: NaiveDate,
 }
 
-impl UpdateCertificate{
-    pub async fn update(
-       self, db: DB
-    ) -> Result<(), AppError> {
+impl UpdateCertificate {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE certificates
@@ -87,29 +76,16 @@ impl UpdateCertificate{
             self.id
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
 }
 
-pub async fn delete(
-    db: PgPool, id: i64
-) -> Result<(), AppError> {
-    sqlx::query!(
-        " DELETE FROM certificates WHERE id = $1",
-        id
-    )
-    .execute(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        AppError::InternalServerError
-    })?;
+pub async fn delete(db: PgPool, id: i64) -> Result<(), AppError> {
+    sqlx::query!(" DELETE FROM certificates WHERE id = $1", id)
+        .execute(&db)
+        .await?;
 
     Ok(())
 }

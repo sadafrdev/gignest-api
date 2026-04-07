@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use utils::{db::DB, enums::Country, error::AppError};
 
-
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Freelancer {
     pub user_id: Option<i64>,
@@ -14,7 +13,7 @@ pub struct Freelancer {
 pub struct SearchFreelancerParam {
     pub skill: Option<String>,
     pub language: Option<String>,
-    pub country: Option<String>
+    pub country: Option<String>,
 }
 
 impl Freelancer {

@@ -1,8 +1,10 @@
-use std::path::Path;
-
-use axum::{Json, routing::{delete, get, post, put}, extract::Extension, Router};
+use axum::{
+    Json, Router,
+    extract::{Extension, Path},
+    routing::{delete, get, post, put},
+};
+use clients::jobs::{self, Job, UpdateJob};
 use utils::{db::DB, error::AppError};
-use clients::jobs::{self, Jobs, Job, JobID, UpdateJob};
 
 pub async fn get_jobs(
     Path(id): Path<i64>,
@@ -26,8 +28,8 @@ pub async fn update_job(
 }
 
 pub async fn delete_job(
-    Path(id): Path<i64>,
-    Extension(db): Extension<DB>,
+    Path(id): Path<i64>, 
+    Extension(db): Extension<DB>
 ) -> Result<(), AppError> {
     jobs::delete_job(db, id).await
 }

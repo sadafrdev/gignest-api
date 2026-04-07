@@ -1,12 +1,10 @@
-use std::arch::aarch64::int64x2x4_t;
-
 use axum::{
-    Extension, extract::Path,
-    Json, Router,
-    routing::{delete, get, put, post},
+    Extension, Json, Router,
+    extract::Path,
+    routing::{delete, get, post, put},
 };
+use freelancers::educations::{self, Education, UpdateEducation};
 use utils::{db::DB, error::AppError};
-use freelancers::educations::{self, Education, UpdateEducation, EducationID};
 
 pub async fn create_education(
     Extension(db): Extension<DB>,
@@ -19,7 +17,7 @@ pub async fn get_educations(
     Path(user_id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Education>>, AppError> {
-    Education::get(db, user_id).await
+    Education::get(db, user_id).await.map(Json)
 }
 
 pub async fn update_education(

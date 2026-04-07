@@ -1,9 +1,12 @@
-use axum::Json;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
-use utils::{db::DB, error::AppError, encryption::{send_email, otp, hashing}, encryption::ResetTokenClaims};
+use utils::{
+    db::DB,
+    encryption::ResetTokenClaims,
+    encryption::{hashing, otp, send_email},
+    error::AppError,
+};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct SendOtp {
@@ -11,20 +14,20 @@ pub struct SendOtp {
 }
 
 impl SendOtp {
-
-    pub async fn send_otp(self, db: DB, sendgrid_api_key: &str, from_email: &str ) -> Result<(), AppError> {
-
+    pub async fn send_otp(
+        self,
+        db: DB,
+        sendgrid_api_key: &str,
+        from_email: &str,
+    ) -> Result<(), AppError> {
         let hashed_otp = hashing(otp());
         let email = &self.email.clone();
 
-        sqlx::query!(
-            " SELECT email FROM users WHERE email = $1 ",
-            self.email
-        )
-        .fetch_optional(&db)
-        .await?
-        .ok_or(AppError::NotFound("EMAIL"));
-    
+        sqlx::query!(" SELECT email FROM users WHERE email = $1 ", self.email)
+            .fetch_optional(&db)
+            .await?
+            .ok_or(AppError::NotFound("EMAIL"))?;
+
         sqlx::query!(
             "
                 INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
@@ -36,14 +39,12 @@ impl SendOtp {
             hashed_otp
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         send_email(email, otp(), sendgrid_api_key, from_email).await;
 
         Ok(())
     }
-    
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
@@ -52,8 +53,13 @@ pub struct VerifyOtp {
     pub email: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct VerifyOtpResponse {
+    pub reset_token: String,
+}
+
 impl VerifyOtp {
-    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
+    pub async fn verify_otp(self, db: DB) -> Result<VerifyOtpResponse, AppError> {
         let email = self.email.clone();
 
         let otp_str = format!("{:06}", self.otp);
@@ -73,22 +79,19 @@ impl VerifyOtp {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::Unauthorized);
+        .ok_or(AppError::Unauthorized)?;
 
         sqlx::query!(
             " DELETE FROM otps WHERE email = $1 AND purpose = 'password_reset' ",
             self.email
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
-        let reset_token =
-        ResetTokenClaims::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
+        let reset_token = ResetTokenClaims::generate_reset_token(&email)
+            .map_err(|_| AppError::InternalServerError)?;
 
-        return Ok(Json(serde_json::json!({
-            "reset_token": reset_token
-        })));
+        return Ok(VerifyOtpResponse { reset_token });
     }
 }
 
@@ -99,11 +102,15 @@ pub struct UpdatePassword {
     pub token: String,
 }
 
-impl UpdatePassword {
+#[derive(Debug, Serialize)]
+pub struct UpdatePasswordResponse {
+    pub message: &'static str,
+}
 
-    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
+impl UpdatePassword {
+    pub async fn update_password(self, db: DB) -> Result<UpdatePasswordResponse, AppError> {
         //Verifying Token
-        ResetTokenClaims::verify_reset_token(&self.token).await;
+        ResetTokenClaims::verify_reset_token(&self.token).await?;
 
         //Updating Password
         sqlx::query!(
@@ -112,11 +119,10 @@ impl UpdatePassword {
             self.email
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
-        Ok(Json(json!({
-            "message": "Password updated successfully"
-        })))
+        Ok(UpdatePasswordResponse {
+            message: "Password updated successfully",
+        })
     }
 }

@@ -17,7 +17,7 @@ pub enum AppError {
     #[error("Internal server error")]
     InternalServerError,
     #[error("Unauthorized")]
-    Unauthorized
+    Unauthorized,
 }
 
 #[derive(Serialize)]
@@ -32,9 +32,15 @@ impl IntoResponse for AppError {
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             AppError::DatabaseError(err) => {
                 eprintln!("Database error: {:?}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database operation failed")
-            },
-            AppError::InternalServerError => (StatusCode::INTERNAL_SERVER_ERROR, "An unexpected error occurred"),
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Database operation failed",
+                )
+            }
+            AppError::InternalServerError => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "An unexpected error occurred",
+            ),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
         };
 

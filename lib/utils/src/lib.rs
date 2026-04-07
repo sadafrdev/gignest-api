@@ -1,11 +1,11 @@
 use dotenvy;
-use serde::{de::DeserializeOwned};
+use serde::de::DeserializeOwned;
 pub mod db;
+pub mod encryption;
 pub mod enums;
 pub mod error;
-pub mod middleware;
 pub mod jwt;
-pub mod encryption;
+pub mod middleware;
 
 pub struct ENV;
 
@@ -16,7 +16,7 @@ impl ENV {
         envy::from_env::<T>().expect("Failed to load env")
     }
 
-    pub fn load_file(){
+    pub fn load_file() {
         dotenvy::dotenv().ok();
     }
 }

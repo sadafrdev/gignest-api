@@ -1,12 +1,10 @@
-use std::num::NonZeroI64;
-
 use axum::{
     Extension, Json, Router,
     extract::Path,
     routing::{delete, get, post, put},
 };
+use freelancers::skills::{self, Skill, Skills, SkillsEnum};
 use utils::{db::DB, error::AppError};
-use freelancers::skills::{self, Skill, SkillUserID, Skills, SkillsEnum};
 
 pub async fn add_skill(
     Extension(db): Extension<DB>,
@@ -19,7 +17,7 @@ pub async fn get_skills(
     Path(user_id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Skills>>, AppError> {
-    Skills::get(db, user_id).await
+    Skills::get(db, user_id).await.map(Json)
 }
 
 pub async fn update_skill(

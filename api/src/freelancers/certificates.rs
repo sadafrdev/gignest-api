@@ -3,8 +3,8 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
+use freelancers::certificates::{self, Certificate, UpdateCertificate};
 use utils::{db::DB, error::AppError};
-use freelancers::certificates::{self, Certificate, UpdateCertificate, User, CertificateDelete};
 
 pub async fn create_certificate(
     Extension(db): Extension<DB>,
@@ -17,7 +17,7 @@ pub async fn get_certificates(
     Path(user_id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Certificate>>, AppError> {
-    Certificate::get(db, user_id).await
+    Certificate::get(db, user_id).await.map(Json)
 }
 
 pub async fn update_certificate(

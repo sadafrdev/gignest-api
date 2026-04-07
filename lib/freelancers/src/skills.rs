@@ -1,4 +1,3 @@
-use axum::Json;
 use core::str;
 use serde::{Deserialize, Serialize};
 use utils::{db::DB, error::AppError};
@@ -36,9 +35,7 @@ pub struct Skills {
 }
 
 impl Skills {
-    pub async fn create(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 SELECT user_id 
@@ -58,16 +55,12 @@ impl Skills {
             self.skill as SkillsEnum
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
 
-    pub async fn get(db: DB, user_id: i64) -> Result<Json<Vec<Self>>, AppError> {
+    pub async fn get(db: DB, user_id: i64) -> Result<Vec<Self>, AppError> {
         let skills = sqlx::query_as!(
             Self,
             r#"
@@ -86,9 +79,8 @@ impl Skills {
             AppError::InternalServerError
         })?;
 
-        Ok(Json(skills))
+        Ok(skills)
     }
-
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -98,24 +90,17 @@ pub struct Skill {
 }
 
 impl Skill {
-    pub async fn update(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " UPDATE skills SET skill = $1 WHERE id = $2 ",
             self.skill as SkillsEnum,
             self.id
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
-
 }
 
 pub async fn delete(db: DB, id: i64, skill: SkillsEnum) -> Result<(), AppError> {
@@ -125,11 +110,7 @@ pub async fn delete(db: DB, id: i64, skill: SkillsEnum) -> Result<(), AppError> 
         skill as SkillsEnum
     )
     .execute(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        AppError::InternalServerError
-    })?;
+    .await?;
 
     Ok(())
 }
