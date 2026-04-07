@@ -1,6 +1,6 @@
 use core::str;
 use serde::{Deserialize, Serialize};
-use sqlx::{types::chrono::NaiveDate};
+use sqlx::types::chrono::NaiveDate;
 use utils::{db::DB, enums::Country, error::AppError};
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -14,9 +14,7 @@ pub struct Education {
 }
 
 impl Education {
-    pub async fn create(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " INSERT INTO educations (user_id, country, degree, institute, major, year_of_graduation) VALUES ($1, $2, $3, $4, $5, $6)",
             self.user_id,
@@ -31,6 +29,32 @@ impl Education {
 
         Ok(())
     }
+
+    pub async fn get(db: DB, user_id: i64) -> Result<Vec<Self>, AppError> {
+        let educations = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT
+                    user_id,
+                    country AS "country: Country",
+                    degree,
+                    institute,
+                    major,
+                    year_of_graduation
+                FROM educations
+                WHERE user_id = $1
+            "#,
+            user_id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {e:?}");
+            AppError::InternalServerError
+        })?;
+
+        Ok(educations)
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -44,9 +68,7 @@ pub struct UpdateEducation {
 }
 
 impl UpdateEducation {
-    pub async fn update(
-        self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE educations
@@ -70,52 +92,16 @@ impl UpdateEducation {
 
         Ok(())
     }
-
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct EducationID {
-    pub id: i64,
-}
-
-impl EducationID {
-
-    pub async fn get(self, db: DB) -> Result<Vec<Education>, AppError> {
-        let educations = sqlx::query_as!(
-            Education,
-            r#"
-                SELECT
-                    user_id,
-                    country AS "country: Country",
-                    degree,
-                    institute,
-                    major,
-                    year_of_graduation
-                FROM educations
-                WHERE user_id = $1
-            "#,
-            self.id
-        )
-        .fetch_all(&db)
+pub async fn delete(db: DB, id: i64) -> Result<(), AppError> {
+    sqlx::query!(" DELETE FROM educations WHERE id = $1 ", id)
+        .execute(&db)
         .await
         .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
+            eprintln!("SQL ERROR: {:?}", e);
             AppError::InternalServerError
         })?;
 
-        Ok(educations)
-    }
-
-    pub async fn delete(
-       self, db: DB
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM educations WHERE id = $1 ",
-            self.id
-        )
-        .execute(&db)
-        .await?;
-
-        Ok(())
-    }
+    Ok(())
 }

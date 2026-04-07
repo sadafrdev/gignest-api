@@ -6,6 +6,7 @@ members = [
     "lib/reviews",
     "lib/utils",
     "api",
+    "lib/search"
 ]
 
 resolver = "1"

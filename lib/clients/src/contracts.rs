@@ -7,19 +7,19 @@ pub struct Contract {
     client_id: i64,
     freelancer_id: i64,
     job_id: i64,
-    status: ContractStatus
+    status: ContractStatus,
 }
 
 #[derive(Debug, Type, Deserialize, Serialize)]
 #[sqlx(type_name = "contract_status")]
 pub enum ContractStatus {
     Active,
-    Completed
+    Completed,
 }
 
 impl Contract {
     pub async fn accept_proposal_and_create_contract(self, db: DB) -> Result<(), AppError> {
-       let record = sqlx::query!(
+        let record = sqlx::query!(
             "
                 SELECT P.id
                 FROM proposals P
@@ -34,7 +34,7 @@ impl Contract {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::Unauthorized)?;  
+        .ok_or(AppError::Unauthorized)?;
 
         sqlx::query!(
             r#"
@@ -60,7 +60,7 @@ impl Contract {
 
         Ok(())
     }
-    
+
     pub async fn freelancer_contracts_by_id(id: i64, db: DB) -> Result<Vec<Self>, AppError> {
         let contracts = sqlx::query_as!(
             Self,
@@ -97,20 +97,16 @@ impl Contract {
         )
         .fetch_all(&db)
         .await?;
-    
+
         Ok(contracts)
     }
-    
 }
 
 pub async fn complete_contract(id: i64, db: DB) -> Result<(), AppError> {
-    sqlx::query!(
-        "UPDATE contract SET status = 'Completed' WHERE id = $1",
-        id
-    )
-    .execute(&db)
-    .await
-    .map_err(|_| AppError::InternalServerError)?;
+    sqlx::query!("UPDATE contract SET status = 'Completed' WHERE id = $1", id)
+        .execute(&db)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
 
     Ok(())
 }

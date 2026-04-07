@@ -1,11 +1,10 @@
 use axum::{
     Extension, Json, Router,
     extract::Path,
-    routing::{delete, get, patch, post},
+    routing::{delete, get, post, put},
 };
+use freelancers::languages::{self, Language, UpdateLanguage};
 use utils::{db::DB, error::AppError};
-use freelancers::languages::{Language, UpdateLanguage, fetch};
-use freelancers::languages;
 
 pub async fn create_language(
     Extension(db): Extension<DB>,
@@ -18,7 +17,7 @@ pub async fn get_languages(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Language>>, AppError> {
-    fetch(id, db).await.map(Json)
+    Language::fetch(id, db).await.map(Json)
 }
 
 pub async fn update_language(
@@ -38,7 +37,7 @@ pub async fn delete_language(
 pub fn router() -> Router {
     Router::new()
         .route("/language", post(create_language))
-        .route("/language/delete/{id}", delete(delete_language))
+        .route("/language/{id}", delete(delete_language))
         .route("/languages", get(get_languages))
-        .route("/language/update/{id}", patch(update_language))
+        .route("/language/{id}", put(update_language))
 }

@@ -35,10 +35,8 @@ pub struct Skills {
 }
 
 impl Skills {
-    pub async fn create(
-       self, db: DB
-    ) -> Result<(), AppError> {
-        let findskill = sqlx::query!(
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
+        sqlx::query!(
             "
                 SELECT user_id 
                 FROM skills 
@@ -48,11 +46,8 @@ impl Skills {
             self.skill as SkillsEnum
         )
         .fetch_optional(&db)
-        .await?;
-
-        if findskill.is_some() {
-            return Err(AppError::NotFound("Skill"));
-        }
+        .await?
+        .ok_or(AppError::InternalServerError)?;
 
         sqlx::query!(
             " INSERT INTO skills (user_id, skill) VALUES ($1, $2) ",
@@ -65,51 +60,9 @@ impl Skills {
         Ok(())
     }
 
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct Skill {
-    pub id: i64,
-    pub skill: SkillsEnum,
-}
-
-impl Skill {
-    pub async fn update(
-       self, db: DB
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            " UPDATE skills SET skill = $1 WHERE id = $2 ",
-            self.skill as SkillsEnum,
-            self.id
-        )
-        .execute(&db)
-        .await?;
-
-        Ok(())
-    }
-
-    pub async fn delete(self, db: DB) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
-            self.id,
-            self.skill as SkillsEnum
-        )
-        .execute(&db)
-        .await?;
-
-        Ok(())
-    }
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct SkillUserID {
-    pub user_id: i64,
-}
-
-impl SkillUserID{
-    pub async fn get(self, db: DB) -> Result<Vec<Skills>, AppError> {
+    pub async fn get(db: DB, user_id: i64) -> Result<Vec<Self>, AppError> {
         let skills = sqlx::query_as!(
-            Skills,
+            Self,
             r#"
                 SELECT
                     user_id,
@@ -117,7 +70,7 @@ impl SkillUserID{
                 FROM skills 
                 WHERE user_id = $1
             "#,
-            self.user_id
+            user_id
         )
         .fetch_all(&db)
         .await
@@ -128,4 +81,36 @@ impl SkillUserID{
 
         Ok(skills)
     }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Skill {
+    pub id: i64,
+    pub skill: SkillsEnum,
+}
+
+impl Skill {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
+        sqlx::query!(
+            " UPDATE skills SET skill = $1 WHERE id = $2 ",
+            self.skill as SkillsEnum,
+            self.id
+        )
+        .execute(&db)
+        .await?;
+
+        Ok(())
+    }
+}
+
+pub async fn delete(db: DB, id: i64, skill: SkillsEnum) -> Result<(), AppError> {
+    sqlx::query!(
+        " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
+        id,
+        skill as SkillsEnum
+    )
+    .execute(&db)
+    .await?;
+
+    Ok(())
 }

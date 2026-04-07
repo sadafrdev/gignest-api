@@ -30,8 +30,8 @@ impl Proposal {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or( AppError::NotFound("FREELANCER"))?;
-       
+        .ok_or(AppError::NotFound("FREELANCER"))?;
+
         sqlx::query!(
             " INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status) VALUES ($1, $2, $3, $4, $5, $6) ",
             self.freelancer_id,
@@ -43,20 +43,13 @@ impl Proposal {
         )
         .execute(&db)
         .await?;
-    
+
         Ok(())
     }
-}
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct ProposalID {
-    id: i64,
-}
-
-impl ProposalID {
-    pub async fn get_by_proposal_id(self, db: DB) -> Result<Proposal, AppError> {
-        let proposal= sqlx::query_as!(
-            Proposal,
+    pub async fn get_by_proposal_id(db: DB, id: i64) -> Result<Self, AppError> {
+        let proposal = sqlx::query_as!(
+            Self,
             r#"
                 SELECT
                     freelancer_id, 
@@ -68,7 +61,7 @@ impl ProposalID {
                 FROM proposals
                 WHERE id = $1
             "#,
-            self.id
+            id
         )
         .fetch_optional(&db)
         .await?
@@ -77,9 +70,9 @@ impl ProposalID {
         Ok(proposal)
     }
 
-    pub async fn get_by_job_id(self, db: DB) -> Result<Proposal, AppError> {
-        let proposal= sqlx::query_as!(
-            Proposal,
+    pub async fn get_by_job_id(db: DB, id: i64) -> Result<Self, AppError> {
+        let proposal = sqlx::query_as!(
+            Self,
             r#"
                 SELECT
                     freelancer_id, 
@@ -91,7 +84,7 @@ impl ProposalID {
                 FROM proposals
                 WHERE job_id = $1
             "#,
-            self.id
+            id
         )
         .fetch_optional(&db)
         .await?
@@ -100,9 +93,9 @@ impl ProposalID {
         Ok(proposal)
     }
 
-    pub async fn get_by_freelancer_id(self, db: DB) -> Result<Proposal, AppError> {
-        let proposal= sqlx::query_as!(
-            Proposal,
+    pub async fn get_by_freelancer_id(db: DB, id: i64) -> Result<Self, AppError> {
+        let proposal = sqlx::query_as!(
+            Self,
             r#"
                 SELECT
                     freelancer_id, 
@@ -114,7 +107,7 @@ impl ProposalID {
                 FROM proposals
                 WHERE freelancer_id = $1
             "#,
-            self.id
+            id
         )
         .fetch_optional(&db)
         .await?

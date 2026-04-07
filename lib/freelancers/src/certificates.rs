@@ -11,9 +11,7 @@ pub struct Certificate {
 }
 
 impl Certificate {
-    pub async fn generate(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn generate(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " INSERT INTO certificates (user_id, name, certificate_by, year) VALUES ($1, $2, $3, $4)",
             self.user_id,
@@ -26,6 +24,31 @@ impl Certificate {
 
         Ok(())
     }
+
+    pub async fn get(db: DB, user_id: i64) -> Result<Vec<Self>, AppError> {
+        let certificates = sqlx::query_as!(
+            Self,
+            "
+                SELECT
+                    user_id,
+                    name,
+                    certificate_by,
+                    year
+                FROM certificates
+                WHERE user_id = $1
+            ",
+            user_id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {e:?}");
+            AppError::InternalServerError
+        })?;
+
+        Ok(certificates)
+    }
+
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -36,10 +59,8 @@ pub struct UpdateCertificate {
     pub year: NaiveDate,
 }
 
-impl UpdateCertificate{
-    pub async fn update(
-       self, db: DB
-    ) -> Result<(), AppError> {
+impl UpdateCertificate {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE certificates
@@ -61,56 +82,10 @@ impl UpdateCertificate{
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CertificateDelete {
-   id: i64
-}
-
-impl CertificateDelete {
-    pub async fn delete(
-        self, db: PgPool
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM certificates WHERE id = $1",
-            self.id
-        )
+pub async fn delete(db: PgPool, id: i64) -> Result<(), AppError> {
+    sqlx::query!(" DELETE FROM certificates WHERE id = $1", id)
         .execute(&db)
         .await?;
 
-        Ok(())
-    }
-}
-
-#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
-pub struct User {
-    pub user_id: Option<i64>
-}
-
-impl  User{
-    pub async fn get(
-        self,
-        db: DB
-    ) -> Result<Vec<Certificate>, AppError> {
-        let certificates = sqlx::query_as!(
-            Certificate,
-            "
-                SELECT
-                    user_id,
-                    name,
-                    certificate_by,
-                    year
-                FROM certificates
-                WHERE user_id = $1
-            ",
-            self.user_id
-        )
-        .fetch_all(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
-        })?;
-
-        Ok(certificates)
-    }
+    Ok(())
 }

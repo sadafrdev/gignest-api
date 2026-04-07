@@ -1,7 +1,12 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
-use utils::{db::DB, error::AppError, encryption::{send_email, otp, hashing}, encryption::ResetTokenClaims};
+use utils::{
+    db::DB,
+    encryption::ResetTokenClaims,
+    encryption::{hashing, otp, send_email},
+    error::AppError,
+};
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
 pub struct SendOtp {
@@ -9,20 +14,20 @@ pub struct SendOtp {
 }
 
 impl SendOtp {
-
-    pub async fn send_otp(self, db: DB, sendgrid_api_key: &str, from_email: &str ) -> Result<(), AppError> {
-
+    pub async fn send_otp(
+        self,
+        db: DB,
+        sendgrid_api_key: &str,
+        from_email: &str,
+    ) -> Result<(), AppError> {
         let hashed_otp = hashing(otp());
         let email = &self.email.clone();
 
-        sqlx::query!(
-            " SELECT email FROM users WHERE email = $1 ",
-            self.email
-        )
-        .fetch_optional(&db)
-        .await?
-        .ok_or(AppError::NotFound("EMAIL"))?;
-    
+        sqlx::query!(" SELECT email FROM users WHERE email = $1 ", self.email)
+            .fetch_optional(&db)
+            .await?
+            .ok_or(AppError::NotFound("EMAIL"))?;
+
         sqlx::query!(
             "
                 INSERT INTO otps (email, otp_hash, purpose, created_at, expires_at)
@@ -40,7 +45,6 @@ impl SendOtp {
 
         Ok(())
     }
-    
 }
 
 #[derive(Deserialize, Debug, Serialize, FromRow)]
@@ -84,11 +88,10 @@ impl VerifyOtp {
         .execute(&db)
         .await?;
 
-        let reset_token = ResetTokenClaims::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
+        let reset_token = ResetTokenClaims::generate_reset_token(&email)
+            .map_err(|_| AppError::InternalServerError)?;
 
-        return Ok(VerifyOtpResponse {
-            reset_token
-        });
+        return Ok(VerifyOtpResponse { reset_token });
     }
 }
 
@@ -105,7 +108,6 @@ pub struct UpdatePasswordResponse {
 }
 
 impl UpdatePassword {
-
     pub async fn update_password(self, db: DB) -> Result<UpdatePasswordResponse, AppError> {
         //Verifying Token
         ResetTokenClaims::verify_reset_token(&self.token).await?;
@@ -120,7 +122,7 @@ impl UpdatePassword {
         .await?;
 
         Ok(UpdatePasswordResponse {
-            message: "Password updated successfully"
+            message: "Password updated successfully",
         })
     }
 }

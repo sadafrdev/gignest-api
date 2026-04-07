@@ -1,6 +1,6 @@
 use axum::Router;
-pub mod jobs;
 pub mod contracts;
+pub mod jobs;
 
 pub fn router() -> Router {
     Router::new()

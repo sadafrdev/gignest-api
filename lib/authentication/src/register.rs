@@ -1,10 +1,12 @@
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, query};
 use utils::{
-    db::DB, encryption::hashing, enums::{Country, Role}, error::AppError
+    db::DB,
+    encryption::hashing,
+    enums::{Country, Role},
+    error::AppError,
 };
 use validator::Validate;
-
 
 #[derive(Deserialize, Serialize, Debug, FromRow, Validate)]
 pub struct Register {
@@ -21,9 +23,7 @@ pub struct Register {
 }
 
 impl Register {
-    pub async fn register(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn register(self, db: DB) -> Result<(), AppError> {
         let hashed_password = hashing(self.password);
 
         query!(

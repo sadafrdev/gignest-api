@@ -1,4 +1,4 @@
-use axum::{Json, Router, extract::Extension,routing::post};
+use axum::{Json, Router, extract::Extension, routing::post};
 use utils::{db::DB, error::AppError};
 use authentication::register::Register;
 

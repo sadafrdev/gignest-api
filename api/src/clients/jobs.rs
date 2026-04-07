@@ -1,12 +1,16 @@
-use axum::{Json, routing::{delete, get, post, put}, extract::Extension, Router};
+use axum::{
+    Json, Router,
+    extract::{Extension, Path},
+    routing::{delete, get, post, put},
+};
+use clients::jobs::{self, Job, UpdateJob};
 use utils::{db::DB, error::AppError};
-use clients::jobs::{Client, Job, JobID, UpdateJob};
 
 pub async fn get_jobs(
+    Path(id): Path<i64>,
     Extension(db): Extension<DB>,
-    Json(form): Json<Client>,
 ) -> Result<Json<Job>, AppError> {
-    form.find(db).await.map(Json)
+    Job::find(db, id).await.map(Json)
 }
 
 pub async fn create_job(
@@ -24,16 +28,16 @@ pub async fn update_job(
 }
 
 pub async fn delete_job(
-    Extension(db): Extension<DB>,
-    Json(form): Json<JobID>,
+    Path(id): Path<i64>, 
+    Extension(db): Extension<DB>
 ) -> Result<(), AppError> {
-    form.delete_job(db).await
+    jobs::delete_job(db, id).await
 }
 
 pub fn router() -> Router {
     Router::new()
         .route("/job", post(create_job))
         .route("/jobs", get(get_jobs))
-        .route("/update-job", put(update_job))
-        .route("/delete-job", delete(delete_job))
+        .route("/job", put(update_job))
+        .route("/job", delete(delete_job))
 }

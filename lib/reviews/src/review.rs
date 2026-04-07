@@ -5,21 +5,19 @@ use utils::{db::DB, error::AppError};
 pub struct Review {
     pub reviewer_id: Option<i64>,
     pub reviewee_id: Option<i64>,
-    pub contract_id: i32,
+    pub contract_id: i64,
     pub rating: i32,
     pub comment: Option<String>,
 }
 
 impl Review {
-    pub async fn create(
-        self,
-        db: DB,
-    ) -> Result<(), AppError> {
+    pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 INSERT INTO reviews (contract_id, reviewer_id, reviewee_id, rating, comment) 
                 VALUES ($1, $2, $3, $4, $5)
             ",
+            self.contract_id,
             self.reviewer_id,
             self.reviewee_id,
             self.rating,
@@ -50,8 +48,7 @@ impl Review {
         )
         .fetch_all(&db)
         .await?;
-    
+
         Ok(reviews)
     }
-    
 }

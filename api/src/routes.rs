@@ -1,10 +1,10 @@
-use axum::middleware;
-use axum::{Extension, Router};
-use utils::{db::DB, middleware::{verify_token, verify_role}};
+use axum::{Extension, Router, middleware};
+use utils::{
+    db::DB,
+    middleware::{verify_role, verify_token},
+};
 use crate::reviews;
-use crate::authentication;
-use crate::clients;
-use crate::freelancers;
+use crate::{authentication, clients, freelancers, search};
 
 pub fn router(state: DB) -> Router {
     let routes = Router::new()
@@ -17,6 +17,6 @@ pub fn router(state: DB) -> Router {
     Router::new()
         .merge(authentication::router())
         .merge(routes)
+        .nest("/search", search::router())
         .layer(Extension(state))
-    
 }

@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use utils::{db::DB, error::AppError};
-use utils::enums::{LanguageEnum, LanguageLevel};
+use utils::{
+    db::DB,
+    enums::{LanguageEnum, LanguageLevel},
+    error::AppError,
+};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct Language {
@@ -12,9 +15,7 @@ pub struct Language {
 }
 
 impl Language {
-    pub async fn add(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn add(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " INSERT INTO languages (user_id, language, language_level) VALUES ($1, $2, $3) ",
             self.user_id,
@@ -26,6 +27,27 @@ impl Language {
 
         Ok(())
     }
+
+    pub async fn fetch(id: i64, db: DB) -> Result<Vec<Self>, AppError> {
+        let languages = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
+                FROM languages
+                WHERE user_id = $1
+            "#,
+            id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            AppError::InternalServerError
+        })?;
+
+        Ok(languages)
+    }
+
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -36,10 +58,7 @@ pub struct UpdateLanguage {
 }
 
 impl UpdateLanguage {
-    
-    pub async fn update(
-       self, db: DB
-    ) -> Result<(), AppError> {
+    pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
                 UPDATE languages
@@ -50,7 +69,6 @@ impl UpdateLanguage {
             self.language as LanguageEnum,
             self.language_level as LanguageLevel
         )
-       
         .execute(&db)
         .await?;
 
@@ -58,35 +76,10 @@ impl UpdateLanguage {
     }
 }
 
-pub async fn delete(
-    id: i64, db: DB
-) -> Result<(), AppError> {
-    sqlx::query!(
-        " DELETE FROM languages WHERE id = $1 ",
-        id
-    )
-    .execute(&db)
-    .await?;
+pub async fn delete(id: i64, db: DB) -> Result<(), AppError> {
+    sqlx::query!(" DELETE FROM languages WHERE id = $1 ", id)
+        .execute(&db)
+        .await?;
 
     Ok(())
-}
-
-pub async fn fetch(id: i64, db: DB) -> Result<Vec<Language>, AppError> {
-    let languages = sqlx::query_as!(
-        Language,
-        r#"
-            SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
-            FROM languages
-            WHERE user_id = $1
-        "#,
-        id
-    )
-    .fetch_all(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        AppError::InternalServerError
-    })?;
-
-    Ok(languages)
 }

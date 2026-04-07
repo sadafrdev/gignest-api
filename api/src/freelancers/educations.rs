@@ -1,10 +1,10 @@
 use axum::{
-    Extension, extract::Path,
-    Json, Router,
-    routing::{delete, get, patch, post},
+    Extension, Json, Router,
+    extract::Path,
+    routing::{delete, get, post, put},
 };
+use freelancers::educations::{self, Education, UpdateEducation};
 use utils::{db::DB, error::AppError};
-use freelancers::educations::{Education, UpdateEducation, EducationID};
 
 pub async fn create_education(
     Extension(db): Extension<DB>,
@@ -14,10 +14,10 @@ pub async fn create_education(
 }
 
 pub async fn get_educations(
-    Path(id): Path<EducationID>,
+    Path(user_id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Education>>, AppError> {
-    id.get(db).await.map(Json)
+    Education::get(db, user_id).await.map(Json)
 }
 
 pub async fn update_education(
@@ -28,16 +28,16 @@ pub async fn update_education(
 }
 
 pub async fn delete_education(
-    Path(id): Path<EducationID>,
+    Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    id.delete(db).await
+    educations::delete(db, id).await
 }
 
 pub fn router() -> Router {
     Router::new()
         .route("/education", post(create_education))
         .route("/educations/{id}", get(get_educations))
-        .route("/education/update", patch(update_education))
-        .route("/education/delete/{id}", delete(delete_education))
+        .route("/education", put(update_education))
+        .route("/education/{id}", delete(delete_education))
 }

@@ -1,7 +1,7 @@
 use serde::Deserialize;
-use sqlx::query;
-use utils::{db::DB, error::AppError, jwt::create_jwt, encryption::verify_password};
 use serde::Serialize;
+use sqlx::query;
+use utils::{db::DB, encryption::verify_password, error::AppError, jwt::create_jwt};
 
 #[derive(Serialize)]
 pub struct LoginResponse {
@@ -25,9 +25,9 @@ impl Login {
         .ok_or(AppError::InternalServerError)?;
 
         verify_password(&res.password, self.password)?;
-        
+
         let token = create_jwt(res.id)?;
-        
+
         Ok(LoginResponse { token })
     }
 }
