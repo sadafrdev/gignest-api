@@ -27,11 +27,7 @@ impl Education {
             self.year_of_graduation
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
@@ -70,11 +66,7 @@ impl UpdateEducation {
             self.id,
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
@@ -122,11 +114,7 @@ impl EducationID {
             self.id
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }

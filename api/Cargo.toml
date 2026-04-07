@@ -8,7 +8,7 @@ utils = { path = "../lib/utils" }
 freelancers = { path = "../lib/freelancers" }
 clients = { path = "../lib/clients" }
 authentication = { path = "../lib/authentication" }
-
+reviews = { path = "../lib/reviews" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8.6", features = ["postgres", "chrono", "runtime-tokio"] }

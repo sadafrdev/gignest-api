@@ -34,8 +34,7 @@ impl SendOtp {
             hashed_otp
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         send_email(email, otp(), sendgrid_api_key, from_email).await;
 
@@ -83,8 +82,7 @@ impl VerifyOtp {
             self.email
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         let reset_token = ResetTokenClaims::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
 
@@ -119,8 +117,7 @@ impl UpdatePassword {
             self.email
         )
         .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
+        .await?;
 
         Ok(UpdatePasswordResponse {
             message: "Password updated successfully"

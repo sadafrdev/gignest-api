@@ -22,11 +22,7 @@ impl Certificate {
             self.year,
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
@@ -59,11 +55,7 @@ impl UpdateCertificate{
             self.id
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }
@@ -83,11 +75,7 @@ impl CertificateDelete {
             self.id
         )
         .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
+        .await?;
 
         Ok(())
     }

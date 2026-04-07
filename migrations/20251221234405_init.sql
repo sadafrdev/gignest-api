@@ -100,3 +100,13 @@ CREATE TABLE contract (
   status contract_status NOT NULL DEFAULT 'Active',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE reviews (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  reviewer_id BIGINT REFERENCES users(id),
+  reviewee_id BIGINT REFERENCES users(id),
+  contract_id BIGINT REFERENCES contract(id)
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

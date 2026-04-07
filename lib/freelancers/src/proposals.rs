@@ -42,10 +42,8 @@ impl Proposal {
             self.status as ProposalStatus
         )
         .execute(&db)
-        .await
-        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
-        .map_err(|_| AppError::InternalServerError)?;
-
+        .await?;
+    
         Ok(())
     }
 }
