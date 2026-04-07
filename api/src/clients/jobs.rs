@@ -3,7 +3,7 @@ use axum::{
     extract::{Extension, Path},
     routing::{delete, get, post, put},
 };
-use clients::jobs::{self, Job, UpdateJob};
+use clients::jobs::{Job, UpdateJob};
 use utils::{db::DB, error::AppError};
 
 pub async fn get_jobs(
@@ -17,21 +17,21 @@ pub async fn create_job(
     Extension(db): Extension<DB>,
     Json(form): Json<Job>,
 ) -> Result<(), AppError> {
-    form.create_job(db).await
+    form.create(db).await
 }
 
 pub async fn update_job(
     Extension(db): Extension<DB>,
     Json(form): Json<UpdateJob>,
 ) -> Result<(), AppError> {
-    form.update_job(db).await
+    form.update(db).await
 }
 
 pub async fn delete_job(
     Path(id): Path<i64>, 
     Extension(db): Extension<DB>
 ) -> Result<(), AppError> {
-    jobs::delete_job(db, id).await
+    Job::delete(db, id).await
 }
 
 pub fn router() -> Router {

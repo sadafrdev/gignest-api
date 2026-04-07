@@ -29,12 +29,12 @@ pub enum SkillsEnum {
 }
 
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
-pub struct Skills {
+pub struct Skill {
     pub user_id: Option<i64>,
     pub skill: SkillsEnum,
 }
 
-impl Skills {
+impl Skill {
     pub async fn create(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             "
@@ -81,15 +81,28 @@ impl Skills {
 
         Ok(skills)
     }
+
+    pub async fn delete(db: DB, id: i64, skill: SkillsEnum) -> Result<(), AppError> {
+        sqlx::query!(
+            " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
+            id,
+            skill as SkillsEnum
+        )
+        .execute(&db)
+        .await?;
+    
+        Ok(())
+    }
+
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Skill {
+pub struct UpdateSkill {
     pub id: i64,
     pub skill: SkillsEnum,
 }
 
-impl Skill {
+impl UpdateSkill {
     pub async fn update(self, db: DB) -> Result<(), AppError> {
         sqlx::query!(
             " UPDATE skills SET skill = $1 WHERE id = $2 ",
@@ -101,16 +114,4 @@ impl Skill {
 
         Ok(())
     }
-}
-
-pub async fn delete(db: DB, id: i64, skill: SkillsEnum) -> Result<(), AppError> {
-    sqlx::query!(
-        " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
-        id,
-        skill as SkillsEnum
-    )
-    .execute(&db)
-    .await?;
-
-    Ok(())
 }

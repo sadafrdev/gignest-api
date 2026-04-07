@@ -100,13 +100,14 @@ impl Contract {
 
         Ok(contracts)
     }
+
+    pub async fn complete_contract(id: i64, db: DB) -> Result<(), AppError> {
+        sqlx::query!("UPDATE contract SET status = 'Completed' WHERE id = $1", id)
+            .execute(&db)
+            .await
+            .map_err(|_| AppError::InternalServerError)?;
+
+        Ok(())
+    }
 }
 
-pub async fn complete_contract(id: i64, db: DB) -> Result<(), AppError> {
-    sqlx::query!("UPDATE contract SET status = 'Completed' WHERE id = $1", id)
-        .execute(&db)
-        .await
-        .map_err(|_| AppError::InternalServerError)?;
-
-    Ok(())
-}

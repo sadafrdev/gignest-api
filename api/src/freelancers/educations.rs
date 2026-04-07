@@ -3,7 +3,7 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
-use freelancers::educations::{self, Education, UpdateEducation};
+use freelancers::educations::{Education, UpdateEducation};
 use utils::{db::DB, error::AppError};
 
 pub async fn create_education(
@@ -31,7 +31,7 @@ pub async fn delete_education(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    educations::delete(db, id).await
+    Education::delete(db, id).await
 }
 
 pub fn router() -> Router {

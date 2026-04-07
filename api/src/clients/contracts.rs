@@ -4,7 +4,7 @@ use axum::{
     routing::{get, post},
 };
 use utils::{db::DB, error::AppError};
-use clients::contracts::{self, Contract};
+use clients::contracts::Contract;
 
 pub async fn accept_proposal(
     Extension(db): Extension<DB>,
@@ -31,7 +31,7 @@ pub async fn complete_contract(
     Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<(), AppError> {
-    contracts::complete_contract(id, db).await
+    Contract::complete_contract(id, db).await
 }
 
 pub fn router() -> Router {
