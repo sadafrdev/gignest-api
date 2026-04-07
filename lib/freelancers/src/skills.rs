@@ -39,7 +39,7 @@ impl Skills {
     pub async fn create(
        self, db: DB
     ) -> Result<(), AppError> {
-        let findskill = sqlx::query!(
+        sqlx::query!(
             "
                 SELECT user_id 
                 FROM skills 
@@ -49,11 +49,8 @@ impl Skills {
             self.skill as SkillsEnum
         )
         .fetch_optional(&db)
-        .await?;
-
-        if findskill.is_some() {
-            return Err(AppError::NotFound("Skill"));
-        }
+        .await?
+        .ok_or(AppError::InternalServerError)?;
 
         sqlx::query!(
             " INSERT INTO skills (user_id, skill) VALUES ($1, $2) ",
@@ -68,6 +65,28 @@ impl Skills {
         })?;
 
         Ok(())
+    }
+
+    pub async fn get(db: DB, user_id: i64) -> Result<Json<Vec<Self>>, AppError> {
+        let skills = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT
+                    user_id,
+                    skill AS "skill: SkillsEnum"
+                FROM skills 
+                WHERE user_id = $1
+            "#,
+            user_id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            AppError::InternalServerError
+        })?;
+
+        Ok(Json(skills))
     }
 
 }
@@ -97,48 +116,20 @@ impl Skill {
         Ok(())
     }
 
-    pub async fn delete(self, db: DB) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
-            self.id,
-            self.skill as SkillsEnum
-        )
-        .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
-
-        Ok(())
-    }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct SkillUserID {
-    pub user_id: i64,
-}
+pub async fn delete(db: DB, id: i64, skill: SkillsEnum) -> Result<(), AppError> {
+    sqlx::query!(
+        " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
+        id,
+        skill as SkillsEnum
+    )
+    .execute(&db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        AppError::InternalServerError
+    })?;
 
-impl SkillUserID{
-    pub async fn get(self, db: DB) -> Result<Json<Vec<Skills>>, AppError> {
-        let skills = sqlx::query_as!(
-            Skills,
-            r#"
-                SELECT
-                    user_id,
-                    skill AS "skill: SkillsEnum"
-                FROM skills 
-                WHERE user_id = $1
-            "#,
-            self.user_id
-        )
-        .fetch_all(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
-
-        Ok(Json(skills))
-    }
+    Ok(())
 }

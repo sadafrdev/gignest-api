@@ -36,6 +36,33 @@ impl Education {
 
         Ok(())
     }
+
+    pub async fn get(db: DB, user_id: i64) -> Result<Json<Vec<Self>>, AppError> {
+        let educations = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT
+                    user_id,
+                    country AS "country: Country",
+                    degree,
+                    institute,
+                    major,
+                    year_of_graduation
+                FROM educations
+                WHERE user_id = $1
+            "#,
+            user_id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {e:?}");
+            AppError::InternalServerError
+        })?;
+
+        Ok(Json(educations))
+    }
+
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -82,53 +109,19 @@ impl UpdateEducation {
 
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct EducationID {
-    pub id: i64,
-}
+pub async fn delete(
+    db: DB, id: i64
+) -> Result<(), AppError> {
+    sqlx::query!(
+        " DELETE FROM educations WHERE id = $1 ",
+        id
+    )
+    .execute(&db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        AppError::InternalServerError
+    })?;
 
-impl EducationID {
-
-    pub async fn get(self, db: DB) -> Result<Json<Vec<Education>>, AppError> {
-        let educations = sqlx::query_as!(
-            Education,
-            r#"
-                SELECT
-                    user_id,
-                    country AS "country: Country",
-                    degree,
-                    institute,
-                    major,
-                    year_of_graduation
-                FROM educations
-                WHERE user_id = $1
-            "#,
-            self.id
-        )
-        .fetch_all(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
-        })?;
-
-        Ok(Json(educations))
-    }
-
-    pub async fn delete(
-       self, db: DB
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM educations WHERE id = $1 ",
-            self.id
-        )
-        .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
-
-        Ok(())
-    }
+    Ok(())
 }

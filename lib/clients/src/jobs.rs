@@ -37,6 +37,27 @@ impl Job {
         
         Ok(())
     } 
+
+    pub async fn find(db: DB, client_id: i64) -> Result<Self, AppError> {
+        sqlx::query_as!(
+            Self,
+            r#"
+                SELECT
+                    client_id,
+                    title,
+                    description,
+                    job_type AS "job_type: JobType", 
+                    budget_min,
+                    budget_max
+                FROM jobs
+                WHERE client_id = $1
+            "#,
+            client_id
+        )
+        .fetch_optional(&db)
+        .await?
+        .ok_or(AppError::NotFound("JOB"))
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -79,52 +100,17 @@ impl UpdateJob{
 
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct JobID {
-    id: i64,
-}
+pub async fn delete_job(
+    db: DB, id: i64
+) -> Result<(), AppError> {
+    sqlx::query!(
+        " DELETE FROM jobs WHERE id = $1 ",
+        id
+    )
+    .execute(&db)
+    .await
+    .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
+    .map_err(|_| AppError::InternalServerError)?;
 
-impl JobID {
-    pub async fn delete_job(
-        self, db: DB
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM jobs WHERE id = $1 ",
-            self.id
-        )
-        .execute(&db)
-        .await
-        .inspect_err(|e| eprintln!("SQL ERROR: {e:?}"))
-        .map_err(|_| AppError::InternalServerError)?;
-
-        Ok(())
-    }
-}
-
-#[derive(Deserialize, Serialize, Debug)]
-pub struct Jobs {
-    pub client_id: i64,
-}
-
-impl Jobs {
-    pub async fn find(self,  db: DB ) -> Result<Job, AppError> {
-        sqlx::query_as!(
-            Job,
-            r#"
-                SELECT
-                    client_id,
-                    title,
-                    description,
-                    job_type AS "job_type: JobType", 
-                    budget_min,
-                    budget_max
-                FROM jobs
-                WHERE client_id = $1
-            "#,
-            self.client_id
-        )
-        .fetch_optional(&db)
-        .await?
-        .ok_or(AppError::NotFound("JOB"))
-    }
+    Ok(())
 }

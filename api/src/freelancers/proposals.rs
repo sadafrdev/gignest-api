@@ -14,24 +14,24 @@ pub async fn create(
 }
 
 pub async fn find_by_id(
-    Path(id): Path<ProposalID>,
+    Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Proposal>, AppError> {
-    id.get_by_proposal_id(db).await.map(Json)
+    Proposal::get_by_proposal_id(db, id).await.map(Json)
 }
 
 pub async fn find_proposal(
-    Path(id): Path<ProposalID>,
+    Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Proposal>, AppError> {
-    id.get_by_freelancer_id(db).await.map(Json)
+    Proposal::get_by_freelancer_id(db, id).await.map(Json)
 }
 
 pub async fn find_by_job_id(
-    Path(id): Path<ProposalID>,
+    Path(id): Path<i64>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Proposal>, AppError> {
-    id.get_by_job_id(db).await.map(Json)
+    Proposal::get_by_job_id(db, id).await.map(Json)
 }
 
 pub fn router() -> Router {

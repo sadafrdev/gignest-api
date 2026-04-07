@@ -31,6 +31,26 @@ impl Language {
 
         Ok(())
     }
+
+    pub async fn fetch(id: i64, db: DB) -> Result<Json<Vec<Self>>, AppError> {
+        let languages = sqlx::query_as!(
+            Self,
+            r#"
+                SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
+                FROM languages
+                WHERE user_id = $1
+            "#,
+            id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {:?}", e);
+            AppError::InternalServerError
+        })?;
+
+        Ok(Json(languages))
+    }
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
@@ -82,24 +102,4 @@ pub async fn delete(
     })?;
 
     Ok(())
-}
-
-pub async fn fetch(id: i64, db: DB) -> Result<Json<Vec<Language>>, AppError> {
-    let languages = sqlx::query_as!(
-        Language,
-        r#"
-            SELECT id, user_id, language AS "language: LanguageEnum", language_level AS "language_level: LanguageLevel"
-            FROM languages
-            WHERE user_id = $1
-        "#,
-        id
-    )
-    .fetch_all(&db)
-    .await
-    .map_err(|e| {
-        eprintln!("SQL ERROR: {:?}", e);
-        AppError::InternalServerError
-    })?;
-
-    Ok(Json(languages))
 }

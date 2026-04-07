@@ -31,6 +31,33 @@ impl Certificate {
 
         Ok(())
     }
+
+    pub async fn get(
+        db: DB,
+        user_id: i64
+    ) -> Result<Json<Vec<Self>>, AppError> {
+        let certificates = sqlx::query_as!(
+            Self,
+            "
+                SELECT
+                    user_id,
+                    name,
+                    certificate_by,
+                    year
+                FROM certificates
+                WHERE user_id = $1
+            ",
+            user_id
+        )
+        .fetch_all(&db)
+        .await
+        .map_err(|e| {
+            eprintln!("SQL ERROR: {e:?}");
+            AppError::InternalServerError
+        })?;
+
+        Ok(Json(certificates))
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
@@ -70,60 +97,19 @@ impl UpdateCertificate{
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct CertificateDelete {
-   id: i64
-}
+pub async fn delete(
+    db: PgPool, id: i64
+) -> Result<(), AppError> {
+    sqlx::query!(
+        " DELETE FROM certificates WHERE id = $1",
+        id
+    )
+    .execute(&db)
+    .await
+    .map_err(|e| {
+        eprintln!("SQL ERROR: {:?}", e);
+        AppError::InternalServerError
+    })?;
 
-impl CertificateDelete {
-    pub async fn delete(
-        self, db: PgPool
-    ) -> Result<(), AppError> {
-        sqlx::query!(
-            " DELETE FROM certificates WHERE id = $1",
-            self.id
-        )
-        .execute(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {:?}", e);
-            AppError::InternalServerError
-        })?;
-
-        Ok(())
-    }
-}
-
-#[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]
-pub struct User {
-    pub user_id: Option<i64>
-}
-
-impl  User{
-    pub async fn get(
-        self,
-        db: DB
-    ) -> Result<Json<Vec<Certificate>>, AppError> {
-        let certificates = sqlx::query_as!(
-            Certificate,
-            "
-                SELECT
-                    user_id,
-                    name,
-                    certificate_by,
-                    year
-                FROM certificates
-                WHERE user_id = $1
-            ",
-            self.user_id
-        )
-        .fetch_all(&db)
-        .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
-        })?;
-
-        Ok(Json(certificates))
-    }
+    Ok(())
 }
