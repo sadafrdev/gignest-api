@@ -101,7 +101,7 @@ impl UpdatePassword {
 
     pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
         //Verifying Token
-        ResetTokenClaims::verify_reset_token(&self.token).await;
+        ResetTokenClaims::verify_reset_token(&self.token).await?;
 
         //Updating Password
         sqlx::query!(
