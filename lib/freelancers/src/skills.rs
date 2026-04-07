@@ -1,4 +1,3 @@
-use axum::Json;
 use core::str;
 use serde::{Deserialize, Serialize};
 use utils::{db::DB, error::AppError};
@@ -108,7 +107,7 @@ pub struct SkillUserID {
 }
 
 impl SkillUserID{
-    pub async fn get(self, db: DB) -> Result<Json<Vec<Skills>>, AppError> {
+    pub async fn get(self, db: DB) -> Result<Vec<Skills>, AppError> {
         let skills = sqlx::query_as!(
             Skills,
             r#"
@@ -127,6 +126,6 @@ impl SkillUserID{
             AppError::InternalServerError
         })?;
 
-        Ok(Json(skills))
+        Ok(skills)
     }
 }

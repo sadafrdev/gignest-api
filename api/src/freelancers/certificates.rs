@@ -17,7 +17,7 @@ pub async fn get_certificates(
     Path(id): Path<User>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Certificate>>, AppError> {
-    id.get(db).await
+    id.get(db).await.map(Json)
 }
 
 pub async fn update_certificate(
@@ -38,6 +38,6 @@ pub fn router() -> Router {
     Router::new()
         .route("/certificates/{id}", get(get_certificates))
         .route("/certificate", post(create_certificate))
-        .route("/update-certificate", patch(update_certificate))
-        .route("/delete-certificate/{id}", delete(delete_certificate))
+        .route("/certificate/update", patch(update_certificate))
+        .route("/certificate/delete/{id}", delete(delete_certificate))
 }

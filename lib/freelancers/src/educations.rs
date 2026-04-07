@@ -1,4 +1,3 @@
-use axum::Json;
 use core::str;
 use serde::{Deserialize, Serialize};
 use sqlx::{types::chrono::NaiveDate};
@@ -81,7 +80,7 @@ pub struct EducationID {
 
 impl EducationID {
 
-    pub async fn get(self, db: DB) -> Result<Json<Vec<Education>>, AppError> {
+    pub async fn get(self, db: DB) -> Result<Vec<Education>, AppError> {
         let educations = sqlx::query_as!(
             Education,
             r#"
@@ -104,7 +103,7 @@ impl EducationID {
             AppError::InternalServerError
         })?;
 
-        Ok(Json(educations))
+        Ok(educations)
     }
 
     pub async fn delete(

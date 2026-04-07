@@ -1,4 +1,3 @@
-use axum::Json;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, types::chrono::NaiveDate};
 use utils::{db::DB, error::AppError};
@@ -91,7 +90,7 @@ impl  User{
     pub async fn get(
         self,
         db: DB
-    ) -> Result<Json<Vec<Certificate>>, AppError> {
+    ) -> Result<Vec<Certificate>, AppError> {
         let certificates = sqlx::query_as!(
             Certificate,
             "
@@ -112,6 +111,6 @@ impl  User{
             AppError::InternalServerError
         })?;
 
-        Ok(Json(certificates))
+        Ok(certificates)
     }
 }

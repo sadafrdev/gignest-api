@@ -41,3 +41,5 @@ CREATE TYPE skills_enum AS ENUM (
 CREATE TYPE job_type AS ENUM ('Fixed', 'Hourly');
 
 CREATE TYPE proposal_status AS ENUM ('Pending', 'Accepted', 'Rejected');
+
+CREATE TYPE contract_status AS ENUM ('Active', 'Completed');

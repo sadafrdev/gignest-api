@@ -1,3 +1,4 @@
+use axum::middleware;
 use axum::{Extension, Router};
 use utils::{db::DB, middleware::{verify_token, verify_role}};
 use crate::reviews;
@@ -17,4 +18,5 @@ pub fn router(state: DB) -> Router {
         .merge(authentication::router())
         .merge(routes)
         .layer(Extension(state))
+    
 }

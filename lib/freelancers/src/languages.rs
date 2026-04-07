@@ -1,4 +1,3 @@
-use axum::Json;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError};
@@ -72,7 +71,7 @@ pub async fn delete(
     Ok(())
 }
 
-pub async fn fetch(id: i64, db: DB) -> Result<Json<Vec<Language>>, AppError> {
+pub async fn fetch(id: i64, db: DB) -> Result<Vec<Language>, AppError> {
     let languages = sqlx::query_as!(
         Language,
         r#"
@@ -89,5 +88,5 @@ pub async fn fetch(id: i64, db: DB) -> Result<Json<Vec<Language>>, AppError> {
         AppError::InternalServerError
     })?;
 
-    Ok(Json(languages))
+    Ok(languages)
 }
