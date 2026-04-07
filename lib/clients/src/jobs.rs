@@ -95,11 +95,11 @@ impl JobID {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Jobs {
+pub struct Client {
     pub client_id: i64,
 }
 
-impl Jobs {
+impl Client {
     pub async fn find(self,  db: DB ) -> Result<Job, AppError> {
         sqlx::query_as!(
             Job,

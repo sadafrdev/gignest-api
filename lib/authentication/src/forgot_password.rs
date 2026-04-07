@@ -1,6 +1,4 @@
-use axum::Json;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::FromRow;
 use utils::{db::DB, error::AppError, encryption::{send_email, otp, hashing}, encryption::ResetTokenClaims};
@@ -23,7 +21,7 @@ impl SendOtp {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::NotFound("EMAIL"));
+        .ok_or(AppError::NotFound("EMAIL"))?;
     
         sqlx::query!(
             "
@@ -52,8 +50,13 @@ pub struct VerifyOtp {
     pub email: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct VerifyOtpResponse {
+    pub reset_token: String,
+}
+
 impl VerifyOtp {
-    pub async fn verify_otp(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
+    pub async fn verify_otp(self, db: DB) -> Result<VerifyOtpResponse, AppError> {
         let email = self.email.clone();
 
         let otp_str = format!("{:06}", self.otp);
@@ -73,7 +76,7 @@ impl VerifyOtp {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::Unauthorized);
+        .ok_or(AppError::Unauthorized)?;
 
         sqlx::query!(
             " DELETE FROM otps WHERE email = $1 AND purpose = 'password_reset' ",
@@ -83,12 +86,11 @@ impl VerifyOtp {
         .await
         .map_err(|_| AppError::InternalServerError)?;
 
-        let reset_token =
-        ResetTokenClaims::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
+        let reset_token = ResetTokenClaims::generate_reset_token(&email).map_err(|_| AppError::InternalServerError)?;
 
-        return Ok(Json(serde_json::json!({
-            "reset_token": reset_token
-        })));
+        return Ok(VerifyOtpResponse {
+            reset_token
+        });
     }
 }
 
@@ -99,11 +101,16 @@ pub struct UpdatePassword {
     pub token: String,
 }
 
+#[derive(Debug, Serialize)]
+pub struct UpdatePasswordResponse {
+    pub message: &'static str,
+}
+
 impl UpdatePassword {
 
-    pub async fn update_password(self, db: DB) -> Result<Json<serde_json::Value>, AppError> {
+    pub async fn update_password(self, db: DB) -> Result<UpdatePasswordResponse, AppError> {
         //Verifying Token
-        ResetTokenClaims::verify_reset_token(&self.token).await;
+        ResetTokenClaims::verify_reset_token(&self.token).await?;
 
         //Updating Password
         sqlx::query!(
@@ -115,8 +122,8 @@ impl UpdatePassword {
         .await
         .map_err(|_| AppError::InternalServerError)?;
 
-        Ok(Json(json!({
-            "message": "Password updated successfully"
-        })))
+        Ok(UpdatePasswordResponse {
+            message: "Password updated successfully"
+        })
     }
 }

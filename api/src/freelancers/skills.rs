@@ -17,7 +17,7 @@ pub async fn get_skills(
     Path(id): Path<SkillUserID>,
     Extension(db): Extension<DB>,
 ) -> Result<Json<Vec<Skills>>, AppError> {
-    id.get(db).await
+    id.get(db).await.map(Json)
 }
 
 pub async fn update_skill(
@@ -38,6 +38,6 @@ pub fn router() -> Router {
     Router::new()
         .route("/skill", post(add_skill))
         .route("/skills/{id}", get(get_skills))
-        .route("/update-skill", put(update_skill))
-        .route("/delete-skill/{id}", delete(delete_skill))
+        .route("/skill/update", put(update_skill))
+        .route("/skill/delete/{id}", delete(delete_skill))
 }

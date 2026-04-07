@@ -8,7 +8,7 @@ pub struct AuthUser {
     pub id: i64,
 }
 
-pub async fn from_func(
+pub async fn verify_token(
     mut req: Request,
     next: Next,
 ) -> Result<Response, AppError> {

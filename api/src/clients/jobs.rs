@@ -1,10 +1,10 @@
 use axum::{Json, routing::{delete, get, post, put}, extract::Extension, Router};
 use utils::{db::DB, error::AppError};
-use clients::jobs::{Jobs, Job, JobID, UpdateJob};
+use clients::jobs::{Client, Job, JobID, UpdateJob};
 
 pub async fn get_jobs(
     Extension(db): Extension<DB>,
-    Json(form): Json<Jobs>,
+    Json(form): Json<Client>,
 ) -> Result<Json<Job>, AppError> {
     form.find(db).await.map(Json)
 }

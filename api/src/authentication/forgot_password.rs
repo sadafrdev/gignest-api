@@ -1,12 +1,9 @@
 use axum::{
-    Json, Router,
-    extract::{Extension, State},
-    routing::{patch, post},
+    Json, Router, extract::{Extension, State}, routing::{patch, post}
 };
 use serde::Deserialize;
-use serde_json::Value;
 use utils::{db::DB, error::AppError};
-use authentication::forgot_password::{SendOtp, UpdatePassword, VerifyOtp};
+use authentication::forgot_password::{SendOtp, UpdatePassword, UpdatePasswordResponse, VerifyOtp, VerifyOtpResponse};
 
 pub async fn send_otp(
     State(env): State<ENV>,
@@ -19,15 +16,15 @@ pub async fn send_otp(
 pub async fn verify_otp(
     Extension(db): Extension<DB>,
     Json(form): Json<VerifyOtp>,
-) -> Result<Json<Value>, AppError> {
-    form.verify_otp(db).await
+) -> Result<Json<VerifyOtpResponse>, AppError> {
+    form.verify_otp(db).await.map(Json)
 }
 
 pub async fn update_password(
     Extension(db): Extension<DB>,
     Json(form): Json<UpdatePassword>,
-) -> Result<Json<Value>, AppError> {
-    form.update_password(db).await
+) -> Result<Json<UpdatePasswordResponse>, AppError> {
+    form.update_password(db).await.map(Json)
 }
 
 #[derive(Deserialize, Clone)]
@@ -35,6 +32,7 @@ pub struct ENV{
     from_email: String,
     sendgrid_api_key: String
 }
+
 
 pub fn router() -> Router {
     let env: ENV = utils::ENV::load();
