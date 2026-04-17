@@ -18,6 +18,8 @@ pub enum AppError {
     InternalServerError,
     #[error("Unauthorized")]
     Unauthorized,
+    #[error("Bad request: {0}")]
+    BadRequest(&'static str),
 }
 
 #[derive(Serialize)]
@@ -42,6 +44,7 @@ impl IntoResponse for AppError {
                 "An unexpected error occurred",
             ),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
         };
 
         let body = Json(ErrorResponse {

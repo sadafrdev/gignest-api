@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 utils = { path = "../utils" }
 sqlx = { version = "0.8.6", features = ["postgres", "chrono", "runtime-tokio", "bigdecimal"] }
-axum = "0.8.7"
+axum = { version = "0.8.7", features = ["multipart"] }
 serde = { version = "1.0", features = ["derive"] }
 anyhow = "1"
 serde_json = "1"
