@@ -13,7 +13,7 @@ pub struct Claims {
     pub role: Role,
 }
 
-pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
+pub fn create_jwt(user_id: i64, role: Role) -> Result<String, AppError> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::hours(24))
         .ok_or(AppError::InternalServerError)?
@@ -22,7 +22,7 @@ pub fn create_jwt(user_id: i64) -> Result<String, AppError> {
     let claims = Claims {
         sub: user_id,
         exp: expiration,
-        role: Role::Client,
+        role
     };
 
     encoding(claims)

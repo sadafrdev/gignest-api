@@ -13,7 +13,7 @@ pub fn router(state: DB) -> Router {
         .nest("/reviews", reviews::router())
         .layer(middleware::from_fn(verify_token))
         .layer(middleware::from_fn(verify_role));
-
+    
     Router::new()
         .merge(authentication::router())
         .merge(routes)

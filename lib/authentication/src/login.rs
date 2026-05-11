@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::query;
-use utils::{db::DB, encryption::verify_password, error::AppError, jwt::create_jwt};
+use utils::{db::DB, encryption::verify_password, error::AppError, jwt::create_jwt, enums::Role};
 
 #[derive(Serialize)]
 pub struct LoginResponse {
@@ -17,7 +17,7 @@ pub struct Login {
 impl Login {
     pub async fn login(self, db: DB) -> Result<LoginResponse, AppError> {
         let res = query!(
-            " SELECT id, password FROM users WHERE email = $1 ",
+            r#" SELECT id, password, role AS "user_role: Role" FROM users WHERE email = $1 "#,
             self.email
         )
         .fetch_optional(&db)
@@ -25,8 +25,7 @@ impl Login {
         .ok_or(AppError::InternalServerError)?;
 
         verify_password(&res.password, self.password)?;
-
-        let token = create_jwt(res.id)?;
+        let token = create_jwt(res.id, res.user_role)?;
 
         Ok(LoginResponse { token })
     }

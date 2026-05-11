@@ -120,5 +120,6 @@ CREATE TABLE uploads (
   original_name TEXT NOT NULL,
   safe_name TEXT NOT NULL,
   file_path TEXT NOT NULL,
+  file_bytes BYTEA NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
