@@ -98,12 +98,12 @@ impl Attachment {
             
                     form.safe_name = format!("{}.{}", Uuid::new_v4(), ext);
                     form.file_bytes = field.bytes().await
-                        .map_err(|_| AppError::BadRequest("Failed to read file size".to_string()))?
+                        .map_err(|e| AppError::BadRequest(format!("Failed to read file size: {}", e)))?
                         .to_vec();
                 }
                 None => {
                     let value = field.text().await
-                        .map_err(|_| AppError::BadRequest("Failed to read form field value".to_string()))?;
+                        .map_err(|e| AppError::BadRequest(format!("Failed to read form field value: {}", e)))?;
             
                     match name.as_str() {
                         "title"       => form.title = value,
@@ -157,7 +157,7 @@ impl Attachment {
         .fetch_one(&db)
         .await?;
     
-        tokio::fs::remove_file(&attachment.file_path).await.map_err(|_| AppError::BadRequest("Failed to delete file from disk".to_string()))?;
+        tokio::fs::remove_file(&attachment.file_path).await.map_err(|e| AppError::BadRequest(format!("Failed to delete file from disk: {}", e)))?;
     
         Ok(())
     }

@@ -42,8 +42,7 @@ impl Certificate {
         .fetch_all(&db)
         .await
         .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
+            AppError::DatabaseError(e)
         })?;
 
         Ok(certificates)

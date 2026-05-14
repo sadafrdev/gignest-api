@@ -49,8 +49,7 @@ impl Education {
         .fetch_all(&db)
         .await
         .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
+            AppError::DatabaseError(e)
         })?;
 
         Ok(educations)
@@ -61,8 +60,7 @@ impl Education {
             .execute(&db)
             .await
             .map_err(|e| {
-                eprintln!("SQL ERROR: {:?}", e);
-                AppError::InternalServerError
+                AppError::DatabaseError(e)
             })?;
     
         Ok(())

@@ -65,7 +65,7 @@ impl Proposal {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::InternalServerError)?;
+        .ok_or(AppError::NotFound("Proposal Not Found".to_string()))?;
 
         Ok(proposal)
     }
@@ -88,7 +88,7 @@ impl Proposal {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::InternalServerError)?;
+        .ok_or(AppError::NotFound("Proposal Not Found".to_string()))?;
 
         Ok(proposal)
     }
