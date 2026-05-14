@@ -3,4 +3,4 @@ pub mod educations;
 pub mod languages;
 pub mod proposals;
 pub mod skills;
-pub mod uploads;
+pub mod attachments;

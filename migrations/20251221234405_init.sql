@@ -112,8 +112,9 @@ CREATE TABLE reviews (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE uploads (
+CREATE TABLE attachments (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  portfolio_id BIGINT REFERENCES portfolios(id) ON DELETE RESTRICT NOT NULL,
   user_id BIGINT REFERENCES users(id) NOT NULL,
   title TEXT NOT NULL,
   description TEXT NOT NULL,

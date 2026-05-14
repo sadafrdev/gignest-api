@@ -4,7 +4,7 @@ pub mod educations;
 pub mod languages;
 pub mod proposals;
 pub mod skills;
-pub mod uploads;
+pub mod attachments;
 
 pub fn router() -> Router {
     Router::new()
@@ -13,5 +13,5 @@ pub fn router() -> Router {
         .merge(languages::router())
         .merge(educations::router())
         .merge(proposals::router())
-        .merge(uploads::router())
+        .merge(attachments::router())
 }

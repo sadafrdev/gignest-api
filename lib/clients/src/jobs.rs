@@ -52,7 +52,7 @@ impl Job {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::NotFound("JOB"))
+        .ok_or(AppError::NotFound("JOB".to_string()))
     }
 
     pub async fn delete(db: DB, id: i64) -> Result<(), AppError> {

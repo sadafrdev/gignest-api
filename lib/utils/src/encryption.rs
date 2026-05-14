@@ -14,7 +14,7 @@ pub fn verify_password(db_password: &str, password: String) -> Result<(), AppErr
 
     Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
-        .map_err(|_| AppError::ValidationError("Invalid credentials"))?;
+        .map_err(|_| AppError::ValidationError("Invalid credentials".to_string()))?;
 
     Ok(())
 }
@@ -129,7 +129,7 @@ impl ResetTokenClaims {
         let data = decoding::<ResetTokenClaims>(token)?;
 
         if data.sub != "password_reset" {
-            return Err(AppError::ValidationError("TOKEN"));
+            return Err(AppError::ValidationError("TOKEN".to_string()));
         }
 
         Ok(data)

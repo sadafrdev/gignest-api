@@ -9,9 +9,9 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum AppError {
     #[error("Invalid input data: {0}")]
-    ValidationError(&'static str),
+    ValidationError(String),
     #[error("Resource not found: {0}")]
-    NotFound(&'static str),
+    NotFound(String),
     #[error("Database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
     #[error("Internal server error")]
@@ -19,12 +19,12 @@ pub enum AppError {
     #[error("Unauthorized")]
     Unauthorized,
     #[error("Bad request: {0}")]
-    BadRequest(&'static str),
+    BadRequest(String),
 }
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
-    message: &'static str,
+    message: String,
 }
 
 impl IntoResponse for AppError {
@@ -36,14 +36,14 @@ impl IntoResponse for AppError {
                 eprintln!("Database error: {:?}", err);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    "Database operation failed",
+                    "Database operation failed".to_string(),
                 )
             }
             AppError::InternalServerError => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred",
+                "An unexpected error occurred".to_string(),
             ),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized"),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
         };
 
