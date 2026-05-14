@@ -52,17 +52,16 @@ impl Job {
         )
         .fetch_optional(&db)
         .await?
-        .ok_or(AppError::NotFound("JOB"))
+        .ok_or(AppError::NotFound("JOB".to_string()))
     }
 
     pub async fn delete(db: DB, id: i64) -> Result<(), AppError> {
         sqlx::query!(" DELETE FROM jobs WHERE id = $1 ", id)
             .execute(&db)
             .await?;
-    
+
         Ok(())
     }
-
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -98,5 +97,4 @@ impl UpdateJob {
 
         Ok(())
     }
-
 }

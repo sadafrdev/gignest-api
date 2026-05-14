@@ -48,26 +48,19 @@ impl Education {
         )
         .fetch_all(&db)
         .await
-        .map_err(|e| {
-            eprintln!("SQL ERROR: {e:?}");
-            AppError::InternalServerError
-        })?;
+        .map_err(|e| AppError::DatabaseError(e))?;
 
         Ok(educations)
     }
-    
+
     pub async fn delete(db: DB, id: i64) -> Result<(), AppError> {
         sqlx::query!(" DELETE FROM educations WHERE id = $1 ", id)
             .execute(&db)
             .await
-            .map_err(|e| {
-                eprintln!("SQL ERROR: {:?}", e);
-                AppError::InternalServerError
-            })?;
-    
+            .map_err(|e| AppError::DatabaseError(e))?;
+
         Ok(())
     }
-    
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]

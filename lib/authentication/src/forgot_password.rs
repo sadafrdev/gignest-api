@@ -26,7 +26,7 @@ impl SendOtp {
         sqlx::query!(" SELECT email FROM users WHERE email = $1 ", self.email)
             .fetch_optional(&db)
             .await?
-            .ok_or(AppError::NotFound("EMAIL"))?;
+            .ok_or(AppError::NotFound("EMAIL".to_string()))?;
 
         sqlx::query!(
             "

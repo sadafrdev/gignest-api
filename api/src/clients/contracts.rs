@@ -3,8 +3,8 @@ use axum::{
     extract::{Extension, Path},
     routing::{get, post},
 };
-use utils::{db::DB, error::AppError};
 use clients::contracts::Contract;
+use utils::{db::DB, error::AppError};
 
 pub async fn accept_proposal(
     Extension(db): Extension<DB>,

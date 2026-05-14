@@ -1,3 +1,6 @@
+use authentication::forgot_password::{
+    SendOtp, UpdatePassword, UpdatePasswordResponse, VerifyOtp, VerifyOtpResponse,
+};
 use axum::{
     Json, Router,
     extract::{Extension, State},
@@ -5,9 +8,6 @@ use axum::{
 };
 use serde::Deserialize;
 use utils::{db::DB, error::AppError};
-use authentication::forgot_password::{
-    SendOtp, UpdatePassword, UpdatePasswordResponse, VerifyOtp, VerifyOtpResponse,
-};
 
 pub async fn send_otp(
     State(env): State<ENV>,

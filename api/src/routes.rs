@@ -1,10 +1,10 @@
+use crate::reviews;
+use crate::{authentication, clients, freelancers, search};
 use axum::{Extension, Router, middleware};
 use utils::{
     db::DB,
     middleware::{verify_role, verify_token},
 };
-use crate::reviews;
-use crate::{authentication, clients, freelancers, search};
 
 pub fn router(state: DB) -> Router {
     let routes = Router::new()

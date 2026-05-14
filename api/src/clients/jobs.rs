@@ -27,10 +27,7 @@ pub async fn update_job(
     form.update(db).await
 }
 
-pub async fn delete_job(
-    Path(id): Path<i64>, 
-    Extension(db): Extension<DB>
-) -> Result<(), AppError> {
+pub async fn delete_job(Path(id): Path<i64>, Extension(db): Extension<DB>) -> Result<(), AppError> {
     Job::delete(db, id).await
 }
 
