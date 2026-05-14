@@ -41,9 +41,7 @@ impl Certificate {
         )
         .fetch_all(&db)
         .await
-        .map_err(|e| {
-            AppError::DatabaseError(e)
-        })?;
+        .map_err(|e| AppError::DatabaseError(e))?;
 
         Ok(certificates)
     }
@@ -52,10 +50,9 @@ impl Certificate {
         sqlx::query!(" DELETE FROM certificates WHERE id = $1", id)
             .execute(&db)
             .await?;
-    
-        Ok(())
-    }    
 
+        Ok(())
+    }
 }
 
 #[derive(Deserialize, Serialize, Debug, sqlx::FromRow)]

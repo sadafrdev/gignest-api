@@ -1,11 +1,11 @@
 use axum::{extract::Multipart, response::IntoResponse};
-use std::path::Path;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use std::path::Path;
 use utils::{db::DB, error::AppError};
+use uuid::Uuid;
 
 #[derive(Deserialize, Default, Serialize)]
-pub struct Attachment{
+pub struct Attachment {
     id: i64,
     portfolio_id: i64,
     user_id: i64,
@@ -43,10 +43,7 @@ impl Attachment {
         Ok(attachments)
     }
 
-    pub async fn download(
-        id: i64,
-        db: DB,
-    ) -> Result<impl IntoResponse, AppError> {
+    pub async fn download(id: i64, db: DB) -> Result<impl IntoResponse, AppError> {
         let attachment = sqlx::query_as!(
             Self,
             "
@@ -72,44 +69,53 @@ impl Attachment {
         let file = tokio::fs::read(attachment.file_path)
             .await
             .map_err(|e| AppError::BadRequest(format!("Failed to read file: {}", e.to_string())))?;
-    
+
         Ok((
-            [("Content-Disposition", format!("attachment; filename=\"{}\"", attachment.original_name))],
+            [(
+                "Content-Disposition",
+                format!("attachment; filename=\"{}\"", attachment.original_name),
+            )],
             file,
         ))
     }
 
-    pub async fn create(
-        mut multi: Multipart,
-        db : DB
-    )-> Result<(), AppError> {
+    pub async fn create(mut multi: Multipart, db: DB) -> Result<(), AppError> {
         let mut form = Self::default();
-        while let Some(field) = multi.next_field().await.map_err(|_| AppError::BadRequest("Failed to read multipart field".to_string()))? {
+        while let Some(field) = multi
+            .next_field()
+            .await
+            .map_err(|_| AppError::BadRequest("Failed to read multipart field".to_string()))?
+        {
             let name = field.name().unwrap_or_default().to_string();
 
             match field.file_name() {
                 Some(file_name) => {
                     form.original_name = file_name.to_string();
-            
+
                     let ext = Path::new(&form.original_name)
                         .extension()
                         .and_then(|e| e.to_str())
                         .unwrap_or("bin");
-            
+
                     form.safe_name = format!("{}.{}", Uuid::new_v4(), ext);
-                    form.file_bytes = field.bytes().await
-                        .map_err(|e| AppError::BadRequest(format!("Failed to read file size: {}", e)))?
+                    form.file_bytes = field
+                        .bytes()
+                        .await
+                        .map_err(|e| {
+                            AppError::BadRequest(format!("Failed to read file size: {}", e))
+                        })?
                         .to_vec();
                 }
                 None => {
-                    let value = field.text().await
-                        .map_err(|e| AppError::BadRequest(format!("Failed to read form field value: {}", e)))?;
-            
+                    let value = field.text().await.map_err(|e| {
+                        AppError::BadRequest(format!("Failed to read form field value: {}", e))
+                    })?;
+
                     match name.as_str() {
-                        "title"       => form.title = value,
+                        "title" => form.title = value,
                         "description" => form.description = value,
-                        "user_id"     => form.user_id = value.parse().unwrap(),
-                        _             => {}
+                        "user_id" => form.user_id = value.parse().unwrap(),
+                        _ => {}
                     }
                 }
             }
@@ -118,10 +124,12 @@ impl Attachment {
         let file_path = format!("/tmp/{}", form.safe_name);
 
         tokio::fs::create_dir_all("attachments")
-        .await
-        .map_err(|e| AppError::BadRequest(e.to_string()))?;
+            .await
+            .map_err(|e| AppError::BadRequest(e.to_string()))?;
 
-        tokio::fs::write(&file_path, &form.file_bytes).await.map_err(|e| AppError::BadRequest(e.to_string()))?;
+        tokio::fs::write(&file_path, &form.file_bytes)
+            .await
+            .map_err(|e| AppError::BadRequest(e.to_string()))?;
 
         sqlx::query!(
             "
@@ -142,24 +150,18 @@ impl Attachment {
         Ok(())
     }
 
-    pub async fn delete(
-        id: i64,
-        db: DB
-    ) -> Result<(), AppError> {
+    pub async fn delete(id: i64, db: DB) -> Result<(), AppError> {
         let attachment = sqlx::query!(
-            "
-                DELETE FROM attachments
-                WHERE id = $1 
-                RETURNING file_path
-            ",
+            "DELETE FROM attachments WHERE id = $1 RETURNING file_path",
             id
         )
         .fetch_one(&db)
         .await?;
-    
-        tokio::fs::remove_file(&attachment.file_path).await.map_err(|e| AppError::BadRequest(format!("Failed to delete file from disk: {}", e)))?;
-    
+
+        tokio::fs::remove_file(&attachment.file_path)
+            .await
+            .map_err(|e| AppError::BadRequest(format!("Failed to delete file from disk: {}", e)))?;
+
         Ok(())
     }
-    
 }

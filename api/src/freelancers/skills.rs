@@ -3,7 +3,7 @@ use axum::{
     extract::Path,
     routing::{delete, get, post, put},
 };
-use freelancers::skills::{Skill, UpdateSkill, SkillsEnum};
+use freelancers::skills::{Skill, SkillsEnum, UpdateSkill};
 use utils::{db::DB, error::AppError};
 
 pub async fn add_skill(

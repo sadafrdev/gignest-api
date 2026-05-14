@@ -1,6 +1,6 @@
+use authentication::register::Register;
 use axum::{Json, Router, extract::Extension, routing::post};
 use utils::{db::DB, error::AppError};
-use authentication::register::Register;
 
 pub async fn register(
     Extension(db): Extension<DB>,

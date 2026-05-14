@@ -90,10 +90,9 @@ impl Skill {
         )
         .execute(&db)
         .await?;
-    
+
         Ok(())
     }
-
 }
 
 #[derive(Deserialize, Serialize, Debug)]

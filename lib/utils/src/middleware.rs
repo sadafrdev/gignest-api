@@ -1,9 +1,9 @@
+use crate::{enums::Role, error::AppError, jwt::verify_jwt};
 use axum::{
     extract::{OriginalUri, Request},
     middleware::Next,
     response::Response,
 };
-use crate::{enums::Role, error::AppError, jwt::verify_jwt};
 
 #[derive(Clone, Debug)]
 pub struct AuthUser {

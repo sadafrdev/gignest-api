@@ -3,8 +3,8 @@ use axum::{
     extract::{Extension, Path},
     routing::{get, post},
 };
-use utils::{db::DB, error::AppError};
 use freelancers::proposals::Proposal;
+use utils::{db::DB, error::AppError};
 
 pub async fn create(
     Extension(db): Extension<DB>,

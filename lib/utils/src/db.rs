@@ -1,6 +1,6 @@
+use crate::{ENV, error::AppError};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Pool, Postgres};
-use crate::{ENV, error::AppError};
 
 #[derive(Clone)]
 pub struct AppState {

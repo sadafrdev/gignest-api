@@ -1,10 +1,10 @@
-use chrono::{Duration, Utc};
-use serde::{Deserialize, Serialize};
 use crate::{
     encryption::{decoding, encoding},
     enums::Role,
     error::AppError,
 };
+use chrono::{Duration, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -22,7 +22,7 @@ pub fn create_jwt(user_id: i64, role: Role) -> Result<String, AppError> {
     let claims = Claims {
         sub: user_id,
         exp: expiration,
-        role
+        role,
     };
 
     encoding(claims)

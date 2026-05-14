@@ -1,6 +1,11 @@
-use axum::{Json, Router, extract::{Extension, Multipart, Path}, response::IntoResponse, routing::{delete, get, post}};
-use utils::{db::DB, error::AppError};
+use axum::{
+    Json, Router,
+    extract::{Extension, Multipart, Path},
+    response::IntoResponse,
+    routing::{delete, get, post},
+};
 use freelancers::attachments::Attachment;
+use utils::{db::DB, error::AppError};
 
 pub async fn get_attachments(
     Path(user_id): Path<i64>,
@@ -16,10 +21,7 @@ pub async fn download_attachment(
     Attachment::download(id, db).await
 }
 
-pub async fn create(
-    Extension(db): Extension<DB>,
-    multi: Multipart,
-) -> Result<(), AppError> {
+pub async fn create(Extension(db): Extension<DB>, multi: Multipart) -> Result<(), AppError> {
     Attachment::create(multi, db).await
 }
 

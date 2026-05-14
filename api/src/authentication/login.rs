@@ -1,6 +1,6 @@
+use authentication::login::{Login, LoginResponse};
 use axum::{Extension, Json, Router, routing::post};
 use utils::{db::DB, error::AppError};
-use authentication::login::{Login, LoginResponse};
 
 pub async fn login(
     Extension(db): Extension<DB>,

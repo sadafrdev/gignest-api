@@ -1,3 +1,5 @@
+use crate::ENV;
+use crate::error::AppError;
 use argon2::password_hash::{PasswordHasher, SaltString, rand_core::OsRng};
 use argon2::{Argon2, PasswordVerifier, password_hash::PasswordHash};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
@@ -7,8 +9,6 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use time::{Duration, OffsetDateTime};
-use crate::ENV;
-use crate::error::AppError;
 pub fn verify_password(db_password: &str, password: String) -> Result<(), AppError> {
     let parsed_hash = PasswordHash::new(db_password).map_err(|_| AppError::InternalServerError)?;
 

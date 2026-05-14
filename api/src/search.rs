@@ -1,9 +1,9 @@
 use axum::{Extension, Json, Router, extract::Query, routing::get};
-use utils::{db::DB, error::AppError};
 use search::{
     clients::{Client, SearchClientParam},
     freelancers::{Freelancer, SearchFreelancerParam},
 };
+use utils::{db::DB, error::AppError};
 
 pub async fn search_client(
     Extension(db): Extension<DB>,

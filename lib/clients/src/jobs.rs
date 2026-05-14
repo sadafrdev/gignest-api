@@ -59,10 +59,9 @@ impl Job {
         sqlx::query!(" DELETE FROM jobs WHERE id = $1 ", id)
             .execute(&db)
             .await?;
-    
+
         Ok(())
     }
-
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -98,5 +97,4 @@ impl UpdateJob {
 
         Ok(())
     }
-
 }

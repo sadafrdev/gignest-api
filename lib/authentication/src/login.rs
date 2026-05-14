@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::query;
-use utils::{db::DB, encryption::verify_password, error::AppError, jwt::create_jwt, enums::Role};
+use utils::{db::DB, encryption::verify_password, enums::Role, error::AppError, jwt::create_jwt};
 
 #[derive(Serialize)]
 pub struct LoginResponse {
