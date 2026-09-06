@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " INSERT INTO certificates (user_id, name, certificate_by, year) VALUES ($1, $2, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "15bf3255103c0f6f5cc60e7402a10965e948c3700e2c1915a3c8f2b4cb4ef3e3"
+}

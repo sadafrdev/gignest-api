@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT \n                    client_id, \n                    freelancer_id, \n                    job_id, \n                    status AS \"status: ContractStatus\" \n                FROM contract \n                WHERE client_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "client_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "freelancer_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "job_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "status: ContractStatus",
+        "type_info": {
+          "Custom": {
+            "name": "contract_status",
+            "kind": {
+              "Enum": [
+                "Active",
+                "Completed"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "43ea278987bb38440b90e27ae4e82c87a8a1b73b71d36fe19982c802c8403bb2"
+}

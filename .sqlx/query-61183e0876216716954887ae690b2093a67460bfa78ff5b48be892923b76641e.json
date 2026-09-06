@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT DISTINCT \n                    U.id,\n                    U.username,\n                    U.email,\n                    U.phone_number AS phone\n                FROM users U\n                LEFT JOIN jobs J ON J.client_id = U.id\n                WHERE \n                    U.role = 'Client'\n                    AND ($1::text IS NOT NULL OR title::text ILIKE $1)\n                    AND ($2::NUMERIC IS NOT NULL OR budget_min >= $2)\n                    AND ($3::NUMERIC IS NOT NULL OR budget_max <= $3)\n                    AND ($4::text IS NOT NULL OR job_type::text = $4)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "email",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "phone",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Numeric",
+        "Numeric",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "61183e0876216716954887ae690b2093a67460bfa78ff5b48be892923b76641e"
+}

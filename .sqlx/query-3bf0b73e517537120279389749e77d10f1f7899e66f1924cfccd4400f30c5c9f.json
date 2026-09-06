@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT DISTINCT \n                    U.id AS user_id,\n                    U.first_name,\n                    U.last_name,\n                    U.country AS \"country: Country\"\n                FROM users U\n                LEFT JOIN skills S ON S.user_id = U.id\n                LEFT JOIN languages L ON L.user_id = U.id\n                WHERE \n                    U.role = 'Freelancer' \n                    AND ($1::text IS NULL OR S.skill::text ILIKE $1)\n                    AND ($2::text IS NULL OR L.language::text ILIKE $2)\n                    AND ($3::text IS NULL OR U.country::text = $3)\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "first_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "last_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "country: Country",
+        "type_info": {
+          "Custom": {
+            "name": "country",
+            "kind": {
+              "Enum": [
+                "us",
+                "ca",
+                "gb",
+                "au",
+                "de",
+                "fr",
+                "in",
+                "jp",
+                "cn",
+                "br",
+                "za",
+                "ng",
+                "ke",
+                "eg",
+                "mx",
+                "pk",
+                "ru",
+                "it",
+                "es",
+                "nl"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "3bf0b73e517537120279389749e77d10f1f7899e66f1924cfccd4400f30c5c9f"
+}

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " \n                INSERT INTO jobs (client_id, title, description, job_type , budget_min, budget_max) \n                VALUES ($1, $2, $3, $4, $5, $6)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Text",
+        {
+          "Custom": {
+            "name": "job_type",
+            "kind": {
+              "Enum": [
+                "Fixed",
+                "Hourly"
+              ]
+            }
+          }
+        },
+        "Numeric",
+        "Numeric"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3925b915dda3314f24575629bf22b866003293239090a9e3416b8de9b519f8d6"
+}

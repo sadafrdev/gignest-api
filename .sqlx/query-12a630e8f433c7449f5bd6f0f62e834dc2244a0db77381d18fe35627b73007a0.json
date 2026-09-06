@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT P.id\n                FROM proposals P\n                JOIN jobs J ON P.job_id = J.id\n                WHERE P.job_id = $1\n                AND J.client_id = $2\n                AND P.freelancer_id = $3\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "12a630e8f433c7449f5bd6f0f62e834dc2244a0db77381d18fe35627b73007a0"
+}

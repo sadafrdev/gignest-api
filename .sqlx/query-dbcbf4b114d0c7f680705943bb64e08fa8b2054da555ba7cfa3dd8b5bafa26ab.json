@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE certificates\n                SET\n                    name = $1,\n                    certificate_by = $2,\n                    year = $3\n                WHERE id = $4\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Date",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dbcbf4b114d0c7f680705943bb64e08fa8b2054da555ba7cfa3dd8b5bafa26ab"
+}

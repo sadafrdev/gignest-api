@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT email\n                FROM otps\n                WHERE email = $1\n                    AND otp_hash = $2\n                    AND purpose = 'password_reset'\n                    AND expires_at > now()\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "email",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "629def5e93a4aa4eb60225abf62e5245d630d5a009181ed898cef76daad4cc12"
+}

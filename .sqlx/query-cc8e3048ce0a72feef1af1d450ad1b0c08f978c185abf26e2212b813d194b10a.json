@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " UPDATE skills SET skill = $1 WHERE id = $2 ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        {
+          "Custom": {
+            "name": "skills_enum",
+            "kind": {
+              "Enum": [
+                "WebDevelopment",
+                "AppDevelopment",
+                "DataScience",
+                "CyberSecurity",
+                "CloudComputing",
+                "RustProgramming",
+                "PythonProgramming",
+                "JavaProgramming",
+                "FrontendDevelopment",
+                "BackendDevelopment",
+                "HtmlCss",
+                "Javascript",
+                "MobileDevelopment",
+                "GraphicDesign",
+                "DigitalMarketing",
+                "ContentWriting",
+                "DataAnalysis",
+                "ProjectManagement",
+                "SeoSpeciallities",
+                "VideoEditing",
+                "UiUxDesign"
+              ]
+            }
+          }
+        },
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cc8e3048ce0a72feef1af1d450ad1b0c08f978c185abf26e2212b813d194b10a"
+}

@@ -1,0 +1,80 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    user_id,\n                    country AS \"country: Country\",\n                    degree,\n                    institute,\n                    major,\n                    year_of_graduation\n                FROM educations\n                WHERE user_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "country: Country",
+        "type_info": {
+          "Custom": {
+            "name": "country",
+            "kind": {
+              "Enum": [
+                "us",
+                "ca",
+                "gb",
+                "au",
+                "de",
+                "fr",
+                "in",
+                "jp",
+                "cn",
+                "br",
+                "za",
+                "ng",
+                "ke",
+                "eg",
+                "mx",
+                "pk",
+                "ru",
+                "it",
+                "es",
+                "nl"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "degree",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "institute",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "major",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "year_of_graduation",
+        "type_info": "Date"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e8adb274b5a1e23b75c4de06a8ba8b6dce98b3d3d6762bb1e72e504b097feea6"
+}

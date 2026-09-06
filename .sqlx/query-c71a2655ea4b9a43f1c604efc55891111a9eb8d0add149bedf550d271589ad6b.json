@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " DELETE FROM educations WHERE id = $1 ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c71a2655ea4b9a43f1c604efc55891111a9eb8d0add149bedf550d271589ad6b"
+}
