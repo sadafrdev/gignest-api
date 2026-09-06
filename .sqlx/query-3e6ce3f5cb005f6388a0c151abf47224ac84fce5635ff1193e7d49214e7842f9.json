@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " SELECT id, password FROM users WHERE email = $1 ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "password",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "3e6ce3f5cb005f6388a0c151abf47224ac84fce5635ff1193e7d49214e7842f9"
+}

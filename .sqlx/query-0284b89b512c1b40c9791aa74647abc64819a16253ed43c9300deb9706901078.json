@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " DELETE FROM languages WHERE id = $1 ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0284b89b512c1b40c9791aa74647abc64819a16253ed43c9300deb9706901078"
+}

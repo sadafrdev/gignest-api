@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE languages\n                SET language = $2, language_level = $3\n                WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        {
+          "Custom": {
+            "name": "language",
+            "kind": {
+              "Enum": [
+                "English",
+                "Urdu",
+                "Spanish",
+                "Chinese",
+                "Korean",
+                "French",
+                "Russian",
+                "German",
+                "Arabic",
+                "Hindi",
+                "Persian",
+                "Turkish",
+                "Bengali"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "language_level",
+            "kind": {
+              "Enum": [
+                "Begginer",
+                "Intermediate",
+                "Fluent"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c6004f84a3e8ca6c88d451cf11b0fcef518c95bac0697eaaffbab2f0e1543580"
+}

@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE jobs\n                SET\n                    title = $1,\n                    description = $2,\n                    budget_min = $3,\n                    budget_max = $4\n                WHERE id = $5\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Numeric",
+        "Numeric",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0c2d17e559ae4c95447c27fecb6724b3975c333a94b1a4a34563fa2b5d74c73d"
+}

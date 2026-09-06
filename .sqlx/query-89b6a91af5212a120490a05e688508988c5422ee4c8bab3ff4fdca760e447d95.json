@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " SELECT email FROM users WHERE email = $1 ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "email",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "89b6a91af5212a120490a05e688508988c5422ee4c8bab3ff4fdca760e447d95"
+}

@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT \n                    reviewer_id, \n                    reviewee_id, \n                    contract_id,\n                    rating, \n                    comment \n                FROM reviews \n                WHERE reviewee_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "reviewer_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "reviewee_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "contract_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "rating",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "comment",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "84f92db9d1e1402b204f6e6132df16e41009440f421d986b5c7d1bb0dc548c0c"
+}

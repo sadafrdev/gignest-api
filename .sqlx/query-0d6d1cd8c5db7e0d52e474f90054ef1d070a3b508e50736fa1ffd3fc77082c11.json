@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " INSERT INTO proposals (freelancer_id, cover_letter, job_id, bid_amount, job_type, status) VALUES ($1, $2, $3, $4, $5, $6) ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Text",
+        "Int8",
+        "Numeric",
+        {
+          "Custom": {
+            "name": "job_type",
+            "kind": {
+              "Enum": [
+                "Fixed",
+                "Hourly"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "proposal_status",
+            "kind": {
+              "Enum": [
+                "Pending",
+                "Accepted",
+                "Rejected"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0d6d1cd8c5db7e0d52e474f90054ef1d070a3b508e50736fa1ffd3fc77082c11"
+}

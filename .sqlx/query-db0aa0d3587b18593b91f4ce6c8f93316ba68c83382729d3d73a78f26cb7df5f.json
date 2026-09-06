@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " DELETE FROM skills  WHERE id = $1 and skill = $2 ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        {
+          "Custom": {
+            "name": "skills_enum",
+            "kind": {
+              "Enum": [
+                "WebDevelopment",
+                "AppDevelopment",
+                "DataScience",
+                "CyberSecurity",
+                "CloudComputing",
+                "RustProgramming",
+                "PythonProgramming",
+                "JavaProgramming",
+                "FrontendDevelopment",
+                "BackendDevelopment",
+                "HtmlCss",
+                "Javascript",
+                "MobileDevelopment",
+                "GraphicDesign",
+                "DigitalMarketing",
+                "ContentWriting",
+                "DataAnalysis",
+                "ProjectManagement",
+                "SeoSpeciallities",
+                "VideoEditing",
+                "UiUxDesign"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "db0aa0d3587b18593b91f4ce6c8f93316ba68c83382729d3d73a78f26cb7df5f"
+}

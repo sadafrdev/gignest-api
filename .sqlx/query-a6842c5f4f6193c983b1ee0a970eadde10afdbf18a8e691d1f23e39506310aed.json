@@ -1,0 +1,59 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO users\n                (first_name, last_name, password, email, phone_number, username, country, role)\n                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        {
+          "Custom": {
+            "name": "country",
+            "kind": {
+              "Enum": [
+                "us",
+                "ca",
+                "gb",
+                "au",
+                "de",
+                "fr",
+                "in",
+                "jp",
+                "cn",
+                "br",
+                "za",
+                "ng",
+                "ke",
+                "eg",
+                "mx",
+                "pk",
+                "ru",
+                "it",
+                "es",
+                "nl"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "user_role",
+            "kind": {
+              "Enum": [
+                "Client",
+                "Freelancer"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a6842c5f4f6193c983b1ee0a970eadde10afdbf18a8e691d1f23e39506310aed"
+}

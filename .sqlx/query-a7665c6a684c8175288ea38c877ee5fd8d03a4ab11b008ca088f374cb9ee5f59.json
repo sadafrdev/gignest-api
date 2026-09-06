@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " DELETE FROM otps WHERE email = $1 AND purpose = 'password_reset' ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a7665c6a684c8175288ea38c877ee5fd8d03a4ab11b008ca088f374cb9ee5f59"
+}

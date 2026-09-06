@@ -1,0 +1,72 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT id, user_id, language AS \"language: LanguageEnum\", language_level AS \"language_level: LanguageLevel\"\n                FROM languages\n                WHERE user_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "language: LanguageEnum",
+        "type_info": {
+          "Custom": {
+            "name": "language",
+            "kind": {
+              "Enum": [
+                "English",
+                "Urdu",
+                "Spanish",
+                "Chinese",
+                "Korean",
+                "French",
+                "Russian",
+                "German",
+                "Arabic",
+                "Hindi",
+                "Persian",
+                "Turkish",
+                "Bengali"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "language_level: LanguageLevel",
+        "type_info": {
+          "Custom": {
+            "name": "language_level",
+            "kind": {
+              "Enum": [
+                "Begginer",
+                "Intermediate",
+                "Fluent"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "b1bad32a47c3c784cc47199b4c05297b0d76aa61fe30127121afe3b049ce73aa"
+}

@@ -1,0 +1,57 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    user_id,\n                    skill AS \"skill: SkillsEnum\"\n                FROM skills \n                WHERE user_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "skill: SkillsEnum",
+        "type_info": {
+          "Custom": {
+            "name": "skills_enum",
+            "kind": {
+              "Enum": [
+                "WebDevelopment",
+                "AppDevelopment",
+                "DataScience",
+                "CyberSecurity",
+                "CloudComputing",
+                "RustProgramming",
+                "PythonProgramming",
+                "JavaProgramming",
+                "FrontendDevelopment",
+                "BackendDevelopment",
+                "HtmlCss",
+                "Javascript",
+                "MobileDevelopment",
+                "GraphicDesign",
+                "DigitalMarketing",
+                "ContentWriting",
+                "DataAnalysis",
+                "ProjectManagement",
+                "SeoSpeciallities",
+                "VideoEditing",
+                "UiUxDesign"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true,
+      false
+    ]
+  },
+  "hash": "e5ba156d42f2eb7fa34950869bae2c3ce94c789aa32f4a6b56a42c598f05e009"
+}

@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " INSERT INTO languages (user_id, language, language_level) VALUES ($1, $2, $3) ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        {
+          "Custom": {
+            "name": "language",
+            "kind": {
+              "Enum": [
+                "English",
+                "Urdu",
+                "Spanish",
+                "Chinese",
+                "Korean",
+                "French",
+                "Russian",
+                "German",
+                "Arabic",
+                "Hindi",
+                "Persian",
+                "Turkish",
+                "Bengali"
+              ]
+            }
+          }
+        },
+        {
+          "Custom": {
+            "name": "language_level",
+            "kind": {
+              "Enum": [
+                "Begginer",
+                "Intermediate",
+                "Fluent"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "42c93f60bab0074dcd18851a70e105c7f75443b736d45e019c90905aa8dcf351"
+}
